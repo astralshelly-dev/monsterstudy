@@ -1,4 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  Gift, Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
   BookMarked,
@@ -26,11 +27,12 @@ const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, primary: true },
   { to: "/estudar", label: "Estudar", icon: GraduationCap, primary: true },
   { to: "/ler", label: "Ler", icon: BookOpen, primary: true },
-  { to: "/livre", label: "Estudo Livre", icon: Brain },
+  { to: "/livre", label: "Treino Livre", icon: Brain },
   { to: "/monsterdex", label: "MonsterDex", icon: PawPrint, primary: true },
   { to: "/monstros", label: "Meus Monstros", icon: Sparkles },
   { to: "/biblioteca", label: "Biblioteca", icon: Library, primary: true },
   { to: "/loja", label: "Loja", icon: ShoppingBag },
+  { to: "/codigos", label: "Códigos", icon: Gift },
   { to: "/conquistas", label: "Conquistas", icon: Trophy },
   { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
   { to: "/historico", label: "Histórico", icon: ScrollText },
