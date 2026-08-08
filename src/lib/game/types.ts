@@ -11,6 +11,7 @@ export type OwnedMonster = {
 export type Book = {
   id: string;
   title: string;
+  subtitle?: string | undefined;
   author: string;
   totalPages: number;
   currentPage: number;
@@ -21,6 +22,7 @@ export type Book = {
   addedAt: string;
   finishedAt?: string | undefined;
 };
+
 
 export type Reward = {
   monsterId: string;
