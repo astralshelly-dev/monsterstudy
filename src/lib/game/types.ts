@@ -70,14 +70,21 @@ export type ReadingSession = {
 export type FreeSession = {
   id: string;
   kind: "free";
+  /** treino livre de estudo ou de leitura */
+  mode: "study" | "read";
   startedAt: string;
   endedAt: string;
   durationSec: number;
   subject?: string | undefined;
   notes?: string | undefined;
+  bookId?: string | undefined;
+  startPage?: number | undefined;
+  endPage?: number | undefined;
+  pagesRead?: number | undefined;
   monsterId?: string | undefined;
   monsterXp: number;
 };
+
 
 export type Session = StudySession | ReadingSession | FreeSession;
 
