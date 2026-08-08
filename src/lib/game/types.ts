@@ -136,4 +136,7 @@ export type GameState = {
   timer: ActiveTimer | null;
   /** recompensa pendente aguardando revelação */
   pendingReward: Reward | null;
+  /** códigos promocionais já resgatados */
+  redeemedCodes: string[];
 };
+
