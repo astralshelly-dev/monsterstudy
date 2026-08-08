@@ -10,33 +10,206 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as ConquistasRouteImport } from './routes/conquistas'
+import { Route as EstatisticasRouteImport } from './routes/estatisticas'
+import { Route as EstudarRouteImport } from './routes/estudar'
+import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as LerRouteImport } from './routes/ler'
+import { Route as LivreRouteImport } from './routes/livre'
+import { Route as LojaRouteImport } from './routes/loja'
+import { Route as MonsterdexRouteImport } from './routes/monsterdex'
+import { Route as MonstrosRouteImport } from './routes/monstros'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as BibliotecaIndexRouteImport } from './routes/biblioteca.index'
+import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConquistasRoute = ConquistasRouteImport.update({
+  id: '/conquistas',
+  path: '/conquistas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstatisticasRoute = EstatisticasRouteImport.update({
+  id: '/estatisticas',
+  path: '/estatisticas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstudarRoute = EstudarRouteImport.update({
+  id: '/estudar',
+  path: '/estudar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LerRoute = LerRouteImport.update({
+  id: '/ler',
+  path: '/ler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LivreRoute = LivreRouteImport.update({
+  id: '/livre',
+  path: '/livre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LojaRoute = LojaRouteImport.update({
+  id: '/loja',
+  path: '/loja',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonsterdexRoute = MonsterdexRouteImport.update({
+  id: '/monsterdex',
+  path: '/monsterdex',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonstrosRoute = MonstrosRouteImport.update({
+  id: '/monstros',
+  path: '/monstros',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BibliotecaIndexRoute = BibliotecaIndexRouteImport.update({
+  id: '/biblioteca/',
+  path: '/biblioteca/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BibliotecaBookIdRoute = BibliotecaBookIdRouteImport.update({
+  id: '/biblioteca/$bookId',
+  path: '/biblioteca/$bookId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/estatisticas': typeof EstatisticasRoute
+  '/estudar': typeof EstudarRoute
+  '/historico': typeof HistoricoRoute
+  '/ler': typeof LerRoute
+  '/livre': typeof LivreRoute
+  '/loja': typeof LojaRoute
+  '/monsterdex': typeof MonsterdexRoute
+  '/monstros': typeof MonstrosRoute
+  '/perfil': typeof PerfilRoute
+  '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/biblioteca/': typeof BibliotecaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/estatisticas': typeof EstatisticasRoute
+  '/estudar': typeof EstudarRoute
+  '/historico': typeof HistoricoRoute
+  '/ler': typeof LerRoute
+  '/livre': typeof LivreRoute
+  '/loja': typeof LojaRoute
+  '/monsterdex': typeof MonsterdexRoute
+  '/monstros': typeof MonstrosRoute
+  '/perfil': typeof PerfilRoute
+  '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/biblioteca': typeof BibliotecaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/conquistas': typeof ConquistasRoute
+  '/estatisticas': typeof EstatisticasRoute
+  '/estudar': typeof EstudarRoute
+  '/historico': typeof HistoricoRoute
+  '/ler': typeof LerRoute
+  '/livre': typeof LivreRoute
+  '/loja': typeof LojaRoute
+  '/monsterdex': typeof MonsterdexRoute
+  '/monstros': typeof MonstrosRoute
+  '/perfil': typeof PerfilRoute
+  '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/biblioteca/': typeof BibliotecaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/configuracoes'
+    | '/conquistas'
+    | '/estatisticas'
+    | '/estudar'
+    | '/historico'
+    | '/ler'
+    | '/livre'
+    | '/loja'
+    | '/monsterdex'
+    | '/monstros'
+    | '/perfil'
+    | '/biblioteca/$bookId'
+    | '/biblioteca/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/configuracoes'
+    | '/conquistas'
+    | '/estatisticas'
+    | '/estudar'
+    | '/historico'
+    | '/ler'
+    | '/livre'
+    | '/loja'
+    | '/monsterdex'
+    | '/monstros'
+    | '/perfil'
+    | '/biblioteca/$bookId'
+    | '/biblioteca'
+  id:
+    | '__root__'
+    | '/'
+    | '/configuracoes'
+    | '/conquistas'
+    | '/estatisticas'
+    | '/estudar'
+    | '/historico'
+    | '/ler'
+    | '/livre'
+    | '/loja'
+    | '/monsterdex'
+    | '/monstros'
+    | '/perfil'
+    | '/biblioteca/$bookId'
+    | '/biblioteca/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  ConquistasRoute: typeof ConquistasRoute
+  EstatisticasRoute: typeof EstatisticasRoute
+  EstudarRoute: typeof EstudarRoute
+  HistoricoRoute: typeof HistoricoRoute
+  LerRoute: typeof LerRoute
+  LivreRoute: typeof LivreRoute
+  LojaRoute: typeof LojaRoute
+  MonsterdexRoute: typeof MonsterdexRoute
+  MonstrosRoute: typeof MonstrosRoute
+  PerfilRoute: typeof PerfilRoute
+  BibliotecaBookIdRoute: typeof BibliotecaBookIdRoute
+  BibliotecaIndexRoute: typeof BibliotecaIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +221,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conquistas': {
+      id: '/conquistas'
+      path: '/conquistas'
+      fullPath: '/conquistas'
+      preLoaderRoute: typeof ConquistasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estatisticas': {
+      id: '/estatisticas'
+      path: '/estatisticas'
+      fullPath: '/estatisticas'
+      preLoaderRoute: typeof EstatisticasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estudar': {
+      id: '/estudar'
+      path: '/estudar'
+      fullPath: '/estudar'
+      preLoaderRoute: typeof EstudarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ler': {
+      id: '/ler'
+      path: '/ler'
+      fullPath: '/ler'
+      preLoaderRoute: typeof LerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/livre': {
+      id: '/livre'
+      path: '/livre'
+      fullPath: '/livre'
+      preLoaderRoute: typeof LivreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loja': {
+      id: '/loja'
+      path: '/loja'
+      fullPath: '/loja'
+      preLoaderRoute: typeof LojaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/monsterdex': {
+      id: '/monsterdex'
+      path: '/monsterdex'
+      fullPath: '/monsterdex'
+      preLoaderRoute: typeof MonsterdexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/monstros': {
+      id: '/monstros'
+      path: '/monstros'
+      fullPath: '/monstros'
+      preLoaderRoute: typeof MonstrosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/biblioteca/': {
+      id: '/biblioteca/'
+      path: '/biblioteca'
+      fullPath: '/biblioteca/'
+      preLoaderRoute: typeof BibliotecaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/biblioteca/$bookId': {
+      id: '/biblioteca/$bookId'
+      path: '/biblioteca/$bookId'
+      fullPath: '/biblioteca/$bookId'
+      preLoaderRoute: typeof BibliotecaBookIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  ConquistasRoute: ConquistasRoute,
+  EstatisticasRoute: EstatisticasRoute,
+  EstudarRoute: EstudarRoute,
+  HistoricoRoute: HistoricoRoute,
+  LerRoute: LerRoute,
+  LivreRoute: LivreRoute,
+  LojaRoute: LojaRoute,
+  MonsterdexRoute: MonsterdexRoute,
+  MonstrosRoute: MonstrosRoute,
+  PerfilRoute: PerfilRoute,
+  BibliotecaBookIdRoute: BibliotecaBookIdRoute,
+  BibliotecaIndexRoute: BibliotecaIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
