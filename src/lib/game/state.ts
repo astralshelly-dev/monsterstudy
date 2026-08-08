@@ -509,32 +509,96 @@ export function saveFreeSession(input: {
   timer: ActiveTimer;
   durationSec: number;
   notes?: string;
-}): { monsterXp: number; levelsGained: number; monsterId: string | null } {
+  mode?: "study" | "read";
+  bookId?: string;
+  endPage?: number;
+}): {
+  monsterXp: number;
+  levelsGained: number;
+  monsterId: string | null;
+  pagesRead: number;
+} {
   const minutes = input.durationSec / 60;
   const boost = 1 + state.upgrades.knowledge_boost * UPGRADES.knowledge_boost.effectPerLevel;
-  const monsterXp = Math.round(minutes * XP.freeStudyPerMinute * boost);
+  const mode = input.mode ?? "study";
+  const bookId = input.bookId ?? input.timer.meta.bookId;
+  const startPage = input.timer.meta.startPage ?? 0;
+  const endPage = input.endPage ?? startPage;
+  const pagesRead = mode === "read" ? Math.max(0, endPage - startPage) : 0;
+  const monsterXp = Math.round(
+    (minutes * XP.freeStudyPerMinute + pagesRead * XP.perPage) * boost,
+  );
   const monsterId = state.activeMonsterId;
   const session: FreeSession = {
     id: uid(),
     kind: "free",
+    mode,
     startedAt: new Date(input.timer.startedAt).toISOString(),
     endedAt: new Date().toISOString(),
     durationSec: input.durationSec,
     subject: input.timer.meta.subject,
     notes: input.notes,
+    bookId: mode === "read" ? bookId : undefined,
+    startPage: mode === "read" ? startPage : undefined,
+    endPage: mode === "read" ? endPage : undefined,
+    pagesRead: mode === "read" ? pagesRead : undefined,
     monsterId: monsterId ?? undefined,
     monsterXp,
   };
   setState((s) => {
     s.sessions = [session, ...s.sessions];
-    markActivity(s, "study", input.durationSec);
-    addUserXp(s, Math.round(minutes * XP.perMinute * boost));
+    markActivity(s, mode, input.durationSec, pagesRead);
+    addUserXp(s, Math.round((minutes * XP.perMinute + pagesRead * XP.perPage) * boost));
+    if (mode === "read" && bookId) {
+      s.books = s.books.map((b) =>
+        b.id === bookId ? { ...b, currentPage: Math.min(b.totalPages, endPage) } : b,
+      );
+    }
     s.timer = null;
   });
   let levelsGained = 0;
   if (monsterId) levelsGained = addMonsterXp(monsterId, monsterXp).levelsGained;
-  return { monsterXp, levelsGained, monsterId };
+  return { monsterXp, levelsGained, monsterId, pagesRead };
 }
+
+// ------------------------------------------------------------
+// Códigos promocionais
+// ------------------------------------------------------------
+export function redeemCode(input: string): { ok: boolean; message: string } {
+  const code = input.trim().toUpperCase();
+  if (!code) return { ok: false, message: "Digite um código." };
+  const found = GIFT_CODES.find((c) => c.code === code);
+  if (!found) return { ok: false, message: "Código inválido." };
+  if (state.redeemedCodes.includes(found.code)) {
+    return { ok: false, message: "Você já resgatou este código." };
+  }
+  setState((s) => {
+    s.redeemedCodes = [...s.redeemedCodes, found.code];
+    s.money += found.money;
+    s.shards += found.shards;
+    if (found.xp) addUserXp(s, found.xp);
+    if (found.unlockTimer && !s.unlockedTimers.includes(found.unlockTimer)) {
+      s.unlockedTimers = [...s.unlockedTimers, found.unlockTimer].sort((a, b) => a - b);
+    }
+  });
+  if (found.monsterId) {
+    const def = MONSTERS_BY_ID[found.monsterId];
+    if (def) {
+      setState((s) => {
+        const owned = s.monsters[def.id];
+        s.monsters = {
+          ...s.monsters,
+          [def.id]: owned
+            ? { ...owned, copies: owned.copies + 1 }
+            : { id: def.id, copies: 1, level: 1, xp: 0, discoveredAt: new Date().toISOString() },
+        };
+        if (!s.activeMonsterId) s.activeMonsterId = def.id;
+      });
+    }
+  }
+  return { ok: true, message: `${found.label} resgatado!` };
+}
+
 
 export function clearPendingReward() {
   setState((s) => {
