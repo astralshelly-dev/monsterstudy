@@ -1,21 +1,23 @@
 import type { HabitatId, RarityId } from "./config";
+import { MONSTER_ART } from "./monster-art";
 
 export type MonsterDef = {
   id: string;
   name: string;
-  /** arte do monstro (glifo) — substituível por imagem futuramente */
+  /** arte do monstro — URL da ilustração (CDN) */
   art: string;
   rarity: RarityId;
   habitat: HabitatId;
   description: string;
 };
 
-export const MONSTERS: MonsterDef[] = [
+type MonsterSeed = Omit<MonsterDef, "art">;
+
+const SEEDS: MonsterSeed[] = [
   // ---------- Comum ----------
   {
     id: "mosslet",
     name: "Mosslet",
-    art: "🍃",
     rarity: "comum",
     habitat: "floresta",
     description: "Um filhote de musgo que dorme entre raízes e desperta com o som de páginas virando.",
@@ -23,7 +25,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "pebbly",
     name: "Pebbly",
-    art: "🪨",
     rarity: "comum",
     habitat: "deserto",
     description: "Feito de cascalho quente. Rola em círculos enquanto você se concentra.",
@@ -31,7 +32,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "drippet",
     name: "Drippet",
-    art: "💧",
     rarity: "comum",
     habitat: "oceano",
     description: "Uma gota viva e curiosa. Adora escorrer pelas margens dos cadernos.",
@@ -39,7 +39,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "sparkid",
     name: "Sparkid",
-    art: "✳️",
     rarity: "comum",
     habitat: "vulcao",
     description: "Faísca teimosa que insiste em não apagar antes do fim do cronômetro.",
@@ -47,7 +46,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "frostnib",
     name: "Frostnib",
-    art: "❄️",
     rarity: "comum",
     habitat: "tundra",
     description: "Pequeno cristal de gelo que refresca a mente durante longas revisões.",
@@ -55,17 +53,29 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "vinelet",
     name: "Vinelet",
-    art: "🌱",
     rarity: "comum",
     habitat: "selva",
     description: "Cipó recém-nascido. Cresce um centímetro por sessão concluída.",
+  },
+  {
+    id: "twiglin",
+    name: "Twiglin",
+    rarity: "comum",
+    habitat: "floresta",
+    description: "Feito de galhos secos e teimosia. Coleciona folhas de cada capítulo lido.",
+  },
+  {
+    id: "sandpip",
+    name: "Sandpip",
+    rarity: "comum",
+    habitat: "deserto",
+    description: "Filhote de pena dourada que pia sempre que o cronômetro chega ao fim.",
   },
 
   // ---------- Incomum ----------
   {
     id: "thornhop",
     name: "Thornhop",
-    art: "🦗",
     rarity: "incomum",
     habitat: "floresta",
     description: "Salta entre espinhos sem se ferir. Símbolo de disciplina ágil.",
@@ -73,7 +83,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "tidewhisk",
     name: "Tidewhisk",
-    art: "🐟",
     rarity: "incomum",
     habitat: "oceano",
     description: "Nada em correntes de tinta e devolve ideias esquecidas à superfície.",
@@ -81,7 +90,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "cindertail",
     name: "Cindertail",
-    art: "🦎",
     rarity: "incomum",
     habitat: "vulcao",
     description: "Sua cauda brasa marca no chão o quanto você já estudou hoje.",
@@ -89,7 +97,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "glaciva",
     name: "Glaciva",
-    art: "🐧",
     rarity: "incomum",
     habitat: "tundra",
     description: "Guardiã paciente das planícies brancas. Nunca apressa uma leitura.",
@@ -97,7 +104,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "dunecoil",
     name: "Dunecoil",
-    art: "🐍",
     rarity: "incomum",
     habitat: "deserto",
     description: "Enrola-se em espirais que lembram fórmulas antigas.",
@@ -105,17 +111,36 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "lumibug",
     name: "Lumibug",
-    art: "🪲",
     rarity: "incomum",
     habitat: "selva",
     description: "Ilumina apenas o parágrafo que você precisa reler.",
   },
+  {
+    id: "mistmote",
+    name: "Mistmote",
+    rarity: "incomum",
+    habitat: "mistico",
+    description: "Névoa curiosa que se condensa sobre anotações inacabadas.",
+  },
+  {
+    id: "glowfin",
+    name: "Glowfin",
+    rarity: "incomum",
+    habitat: "oceano",
+    description: "Acende sua lanterna natural nas madrugadas mais escuras de estudo.",
+  },
 
   // ---------- Raro ----------
   {
+    id: "ashmole",
+    name: "Ashmole",
+    rarity: "raro",
+    habitat: "vulcao",
+    description: "Escava túneis de cinza guardando tudo o que você não quer esquecer.",
+  },
+  {
     id: "emberfang",
     name: "Emberfang",
-    art: "🐉",
     rarity: "raro",
     habitat: "vulcao",
     description: "Dragonete de presas incandescentes. Ruge quando um capítulo termina.",
@@ -123,7 +148,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "moonfang",
     name: "Moonfang",
-    art: "🐺",
     rarity: "raro",
     habitat: "tundra",
     description: "Lobo de pelo prateado que caça sob o luar das madrugadas de estudo.",
@@ -131,7 +155,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "abyssquill",
     name: "Abyssquill",
-    art: "🦑",
     rarity: "raro",
     habitat: "oceano",
     description: "Escreve com tinta abissal aquilo que você jurou não esquecer.",
@@ -139,7 +162,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "barkgolem",
     name: "Barkgolem",
-    art: "🌳",
     rarity: "raro",
     habitat: "floresta",
     description: "Guardião de casca antiga. Um anel novo por cada cem páginas lidas.",
@@ -147,7 +169,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "mirasand",
     name: "Mirasand",
-    art: "🦂",
     rarity: "raro",
     habitat: "deserto",
     description: "Miragem viva que só aparece para quem estuda em silêncio absoluto.",
@@ -155,17 +176,36 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "petalynx",
     name: "Petalynx",
-    art: "🐆",
     rarity: "raro",
     habitat: "selva",
     description: "Felino coberto de pétalas. Passos completamente inaudíveis.",
+  },
+  {
+    id: "quartzox",
+    name: "Quartzox",
+    rarity: "raro",
+    habitat: "tundra",
+    description: "Raposa de quartzo que reflete cada revisão bem feita.",
+  },
+  {
+    id: "bloomserp",
+    name: "Bloomserp",
+    rarity: "raro",
+    habitat: "selva",
+    description: "Serpente florida que desabrocha a cada meta cumprida.",
+  },
+  {
+    id: "starkit",
+    name: "Starkit",
+    rarity: "raro",
+    habitat: "espaco",
+    description: "Gatinho estelar que ronrona em frequências de constelação.",
   },
 
   // ---------- Super Raro ----------
   {
     id: "stormhorn",
     name: "Stormhorn",
-    art: "🦏",
     rarity: "super_raro",
     habitat: "tundra",
     description: "Seu chifre acumula trovões — e libera um por maratona concluída.",
@@ -173,7 +213,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "voidbloom",
     name: "Voidbloom",
-    art: "🌺",
     rarity: "super_raro",
     habitat: "mistico",
     description: "Flor que só abre em dimensões onde o tempo é bem aproveitado.",
@@ -181,7 +220,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "kraveel",
     name: "Kraveel",
-    art: "🐙",
     rarity: "super_raro",
     habitat: "oceano",
     description: "Oito braços, oito livros, uma leitura simultânea impossível.",
@@ -189,17 +227,29 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "magmaw",
     name: "Magmaw",
-    art: "🦖",
     rarity: "super_raro",
     habitat: "vulcao",
     description: "Devora rochas derretidas com o mesmo apetite com que você devora capítulos.",
+  },
+  {
+    id: "thornmaw",
+    name: "Thornmaw",
+    rarity: "super_raro",
+    habitat: "selva",
+    description: "Guardião carnívoro das estufas proibidas. Devora distrações.",
+  },
+  {
+    id: "voltyx",
+    name: "Voltyx",
+    rarity: "super_raro",
+    habitat: "espaco",
+    description: "Lince elétrico que atravessa ideias na velocidade de um relâmpago.",
   },
 
   // ---------- Épico ----------
   {
     id: "aurelith",
     name: "Aurelith",
-    art: "🦅",
     rarity: "epico",
     habitat: "espaco",
     description: "Ave de asas de aurora que sobrevoa constelações de conhecimento.",
@@ -207,7 +257,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "cryotaur",
     name: "Cryotaur",
-    art: "🐂",
     rarity: "epico",
     habitat: "tundra",
     description: "Colosso de gelo eterno. Cada passo congela distrações.",
@@ -215,7 +264,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "sylvaqueen",
     name: "Sylvaqueen",
-    art: "🦋",
     rarity: "epico",
     habitat: "selva",
     description: "Rainha das folhas suspensas. Suas asas escrevem em pólen dourado.",
@@ -223,17 +271,29 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "obsidrake",
     name: "Obsidrake",
-    art: "🐊",
     rarity: "epico",
     habitat: "vulcao",
     description: "Escamas de obsidiana polida refletem tudo o que você aprendeu.",
+  },
+  {
+    id: "tempestrix",
+    name: "Tempestrix",
+    rarity: "epico",
+    habitat: "oceano",
+    description: "Cavalga tempestades e transforma ondas em parágrafos memorizados.",
+  },
+  {
+    id: "dunephar",
+    name: "Dunephar",
+    rarity: "epico",
+    habitat: "deserto",
+    description: "Esfinge de areia que só responde perguntas de quem estudou o bastante.",
   },
 
   // ---------- Lendário ----------
   {
     id: "solmyrr",
     name: "Solmyrr",
-    art: "🦁",
     rarity: "lendario",
     habitat: "deserto",
     description: "Leão solar cuja juba é feita de horas de dedicação acumuladas.",
@@ -241,7 +301,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "nebulith",
     name: "Nebulith",
-    art: "🐋",
     rarity: "lendario",
     habitat: "espaco",
     description: "Baleia cósmica que navega nebulosas guardando memórias inteiras.",
@@ -249,17 +308,22 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "thundrix",
     name: "Thundrix",
-    art: "🦌",
     rarity: "lendario",
     habitat: "tundra",
     description: "Galhadas de relâmpago congelado. Aparece uma vez por estação de estudos.",
+  },
+  {
+    id: "seraphae",
+    name: "Seraphae",
+    rarity: "lendario",
+    habitat: "mistico",
+    description: "Cervo alado de luz serena. Abençoa quem estuda sem pressa.",
   },
 
   // ---------- Mítico ----------
   {
     id: "eclipsaur",
     name: "Eclipsaur",
-    art: "🦕",
     rarity: "mitico",
     habitat: "espaco",
     description: "Ancião que existe entre dois eclipses. Fala apenas em equações.",
@@ -267,7 +331,6 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "arcanyx",
     name: "Arcanyx",
-    art: "🦚",
     rarity: "mitico",
     habitat: "mistico",
     description: "Cada pena guarda um feitiço que só a concentração absoluta revela.",
@@ -275,17 +338,22 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "abyssaria",
     name: "Abyssaria",
-    art: "🐳",
     rarity: "mitico",
     habitat: "oceano",
     description: "Canta no fundo do mundo. Quem a ouve nunca mais perde o foco.",
+  },
+  {
+    id: "umbraleth",
+    name: "Umbraleth",
+    rarity: "mitico",
+    habitat: "tundra",
+    description: "Pantera de sombras congeladas que caça pensamentos dispersos.",
   },
 
   // ---------- Divino ----------
   {
     id: "astraeon",
     name: "Astraeon",
-    art: "🐲",
     rarity: "divino",
     habitat: "mistico",
     description:
@@ -294,13 +362,17 @@ export const MONSTERS: MonsterDef[] = [
   {
     id: "luminara",
     name: "Luminara",
-    art: "🕊️",
     rarity: "divino",
     habitat: "espaco",
     description:
       "Nascida da primeira página já escrita. Sua luz reordena o tempo em favor de quem aprende.",
   },
 ];
+
+export const MONSTERS: MonsterDef[] = SEEDS.map((m) => ({
+  ...m,
+  art: MONSTER_ART[m.id] ?? "",
+}));
 
 export const MONSTERS_BY_ID: Record<string, MonsterDef> = Object.fromEntries(
   MONSTERS.map((m) => [m.id, m]),
