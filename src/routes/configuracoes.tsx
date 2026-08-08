@@ -63,7 +63,7 @@ function Settings() {
       try {
         const parsed = JSON.parse(String(reader.result));
         if (!parsed || typeof parsed !== "object" || !parsed.profile) throw new Error("inválido");
-        window.localStorage.setItem("monster-study-v1", JSON.stringify(parsed));
+        window.localStorage.setItem("monster-study:v1", JSON.stringify(parsed));
         toast.success("Dados importados. Recarregando...");
         setTimeout(() => window.location.reload(), 600);
       } catch {
