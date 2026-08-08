@@ -64,6 +64,7 @@ export function defaultState(): GameState {
     settings: { sounds: true, animations: true, notifications: false, compact: false },
     timer: null,
     pendingReward: null,
+    redeemedCodes: [],
   };
 }
 

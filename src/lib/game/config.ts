@@ -361,3 +361,31 @@ export const BOOK_SHELVES = [
 ] as const;
 
 export type ShelfId = (typeof BOOK_SHELVES)[number]["id"];
+
+// ------------------------------------------------------------
+// Códigos promocionais (resgatáveis na aba Códigos)
+// ------------------------------------------------------------
+export type GiftCode = {
+  code: string;
+  label: string;
+  money: number;
+  shards: number;
+  xp?: number;
+  monsterId?: string;
+  unlockTimer?: number;
+};
+
+export const GIFT_CODES: GiftCode[] = [
+  { code: "BEMVINDO", label: "Kit de boas-vindas", money: 1500, shards: 10, xp: 100 },
+  { code: "MONSTERSTUDY", label: "Bônus de lançamento", money: 5000, shards: 25, xp: 250 },
+  { code: "FOCOTOTAL", label: "Pacote de foco", money: 2500, shards: 15 },
+  { code: "LEITURAVORAZ", label: "Pacote do leitor", money: 3000, shards: 20, xp: 200 },
+  { code: "SEQUENCIA7", label: "Prêmio de sequência", money: 4000, shards: 12 },
+  { code: "MADRUGADA", label: "Turno da madrugada", money: 2000, shards: 8, xp: 150 },
+  { code: "TEMPOEXTRA", label: "Cronômetro de 90 min liberado", money: 500, shards: 5, unlockTimer: 90 },
+  { code: "MARATONA", label: "Cronômetro de 120 min liberado", money: 1000, shards: 5, unlockTimer: 120 },
+  { code: "AMIGODOSMONSTROS", label: "Companheiro raro", money: 1200, shards: 10, monsterId: "starkit" },
+  { code: "LUARPRATEADO", label: "Lobo lunar", money: 1500, shards: 10, monsterId: "moonfang" },
+  { code: "ESTRELAGUIA", label: "Guardiã épica", money: 8000, shards: 40, monsterId: "aurelith", xp: 400 },
+  { code: "CICLOINFINITO", label: "Presente divino", money: 25000, shards: 100, monsterId: "astraeon", xp: 1000 },
+];
