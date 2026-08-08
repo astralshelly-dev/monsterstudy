@@ -93,12 +93,26 @@ export function MonsterArt({
           silhouette && "opacity-40",
         )}
       >
-        <span
-          className={cn("leading-none", animate && "animate-float", silhouette && "brightness-0 opacity-60")}
-          aria-hidden
-        >
-          {art}
-        </span>
+        {art.startsWith("/") ? (
+          <img
+            src={art}
+            alt=""
+            loading="lazy"
+            className={cn(
+              "h-[88%] w-[88%] object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.55)]",
+              animate && "animate-float",
+              silhouette && "brightness-0 opacity-60",
+            )}
+          />
+        ) : (
+          <span
+            className={cn("leading-none", animate && "animate-float", silhouette && "brightness-0 opacity-60")}
+            aria-hidden
+          >
+            {art}
+          </span>
+        )}
+
       </div>
     </div>
   );
