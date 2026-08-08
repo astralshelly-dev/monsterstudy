@@ -83,6 +83,9 @@ function BookDetail() {
       <div className="panel flex flex-wrap gap-6 p-6">
         <BookCover book={book} className="h-56 w-40" />
         <div className="min-w-64 flex-1 space-y-3">
+          {book.subtitle && (
+            <p className="font-display text-lg text-muted-foreground">{book.subtitle}</p>
+          )}
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="rounded-full bg-secondary/70 px-3 py-1">{book.genre}</span>
             <span className="rounded-full bg-secondary/70 px-3 py-1">

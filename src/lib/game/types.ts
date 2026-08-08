@@ -11,6 +11,7 @@ export type OwnedMonster = {
 export type Book = {
   id: string;
   title: string;
+  subtitle?: string | undefined;
   author: string;
   totalPages: number;
   currentPage: number;
@@ -21,6 +22,7 @@ export type Book = {
   addedAt: string;
   finishedAt?: string | undefined;
 };
+
 
 export type Reward = {
   monsterId: string;
@@ -68,14 +70,21 @@ export type ReadingSession = {
 export type FreeSession = {
   id: string;
   kind: "free";
+  /** treino livre de estudo ou de leitura */
+  mode: "study" | "read";
   startedAt: string;
   endedAt: string;
   durationSec: number;
   subject?: string | undefined;
   notes?: string | undefined;
+  bookId?: string | undefined;
+  startPage?: number | undefined;
+  endPage?: number | undefined;
+  pagesRead?: number | undefined;
   monsterId?: string | undefined;
   monsterXp: number;
 };
+
 
 export type Session = StudySession | ReadingSession | FreeSession;
 
@@ -127,4 +136,7 @@ export type GameState = {
   timer: ActiveTimer | null;
   /** recompensa pendente aguardando revelação */
   pendingReward: Reward | null;
+  /** códigos promocionais já resgatados */
+  redeemedCodes: string[];
 };
+

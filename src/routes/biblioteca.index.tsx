@@ -102,6 +102,9 @@ function LibraryPage() {
                 <BookCover book={b} className="h-28 w-20" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display font-semibold">{b.title}</p>
+                  {b.subtitle && (
+                    <p className="truncate text-xs text-muted-foreground">{b.subtitle}</p>
+                  )}
                   <p className="truncate text-xs text-muted-foreground">{b.author}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{b.genre}</p>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -123,17 +126,21 @@ function LibraryPage() {
 function AddBookDialog() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
   const [author, setAuthor] = useState("");
   const [totalPages, setTotalPages] = useState<number | "">("");
   const [synopsis, setSynopsis] = useState("");
   const [genre, setGenre] = useState<string>("Fantasia");
+  const [customGenre, setCustomGenre] = useState("");
   const [shelf, setShelf] = useState<ShelfId>("lendo");
   const [cover, setCover] = useState<string | undefined>(undefined);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function reset() {
     setTitle("");
+    setSubtitle("");
     setAuthor("");
+    setCustomGenre("");
     setTotalPages("");
     setSynopsis("");
     setCover(undefined);
@@ -158,10 +165,11 @@ function AddBookDialog() {
     addBook({
       title,
       author: author || "Autor desconhecido",
+      subtitle: subtitle || undefined,
       totalPages,
       currentPage: 0,
       synopsis,
-      genre,
+      genre: genre === "Outros" ? customGenre.trim() || "Outros" : genre,
       shelf,
       cover,
     });
@@ -211,6 +219,10 @@ function AddBookDialog() {
                 <Input value={title} onChange={(e) => setTitle(e.target.value)} />
               </div>
               <div className="space-y-1.5">
+                <Label>Subtítulo</Label>
+                <Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
                 <Label>Autor</Label>
                 <Input value={author} onChange={(e) => setAuthor(e.target.value)} />
               </div>
@@ -240,6 +252,13 @@ function AddBookDialog() {
                   ))}
                 </SelectContent>
               </Select>
+              {genre === "Outros" && (
+                <Input
+                  placeholder="Escreva o gênero"
+                  value={customGenre}
+                  onChange={(e) => setCustomGenre(e.target.value)}
+                />
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Estante</Label>
