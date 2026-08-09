@@ -460,7 +460,7 @@ export function saveStudySession(input: {
   notes?: string;
 }): Reward {
   const minutes = Math.max(1, Math.round((input.timer.durationSec ?? input.durationSec) / 60));
-  const reward = buildReward(minutes, input.earlyEnd);
+  const reward = buildReward(minutes, input.earlyEnd, 0, input.timer.meta.completion ?? 1);
   const session: StudySession = {
     id: uid(),
     kind: "study",
@@ -497,7 +497,12 @@ export function saveReadingSession(input: {
   const minutes = Math.max(1, Math.round((input.timer.durationSec ?? input.durationSec) / 60));
   const startPage = input.timer.meta.startPage ?? 0;
   const pagesRead = Math.max(0, input.endPage - startPage);
-  const reward = buildReward(minutes, input.earlyEnd, pagesRead * XP.perPage);
+  const reward = buildReward(
+    minutes,
+    input.earlyEnd,
+    pagesRead * XP.perPage,
+    input.timer.meta.completion ?? 1,
+  );
   const bookId = input.timer.meta.bookId!;
   const session: ReadingSession = {
     id: uid(),
