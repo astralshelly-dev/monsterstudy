@@ -78,7 +78,6 @@ function CodesPage() {
       <div className="grid gap-3 sm:grid-cols-2">
         {GIFT_CODES.map((c) => {
           const used = redeemed.includes(c.code);
-          const mon = c.monsterId ? MONSTERS_BY_ID[c.monsterId] : undefined;
           return (
             <div key={c.code} className={cn("panel p-4", used && "opacity-55")}>
               <div className="flex items-center justify-between gap-3">
@@ -96,14 +95,14 @@ function CodesPage() {
               </div>
               <p className="mt-1 font-display text-base font-semibold">{c.label}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {money(c.money)} · {c.shards} fragmentos
-                {c.xp ? ` · +${c.xp} XP` : ""}
-                {c.unlockTimer ? ` · cronômetro de ${c.unlockTimer} min` : ""}
-                {mon ? ` · monstro ${mon.name}` : ""}
+                {c.moneyRange[0]}–{c.moneyRange[1]} moedas · {c.shardRange[0]}–{c.shardRange[1]}{" "}
+                fragmentos
+                {c.randomRarity ? " · + monstro raro aleatório" : ""}
               </p>
             </div>
           );
         })}
+
       </div>
     </div>
   );
