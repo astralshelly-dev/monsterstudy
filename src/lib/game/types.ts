@@ -25,7 +25,8 @@ export type Book = {
 
 
 export type Reward = {
-  monsterId: string;
+  /** null quando a sessão foi encerrada cedo demais para gerar monstro */
+  monsterId: string | null;
   rarity: RarityId;
   duplicate: boolean;
   xp: number;
@@ -102,6 +103,8 @@ export type ActiveTimer = {
     bookId?: string | undefined;
     startPage?: number | undefined;
     earlyEnd?: boolean | undefined;
+    /** fração do tempo planejado cumprida ao encerrar antes do fim (0-1) */
+    completion?: number | undefined;
   };
 
 };

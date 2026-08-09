@@ -4,7 +4,7 @@ import { useGame } from "@/hooks/use-game";
 import { allSessions } from "@/lib/game/state";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { EmptyState, PageHeader } from "@/components/game/Primitives";
-import { RarityBadge } from "@/components/game/MonsterArt";
+import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { dateTime, duration, money, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,7 @@ function History() {
           {sessions.map((s) => {
             const reward = s.kind === "free" ? null : s.reward;
             const earlyEnd = s.kind === "free" ? false : s.earlyEnd;
-            const def = reward ? MONSTERS_BY_ID[reward.monsterId] : null;
+            const def = reward?.monsterId ? MONSTERS_BY_ID[reward.monsterId] : null;
             const book = s.kind === "read" ? state.books.find((b) => b.id === s.bookId) : null;
             return (
               <li key={s.id} className="panel p-4">
@@ -101,7 +101,7 @@ function History() {
                 <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
                   {def && (
                     <span className="flex items-center gap-2">
-                      <span className="text-lg">{def.art}</span>
+                      <MonsterArt art={def.art} rarity={def.rarity} size="sm" animate={false} />
                       <span className="font-medium">{def.name}</span>
                       <RarityBadge rarity={def.rarity} />
                     </span>

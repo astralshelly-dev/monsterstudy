@@ -154,7 +154,7 @@ function BookDetail() {
         ) : (
           <ul className="mt-4 space-y-3">
             {stats.sessions.map((s) => {
-              const def = s.reward ? MONSTERS_BY_ID[s.reward.monsterId] : null;
+              const def = s.reward?.monsterId ? MONSTERS_BY_ID[s.reward.monsterId] : null;
               return (
                 <li key={s.id} className="rounded-xl bg-secondary/40 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">

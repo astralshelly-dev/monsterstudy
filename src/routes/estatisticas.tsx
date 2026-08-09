@@ -48,6 +48,7 @@ function Stats() {
       day: shortDate(key),
       minutos: Math.round(((a?.studySec ?? 0) + (a?.readSec ?? 0)) / 60),
       paginas: a?.pages ?? 0,
+      "minutos lendo": Math.round((a?.readSec ?? 0) / 60),
     };
   });
 
@@ -75,7 +76,7 @@ function Stats() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tempo estudando" value={duration(t.studySec)} />
         <StatCard label="Tempo lendo" value={duration(t.readSec)} />
-        <StatCard label="Páginas lidas" value={num(t.pages)} />
+        <StatCard label="Páginas lidas" value={`${num(t.pages)} · ${duration(t.readSec)}`} />
         <StatCard label="Renda passiva" value={`${money(moneyPerSecond(state))}/s`} />
       </div>
 
@@ -115,7 +116,7 @@ function Stats() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="panel p-5">
-          <h2 className="font-display text-lg font-semibold">Páginas por dia</h2>
+          <h2 className="font-display text-lg font-semibold">Páginas e minutos lendo por dia</h2>
           <div className="mt-4 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={last14}>
@@ -130,6 +131,7 @@ function Stats() {
                   }}
                 />
                 <Bar dataKey="paginas" fill="var(--accent)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="minutos lendo" fill="var(--primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

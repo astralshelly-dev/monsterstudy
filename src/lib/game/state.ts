@@ -241,12 +241,17 @@ export function endTimerEarly() {
   setState((s) => {
     if (!s.timer) return;
     const elapsed = timerElapsedSec(s.timer);
+    const planned = s.timer.durationSec ?? elapsed;
     s.timer = {
       ...s.timer,
       pausedAt: null,
       pausedMs: s.timer.pausedMs + (s.timer.pausedAt ? Date.now() - s.timer.pausedAt : 0),
       durationSec: Math.max(1, elapsed),
-      meta: { ...s.timer.meta, earlyEnd: true },
+      meta: {
+        ...s.timer.meta,
+        earlyEnd: true,
+        completion: planned > 0 ? Math.min(1, elapsed / planned) : 1,
+      },
     };
   });
 }
@@ -277,15 +282,25 @@ export function rarityChances(minutes: number, luckyLevel = state.upgrades.lucky
   return weighted.map(([r, w]) => ({ rarity: r, pct: (w / sum) * 100 }));
 }
 
-function rollRarity(minutes: number, earlyEnd: boolean): RarityId {
+/** fração mínima do tempo planejado para ganhar monstro */
+export const MIN_COMPLETION_FOR_MONSTER = 0.5;
+
+/** 0.5 → penalidade máxima, 1 → sem penalidade */
+function rarePenaltyFactor(completion: number): number {
+  const t = Math.max(0, Math.min(1, (completion - MIN_COMPLETION_FOR_MONSTER) / (1 - MIN_COMPLETION_FOR_MONSTER)));
+  return EARLY_END_PENALTY.rareWeightFactor + (1 - EARLY_END_PENALTY.rareWeightFactor) * t;
+}
+
+function rollRarity(minutes: number, earlyEnd: boolean, completion = 1): RarityId {
   const cfg = timerConfig(minutes);
   const boost = 1 + state.upgrades.lucky_charm * UPGRADES.lucky_charm.effectPerLevel;
+  const penalty = earlyEnd ? rarePenaltyFactor(completion) : 1;
   const entries = Object.entries(cfg.weights) as Array<[RarityId, number]>;
   const weighted = entries.map(([r, w]) => {
     const tier = RARITY_ORDER.indexOf(r);
     let weight = w;
     if (tier >= 2) weight *= boost;
-    if (earlyEnd && tier >= 1) weight *= EARLY_END_PENALTY.rareWeightFactor;
+    if (tier >= 1) weight *= penalty;
     return [r, weight] as [RarityId, number];
   });
   const sum = weighted.reduce((a, [, w]) => a + w, 0);
@@ -305,25 +320,29 @@ function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean
 }
 
 function applyReward(s: GameState, reward: Reward) {
-  const existing = s.monsters[reward.monsterId];
-  if (existing) {
-    s.monsters = {
-      ...s.monsters,
-      [reward.monsterId]: { ...existing, copies: existing.copies + 1 },
-    };
-  } else {
-    s.monsters = {
-      ...s.monsters,
-      [reward.monsterId]: {
-        id: reward.monsterId,
-        copies: 1,
-        level: 1,
-        xp: 0,
-        discoveredAt: new Date().toISOString(),
-      },
-    };
-    if (!s.activeMonsterId) s.activeMonsterId = reward.monsterId;
+  const id = reward.monsterId;
+  if (id) {
+    const existing = s.monsters[id];
+    if (existing) {
+      s.monsters = {
+        ...s.monsters,
+        [id]: { ...existing, copies: existing.copies + 1 },
+      };
+    } else {
+      s.monsters = {
+        ...s.monsters,
+        [id]: {
+          id,
+          copies: 1,
+          level: 1,
+          xp: 0,
+          discoveredAt: new Date().toISOString(),
+        },
+      };
+      if (!s.activeMonsterId) s.activeMonsterId = id;
+    }
   }
+
   s.money += reward.money;
   s.shards += reward.shards;
   addUserXp(s, reward.xp);
@@ -366,12 +385,20 @@ function sessionXp(minutes: number, rarity: RarityId, earlyEnd: boolean, extra =
   return Math.round(xp);
 }
 
-function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0): Reward {
-  const rarity = rollRarity(minutes, earlyEnd);
-  const { monsterId, duplicate } = grantMonster(rarity);
+function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0, completion = 1): Reward {
+  const rarity = rollRarity(minutes, earlyEnd, completion);
+  const eligible = !earlyEnd || completion >= MIN_COMPLETION_FOR_MONSTER;
+  const granted = eligible ? grantMonster(rarity) : { monsterId: null, duplicate: false };
   const xp = sessionXp(minutes, rarity, earlyEnd, extraXp);
   const money = Math.round(RARITIES[rarity].moneyPerSec * minutes * 60 * 0.15 * 100) / 100;
-  return { monsterId, rarity, duplicate, xp, money, shards: duplicate ? 10 * (RARITY_ORDER.indexOf(rarity) + 1) : 0 };
+  return {
+    monsterId: granted.monsterId,
+    rarity,
+    duplicate: granted.duplicate,
+    xp,
+    money,
+    shards: granted.duplicate ? 10 * (RARITY_ORDER.indexOf(rarity) + 1) : 0,
+  };
 }
 
 // ------------------------------------------------------------
@@ -433,7 +460,7 @@ export function saveStudySession(input: {
   notes?: string;
 }): Reward {
   const minutes = Math.max(1, Math.round((input.timer.durationSec ?? input.durationSec) / 60));
-  const reward = buildReward(minutes, input.earlyEnd);
+  const reward = buildReward(minutes, input.earlyEnd, 0, input.timer.meta.completion ?? 1);
   const session: StudySession = {
     id: uid(),
     kind: "study",
@@ -470,7 +497,12 @@ export function saveReadingSession(input: {
   const minutes = Math.max(1, Math.round((input.timer.durationSec ?? input.durationSec) / 60));
   const startPage = input.timer.meta.startPage ?? 0;
   const pagesRead = Math.max(0, input.endPage - startPage);
-  const reward = buildReward(minutes, input.earlyEnd, pagesRead * XP.perPage);
+  const reward = buildReward(
+    minutes,
+    input.earlyEnd,
+    pagesRead * XP.perPage,
+    input.timer.meta.completion ?? 1,
+  );
   const bookId = input.timer.meta.bookId!;
   const session: ReadingSession = {
     id: uid(),
@@ -567,6 +599,10 @@ export function saveFreeSession(input: {
 // ------------------------------------------------------------
 // Códigos promocionais
 // ------------------------------------------------------------
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export function redeemCode(input: string): { ok: boolean; message: string } {
   const code = input.trim().toUpperCase();
   if (!code) return { ok: false, message: "Digite um código." };
@@ -575,18 +611,21 @@ export function redeemCode(input: string): { ok: boolean; message: string } {
   if (state.redeemedCodes.includes(found.code)) {
     return { ok: false, message: "Você já resgatou este código." };
   }
+  const gainedMoney = randInt(found.moneyRange[0], found.moneyRange[1]);
+  const gainedShards = randInt(found.shardRange[0], found.shardRange[1]);
+
   setState((s) => {
     s.redeemedCodes = [...s.redeemedCodes, found.code];
-    s.money += found.money;
-    s.shards += found.shards;
-    if (found.xp) addUserXp(s, found.xp);
-    if (found.unlockTimer && !s.unlockedTimers.includes(found.unlockTimer)) {
-      s.unlockedTimers = [...s.unlockedTimers, found.unlockTimer].sort((a, b) => a - b);
-    }
+    s.money += gainedMoney;
+    s.shards += gainedShards;
   });
-  if (found.monsterId) {
-    const def = MONSTERS_BY_ID[found.monsterId];
+
+  let monsterName: string | null = null;
+  if (found.randomRarity) {
+    const pool = MONSTERS_BY_RARITY[found.randomRarity] ?? [];
+    const def = pool[Math.floor(Math.random() * pool.length)];
     if (def) {
+      monsterName = def.name;
       setState((s) => {
         const owned = s.monsters[def.id];
         s.monsters = {
@@ -599,7 +638,10 @@ export function redeemCode(input: string): { ok: boolean; message: string } {
       });
     }
   }
-  return { ok: true, message: `${found.label} resgatado!` };
+
+  const parts = [`+${gainedMoney} moedas`, `+${gainedShards} fragmentos`];
+  if (monsterName) parts.push(`monstro raro ${monsterName}`);
+  return { ok: true, message: `${found.label}: ${parts.join(" · ")}` };
 }
 
 

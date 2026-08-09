@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Pause, Play, Square, X } from "lucide-react";
 import { useGame } from "@/hooks/use-game";
@@ -17,6 +17,7 @@ import { PageHeader } from "@/components/game/Primitives";
 import { TimerDial } from "@/components/game/TimerDial";
 import { TimerPicker, useTick } from "@/components/game/TimerPicker";
 import { RewardReveal } from "@/components/game/RewardReveal";
+import { playTimerEndSfx } from "@/lib/game/sfx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -233,7 +234,8 @@ function StudyRunning() {
           </Button>
         </div>
         <p className="text-center text-xs text-muted-foreground">
-          Encerrar antes do tempo reduz muito a chance de monstros raros. Cancelar descarta a sessão.
+          Encerrar antes do tempo reduz as chances de raridade — e abaixo de 50% do tempo você não
+          ganha monstro nenhum. Cancelar descarta a sessão.
         </p>
       </div>
     </div>
@@ -247,6 +249,9 @@ function StudyCompletion() {
   const [notes, setNotes] = useState("");
   const durationSec = Math.min(timerElapsedSec(timer), timer.durationSec ?? 0);
   const earlyEnd = Boolean(timer.meta.earlyEnd);
+  useEffect(() => {
+    if (!earlyEnd) playTimerEndSfx();
+  }, [earlyEnd]);
 
   function save() {
     saveStudySession({
