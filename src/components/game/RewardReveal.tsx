@@ -6,6 +6,7 @@ import type { Reward } from "@/lib/game/types";
 import { money, num } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { MonsterArt, RarityBadge, rarityHalo, rarityText } from "./MonsterArt";
+import { playNoRewardSfx, playRewardSfx } from "@/lib/game/sfx";
 import { cn } from "@/lib/utils";
 
 type Phase = "intro" | "suspense" | "reveal";
@@ -20,17 +21,21 @@ export function RewardReveal({
   onClose: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>("intro");
-  const def = MONSTERS_BY_ID[reward.monsterId]!;
+  const def = reward.monsterId ? MONSTERS_BY_ID[reward.monsterId] : undefined;
   const rarity = RARITIES[reward.rarity];
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("suspense"), 1300);
-    const t2 = setTimeout(() => setPhase("reveal"), 1300 + 900 + rarity.drama * 250);
+    const t2 = setTimeout(() => {
+      setPhase("reveal");
+      if (def) playRewardSfx(def.rarity);
+      else playNoRewardSfx();
+    }, 1300 + 900 + rarity.drama * 250);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [rarity.drama]);
+  }, [rarity.drama, def]);
 
   const sparkles = 6 + rarity.drama * 4;
 
@@ -44,7 +49,7 @@ export function RewardReveal({
           rarity.drama >= 4 && "animate-pulse-glow",
         )}
       />
-      {rarity.drama >= 2 && (
+      {def && rarity.drama >= 2 && (
         <div className="pointer-events-none absolute inset-0">
           {Array.from({ length: sparkles }).map((_, i) => (
             <span
@@ -59,7 +64,7 @@ export function RewardReveal({
           ))}
         </div>
       )}
-      {rarity.drama >= 5 && (
+      {def && rarity.drama >= 5 && (
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div
             className={cn(
@@ -90,7 +95,25 @@ export function RewardReveal({
           </div>
         )}
 
-        {phase === "reveal" && (
+        {phase === "reveal" && !def && (
+          <div className="animate-reveal panel space-y-5 p-8">
+            <p className="text-5xl">🍃</p>
+            <h2 className="font-display text-2xl font-bold">Nenhum monstro apareceu</h2>
+            <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+              Você encerrou a sessão com menos de 50% do tempo planejado. Complete pelo menos metade do
+              cronômetro para encontrar criaturas.
+            </p>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <Stat label="XP" value={`+${num(reward.xp)}`} />
+              <Stat label="Dinheiro" value={`+${money(reward.money)}`} />
+            </div>
+            <Button className="w-full" size="lg" onClick={onClose}>
+              Continuar
+            </Button>
+          </div>
+        )}
+
+        {phase === "reveal" && def && (
           <div className="animate-reveal panel space-y-5 p-8">
             {reward.duplicate && (
               <p className="font-display text-sm font-semibold uppercase tracking-[0.25em] text-gold">
