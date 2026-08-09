@@ -222,6 +222,10 @@ function ReadRunning() {
             <X className="h-4 w-4" /> Cancelar sessão
           </Button>
         </div>
+        <p className="text-center text-xs text-muted-foreground">
+          Encerrar antes do tempo reduz as chances de raridade — e abaixo de 50% do tempo você não ganha
+          monstro nenhum. Cancelar descarta a sessão.
+        </p>
       </div>
     </div>
   );
