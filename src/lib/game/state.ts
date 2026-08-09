@@ -385,12 +385,20 @@ function sessionXp(minutes: number, rarity: RarityId, earlyEnd: boolean, extra =
   return Math.round(xp);
 }
 
-function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0): Reward {
-  const rarity = rollRarity(minutes, earlyEnd);
-  const { monsterId, duplicate } = grantMonster(rarity);
+function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0, completion = 1): Reward {
+  const rarity = rollRarity(minutes, earlyEnd, completion);
+  const eligible = !earlyEnd || completion >= MIN_COMPLETION_FOR_MONSTER;
+  const granted = eligible ? grantMonster(rarity) : { monsterId: null, duplicate: false };
   const xp = sessionXp(minutes, rarity, earlyEnd, extraXp);
   const money = Math.round(RARITIES[rarity].moneyPerSec * minutes * 60 * 0.15 * 100) / 100;
-  return { monsterId, rarity, duplicate, xp, money, shards: duplicate ? 10 * (RARITY_ORDER.indexOf(rarity) + 1) : 0 };
+  return {
+    monsterId: granted.monsterId,
+    rarity,
+    duplicate: granted.duplicate,
+    xp,
+    money,
+    shards: granted.duplicate ? 10 * (RARITY_ORDER.indexOf(rarity) + 1) : 0,
+  };
 }
 
 // ------------------------------------------------------------
