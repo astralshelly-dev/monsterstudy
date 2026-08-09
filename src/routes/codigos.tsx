@@ -5,11 +5,9 @@ import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
 import { redeemCode } from "@/lib/game/state";
 import { GIFT_CODES } from "@/lib/game/config";
-import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { PageHeader } from "@/components/game/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { money } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/codigos")({
@@ -71,7 +69,8 @@ function CodesPage() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Cada código pode ser resgatado uma única vez por conta.
+          Cada código pode ser resgatado uma única vez por conta. As recompensas são sorteadas no
+          momento do resgate.
         </p>
       </div>
 
