@@ -25,7 +25,8 @@ export type Book = {
 
 
 export type Reward = {
-  monsterId: string;
+  /** null quando a sessão foi encerrada cedo demais para gerar monstro */
+  monsterId: string | null;
   rarity: RarityId;
   duplicate: boolean;
   xp: number;
