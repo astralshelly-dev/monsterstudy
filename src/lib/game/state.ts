@@ -586,6 +586,10 @@ export function saveFreeSession(input: {
 // ------------------------------------------------------------
 // Códigos promocionais
 // ------------------------------------------------------------
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export function redeemCode(input: string): { ok: boolean; message: string } {
   const code = input.trim().toUpperCase();
   if (!code) return { ok: false, message: "Digite um código." };
@@ -594,18 +598,21 @@ export function redeemCode(input: string): { ok: boolean; message: string } {
   if (state.redeemedCodes.includes(found.code)) {
     return { ok: false, message: "Você já resgatou este código." };
   }
+  const gainedMoney = randInt(found.moneyRange[0], found.moneyRange[1]);
+  const gainedShards = randInt(found.shardRange[0], found.shardRange[1]);
+
   setState((s) => {
     s.redeemedCodes = [...s.redeemedCodes, found.code];
-    s.money += found.money;
-    s.shards += found.shards;
-    if (found.xp) addUserXp(s, found.xp);
-    if (found.unlockTimer && !s.unlockedTimers.includes(found.unlockTimer)) {
-      s.unlockedTimers = [...s.unlockedTimers, found.unlockTimer].sort((a, b) => a - b);
-    }
+    s.money += gainedMoney;
+    s.shards += gainedShards;
   });
-  if (found.monsterId) {
-    const def = MONSTERS_BY_ID[found.monsterId];
+
+  let monsterName: string | null = null;
+  if (found.randomRarity) {
+    const pool = MONSTERS_BY_RARITY[found.randomRarity] ?? [];
+    const def = pool[Math.floor(Math.random() * pool.length)];
     if (def) {
+      monsterName = def.name;
       setState((s) => {
         const owned = s.monsters[def.id];
         s.monsters = {
@@ -618,7 +625,10 @@ export function redeemCode(input: string): { ok: boolean; message: string } {
       });
     }
   }
-  return { ok: true, message: `${found.label} resgatado!` };
+
+  const parts = [`+${gainedMoney} moedas`, `+${gainedShards} fragmentos`];
+  if (monsterName) parts.push(`monstro raro ${monsterName}`);
+  return { ok: true, message: `${found.label}: ${parts.join(" · ")}` };
 }
 
 
