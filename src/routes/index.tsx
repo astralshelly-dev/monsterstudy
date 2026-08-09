@@ -35,7 +35,7 @@ function Dashboard() {
   const today = state.activity[todayKey()] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
   const active = state.activeMonsterId ? state.monsters[state.activeMonsterId] : undefined;
   const recent = state.sessions
-    .flatMap((s) => ("reward" in s && s.reward ? [s.reward] : []))
+    .flatMap((s) => ("reward" in s && s.reward?.monsterId ? [s.reward] : []))
     .slice(0, 6);
 
   return (
@@ -77,7 +77,11 @@ function Dashboard() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Estudo de hoje" value={duration(today.studySec)} icon={<span>⏱️</span>} />
-        <StatCard label="Leitura de hoje" value={`${num(today.pages)} páginas`} icon={<span>📖</span>} />
+        <StatCard
+          label="Leitura de hoje"
+          value={`${num(today.pages)} páginas · ${duration(today.readSec)}`}
+          icon={<span>📖</span>}
+        />
         <StatCard
           label="Monstros"
           value={`${t.discovered} / ${t.totalMonsters}`}
@@ -146,14 +150,10 @@ function Dashboard() {
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {recent.map((r, i) => {
-              const def = MONSTERS_BY_ID[r.monsterId];
-              if (!def) return null;
+              const id = r.monsterId;
+              if (!id || !MONSTERS_BY_ID[id]) return null;
               return (
-                <MonsterCard
-                  key={`${r.monsterId}-${i}`}
-                  monsterId={r.monsterId}
-                  owned={state.monsters[r.monsterId]}
-                />
+                <MonsterCard key={`${id}-${i}`} monsterId={id} owned={state.monsters[id]} />
               );
             })}
           </div>
