@@ -241,12 +241,17 @@ export function endTimerEarly() {
   setState((s) => {
     if (!s.timer) return;
     const elapsed = timerElapsedSec(s.timer);
+    const planned = s.timer.durationSec ?? elapsed;
     s.timer = {
       ...s.timer,
       pausedAt: null,
       pausedMs: s.timer.pausedMs + (s.timer.pausedAt ? Date.now() - s.timer.pausedAt : 0),
       durationSec: Math.max(1, elapsed),
-      meta: { ...s.timer.meta, earlyEnd: true },
+      meta: {
+        ...s.timer.meta,
+        earlyEnd: true,
+        completion: planned > 0 ? Math.min(1, elapsed / planned) : 1,
+      },
     };
   });
 }
