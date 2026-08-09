@@ -282,15 +282,25 @@ export function rarityChances(minutes: number, luckyLevel = state.upgrades.lucky
   return weighted.map(([r, w]) => ({ rarity: r, pct: (w / sum) * 100 }));
 }
 
-function rollRarity(minutes: number, earlyEnd: boolean): RarityId {
+/** fração mínima do tempo planejado para ganhar monstro */
+export const MIN_COMPLETION_FOR_MONSTER = 0.5;
+
+/** 0.5 → penalidade máxima, 1 → sem penalidade */
+function rarePenaltyFactor(completion: number): number {
+  const t = Math.max(0, Math.min(1, (completion - MIN_COMPLETION_FOR_MONSTER) / (1 - MIN_COMPLETION_FOR_MONSTER)));
+  return EARLY_END_PENALTY.rareWeightFactor + (1 - EARLY_END_PENALTY.rareWeightFactor) * t;
+}
+
+function rollRarity(minutes: number, earlyEnd: boolean, completion = 1): RarityId {
   const cfg = timerConfig(minutes);
   const boost = 1 + state.upgrades.lucky_charm * UPGRADES.lucky_charm.effectPerLevel;
+  const penalty = earlyEnd ? rarePenaltyFactor(completion) : 1;
   const entries = Object.entries(cfg.weights) as Array<[RarityId, number]>;
   const weighted = entries.map(([r, w]) => {
     const tier = RARITY_ORDER.indexOf(r);
     let weight = w;
     if (tier >= 2) weight *= boost;
-    if (earlyEnd && tier >= 1) weight *= EARLY_END_PENALTY.rareWeightFactor;
+    if (tier >= 1) weight *= penalty;
     return [r, weight] as [RarityId, number];
   });
   const sum = weighted.reduce((a, [, w]) => a + w, 0);
@@ -310,25 +320,29 @@ function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean
 }
 
 function applyReward(s: GameState, reward: Reward) {
-  const existing = s.monsters[reward.monsterId];
-  if (existing) {
-    s.monsters = {
-      ...s.monsters,
-      [reward.monsterId]: { ...existing, copies: existing.copies + 1 },
-    };
-  } else {
-    s.monsters = {
-      ...s.monsters,
-      [reward.monsterId]: {
-        id: reward.monsterId,
-        copies: 1,
-        level: 1,
-        xp: 0,
-        discoveredAt: new Date().toISOString(),
-      },
-    };
-    if (!s.activeMonsterId) s.activeMonsterId = reward.monsterId;
+  const id = reward.monsterId;
+  if (id) {
+    const existing = s.monsters[id];
+    if (existing) {
+      s.monsters = {
+        ...s.monsters,
+        [id]: { ...existing, copies: existing.copies + 1 },
+      };
+    } else {
+      s.monsters = {
+        ...s.monsters,
+        [id]: {
+          id,
+          copies: 1,
+          level: 1,
+          xp: 0,
+          discoveredAt: new Date().toISOString(),
+        },
+      };
+      if (!s.activeMonsterId) s.activeMonsterId = id;
+    }
   }
+
   s.money += reward.money;
   s.shards += reward.shards;
   addUserXp(s, reward.xp);
