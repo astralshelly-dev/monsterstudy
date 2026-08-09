@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Pause, Play, Square, X } from "lucide-react";
 import { useGame } from "@/hooks/use-game";
@@ -17,6 +17,7 @@ import { EmptyState, PageHeader } from "@/components/game/Primitives";
 import { TimerDial } from "@/components/game/TimerDial";
 import { TimerPicker, useTick } from "@/components/game/TimerPicker";
 import { RewardReveal } from "@/components/game/RewardReveal";
+import { playTimerEndSfx } from "@/lib/game/sfx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -237,6 +238,10 @@ function ReadCompletion() {
   const pages = typeof endPage === "number" ? Math.max(0, endPage - startPage) : 0;
   const speed = pages / Math.max(1, durationSec / 60);
   const pct = book ? ((typeof endPage === "number" ? endPage : startPage) / book.totalPages) * 100 : 0;
+  const earlyEnd = Boolean(timer.meta.earlyEnd);
+  useEffect(() => {
+    if (!earlyEnd) playTimerEndSfx();
+  }, [earlyEnd]);
 
   return (
     <div className="space-y-6">
@@ -288,7 +293,7 @@ function ReadCompletion() {
             saveReadingSession({
               timer,
               durationSec,
-              earlyEnd: Boolean(timer.meta.earlyEnd),
+              earlyEnd,
               endPage,
               notes: notes || undefined,
             })
