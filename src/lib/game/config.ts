@@ -119,6 +119,17 @@ export const RARITIES: Record<RarityId, Rarity> = {
     text: "text-rarity-divino",
     drama: 7,
   },
+  secreto: {
+    id: "secreto",
+    name: "Secreto",
+    tier: 8,
+    moneyPerSec: 30,
+    xpMultiplier: 8,
+    gradient: "rarity-secreto",
+    ring: "ring-rarity-secreto",
+    text: "text-rarity-secreto",
+    drama: 8,
+  },
 };
 
 export const RARITY_ORDER: RarityId[] = [
@@ -130,9 +141,16 @@ export const RARITY_ORDER: RarityId[] = [
   "lendario",
   "mitico",
   "divino",
+  "secreto",
 ];
 
-export type HabitatId =
+/** Raridade oculta: não aparece em listas/porcentagens até ser desbloqueada */
+export const SECRET_RARITY: RarityId = "secreto";
+export const SECRET_MONSTER_ID = "aetheryon";
+/** só o cronômetro de 5 horas pode revelar o secreto */
+export const SECRET_TIMER_MINUTES = 300;
+export const SECRET_CHANCE = 0.005;
+
   | "floresta"
   | "oceano"
   | "vulcao"
