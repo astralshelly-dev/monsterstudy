@@ -426,6 +426,9 @@ function applyReward(s: GameState, reward: Reward) {
         },
       };
       if (!s.activeMonsterId) s.activeMonsterId = id;
+      const list = (s.incomeMonsterIds ?? []).filter((x) => s.monsters[x]);
+      if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
+      else s.incomeMonsterIds = list;
     }
   }
 
