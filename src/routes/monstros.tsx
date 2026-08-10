@@ -3,7 +3,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
-import { monsterProgress, setActiveMonster, spendShards } from "@/lib/game/state";
+import {
+  incomeMonsterIds,
+  incomeSlots,
+  monsterIncome,
+  monsterProgress,
+  setActiveMonster,
+  spendShards,
+  toggleIncomeMonster,
+} from "@/lib/game/state";
 import { EmptyState, PageHeader, StatCard } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Button } from "@/components/ui/button";
@@ -58,19 +66,32 @@ function MyMonsters() {
     );
   }
 
+  const slots = incomeSlots(state);
+  const income = incomeMonsterIds(state);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Meus Monstros"
         icon="🐾"
-        subtitle="Selecione um monstro para treinar no Estudo Livre e use duplicatas para acelerar a evolução."
+        subtitle="Escolha quais monstros geram renda passiva, selecione quem treina no Treino Livre e use duplicatas para evoluir."
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard label="Criaturas" value={num(owned.length)} />
         <StatCard label="Duplicatas" value={num(duplicates)} hint={`${state.shards} fragmentos`} />
-        <StatCard label="Renda total" value={`${money(moneyPerSecond(state))}/s`} />
+        <StatCard
+          label="Renda total"
+          value={`${money(moneyPerSecond(state))}/s`}
+          hint={`${income.length}/${slots} slots de renda`}
+        />
       </div>
+
+      <p className="text-sm text-muted-foreground">
+        💰 Apenas {slots} monstros podem gerar renda ao mesmo tempo. Aumente esse limite com o
+        upgrade <span className="font-semibold text-foreground">Covil de Monstros</span> na Loja
+        (até +3).
+      </p>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {owned.map((m) => (
@@ -87,9 +108,10 @@ function MonsterRow({ id }: { id: string }) {
   const [amount] = useState(20);
   if (!prog) return null;
   const active = state.activeMonsterId === id;
+  const earning = incomeMonsterIds(state).includes(id);
 
   return (
-    <div className={cn("panel p-4", active && "ring-2 ring-primary")}>
+    <div className={cn("panel p-4", active && "ring-2 ring-primary", earning && "ring-1 ring-gold/60")}>
       <div className="flex gap-4">
         <MonsterArt art={prog.def.art} rarity={prog.def.rarity} />
         <div className="min-w-0 flex-1">
@@ -99,11 +121,12 @@ function MonsterRow({ id }: { id: string }) {
               <RarityBadge rarity={prog.def.rarity} />
             </div>
             <p className="whitespace-nowrap text-sm text-gold">
-              {money(RARITIES[prog.def.rarity].moneyPerSec * prog.copies)}/s
+              {money(monsterIncome(id, state))}/s
             </p>
           </div>
           <p className="mt-1.5 text-xs text-muted-foreground">
             Nível {prog.level} · x{prog.copies} cópias
+            {earning ? " · 💰 gerando renda" : ""}
           </p>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
             <div
@@ -118,6 +141,17 @@ function MonsterRow({ id }: { id: string }) {
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" variant={active ? "secondary" : "default"} onClick={() => setActiveMonster(id)}>
               {active ? "Em treino" : "Treinar"}
+            </Button>
+            <Button
+              size="sm"
+              variant={earning ? "secondary" : "outline"}
+              onClick={() => {
+                const res = toggleIncomeMonster(id);
+                if (res.ok) toast.success(res.message);
+                else toast.error(res.message);
+              }}
+            >
+              {earning ? "Tirar da renda" : "Gerar renda"}
             </Button>
             <Button
               size="sm"

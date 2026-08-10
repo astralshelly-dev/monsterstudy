@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
-import { MONSTERS, MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { visibleMonsters, visibleRarities } from "@/lib/game/state";
 import { HABITATS, RARITIES, RARITY_ORDER, type HabitatId, type RarityId } from "@/lib/game/config";
 import { PageHeader } from "@/components/game/Primitives";
 import { MonsterCard } from "@/components/game/MonsterCard";
@@ -37,12 +38,17 @@ function MonsterDex() {
   const [habitat, setHabitat] = useState<HabitatId | "all">("all");
   const [selected, setSelected] = useState<string | null>(null);
 
+  const pool = useMemo(() => visibleMonsters(state), [state]);
   const list = useMemo(
     () =>
-      MONSTERS.filter(
-        (m) => (rarity === "all" || m.rarity === rarity) && (habitat === "all" || m.habitat === habitat),
-      ).sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity)),
-    [rarity, habitat],
+      pool
+        .filter(
+          (m) =>
+            (rarity === "all" || m.rarity === rarity) &&
+            (habitat === "all" || m.habitat === habitat),
+        )
+        .sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity)),
+    [pool, rarity, habitat],
   );
 
   const discovered = Object.keys(state.monsters).length;
@@ -52,7 +58,7 @@ function MonsterDex() {
       <PageHeader
         title="MonsterDex"
         icon="🐾"
-        subtitle={`${discovered} / ${MONSTERS.length} descobertos`}
+        subtitle={`${discovered} / ${pool.length} descobertos`}
       />
 
       <div className="panel space-y-3 p-4">
@@ -60,7 +66,7 @@ function MonsterDex() {
           label="Raridade"
           options={[
             { id: "all", name: "Todos" },
-            ...RARITY_ORDER.map((r) => ({ id: r, name: RARITIES[r].name })),
+            ...visibleRarities(state).map((r) => ({ id: r, name: RARITIES[r].name })),
           ]}
           value={rarity}
           onChange={(v) => setRarity(v as RarityId | "all")}

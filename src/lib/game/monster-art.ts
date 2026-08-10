@@ -48,8 +48,10 @@ import a44 from "@/assets/monsters/umbraleth.png.asset.json";
 import a45 from "@/assets/monsters/vinelet.png.asset.json";
 import a46 from "@/assets/monsters/voidbloom.png.asset.json";
 import a47 from "@/assets/monsters/voltyx.png.asset.json";
+import aetheryon from "@/assets/monsters/aetheryon.png";
 
 export const MONSTER_ART: Record<string, string> = {
+  aetheryon,
   abyssaria: a0.url,
   abyssquill: a1.url,
   arcanyx: a2.url,

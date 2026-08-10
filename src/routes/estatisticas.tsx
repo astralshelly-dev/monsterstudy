@@ -14,8 +14,8 @@ import {
   YAxis,
 } from "recharts";
 import { useGame } from "@/lib/../hooks/use-game";
-import { totals, todayKey, moneyPerSecond } from "@/lib/game/state";
-import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
+import { totals, todayKey, moneyPerSecond, visibleRarities } from "@/lib/game/state";
+import { RARITIES } from "@/lib/game/config";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { duration, money, num, shortDate } from "@/lib/format";
@@ -52,7 +52,7 @@ function Stats() {
     };
   });
 
-  const rarityData = RARITY_ORDER.map((r) => ({
+  const rarityData = visibleRarities(state).map((r) => ({
     name: RARITIES[r].name,
     value: Object.keys(state.monsters).filter((id) => MONSTERS_BY_ID[id]?.rarity === r).length,
     color: `var(--r-${r})`,
@@ -73,9 +73,8 @@ function Stats() {
     <div className="space-y-6">
       <PageHeader title="Estatísticas" icon="📊" subtitle="Sua evolução em números." />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <StatCard label="Tempo estudando" value={duration(t.studySec)} />
-        <StatCard label="Tempo lendo" value={duration(t.readSec)} />
         <StatCard label="Páginas lidas" value={`${num(t.pages)} · ${duration(t.readSec)}`} />
         <StatCard label="Renda passiva" value={`${money(moneyPerSecond(state))}/s`} />
       </div>

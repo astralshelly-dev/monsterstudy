@@ -11,7 +11,8 @@ export type RarityId =
   | "epico"
   | "lendario"
   | "mitico"
-  | "divino";
+  | "divino"
+  | "secreto";
 
 export type Rarity = {
   id: RarityId;
@@ -118,6 +119,17 @@ export const RARITIES: Record<RarityId, Rarity> = {
     text: "text-rarity-divino",
     drama: 7,
   },
+  secreto: {
+    id: "secreto",
+    name: "Secreto",
+    tier: 8,
+    moneyPerSec: 30,
+    xpMultiplier: 8,
+    gradient: "rarity-secreto",
+    ring: "ring-rarity-secreto",
+    text: "text-rarity-secreto",
+    drama: 8,
+  },
 };
 
 export const RARITY_ORDER: RarityId[] = [
@@ -129,7 +141,15 @@ export const RARITY_ORDER: RarityId[] = [
   "lendario",
   "mitico",
   "divino",
+  "secreto",
 ];
+
+/** Raridade oculta: não aparece em listas/porcentagens até ser desbloqueada */
+export const SECRET_RARITY: RarityId = "secreto";
+export const SECRET_MONSTER_ID = "aetheryon";
+/** só o cronômetro de 5 horas pode revelar o secreto */
+export const SECRET_TIMER_MINUTES = 300;
+export const SECRET_CHANCE = 0.005;
 
 export type HabitatId =
   | "floresta"
@@ -247,6 +267,23 @@ export const XP = {
   freeStudyPerMinute: 6,
 };
 
+/**
+ * Metas de tempo do Treino Livre: ao atingir cada marco, o monstro em treino
+ * recebe uma explosão de XP extra (cumulativa por marco alcançado).
+ */
+export const FREE_XP_MILESTONES: Array<{ minutes: number; xp: number }> = [
+  { minutes: 30, xp: 250 },
+  { minutes: 60, xp: 300 },
+  { minutes: 90, xp: 350 },
+  { minutes: 120, xp: 400 },
+  { minutes: 180, xp: 450 },
+  { minutes: 240, xp: 500 },
+  { minutes: 300, xp: 550 },
+];
+
+/** depois de 5h, mais uma explosão a cada 50 minutos */
+export const FREE_XP_REPEAT = { everyMinutes: 50, xp: 500, afterMinutes: 300 };
+
 export function userXpForLevel(level: number): number {
   return Math.floor(120 * Math.pow(level, 1.45));
 }
@@ -256,9 +293,20 @@ export function monsterXpForLevel(level: number, rarityTier: number): number {
 }
 
 // ------------------------------------------------------------
+// Renda passiva: monstros selecionados
+// ------------------------------------------------------------
+/** quantos monstros podem gerar renda sem upgrades */
+export const BASE_INCOME_SLOTS = 3;
+
+// ------------------------------------------------------------
 // Upgrades da loja
 // ------------------------------------------------------------
-export type UpgradeId = "lucky_charm" | "golden_wallet" | "knowledge_boost" | "streak_booster";
+export type UpgradeId =
+  | "lucky_charm"
+  | "golden_wallet"
+  | "knowledge_boost"
+  | "streak_booster"
+  | "monster_den";
 
 export type UpgradeConfig = {
   id: UpgradeId;
@@ -317,6 +365,17 @@ export const UPGRADES: Record<UpgradeId, UpgradeConfig> = {
     priceGrowth: 1.8,
     effectPerLevel: 0.15,
     effectLabel: (l) => `+${Math.round(l * 15)}% recompensa de streak`,
+  },
+  monster_den: {
+    id: "monster_den",
+    name: "Covil de Monstros",
+    icon: "🏰",
+    description: `Amplia quantos monstros podem gerar renda ao mesmo tempo (base ${BASE_INCOME_SLOTS}).`,
+    maxLevel: 3,
+    basePrice: 9000,
+    priceGrowth: 2.4,
+    effectPerLevel: 1,
+    effectLabel: (l) => `${BASE_INCOME_SLOTS + l} monstros gerando renda`,
   },
 };
 

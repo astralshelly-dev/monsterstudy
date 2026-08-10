@@ -1,10 +1,16 @@
 import {
+  BASE_INCOME_SLOTS,
   DEFAULT_UNLOCKED_TIMERS,
+  FREE_XP_MILESTONES,
+  FREE_XP_REPEAT,
   GIFT_CODES,
-
   EARLY_END_PENALTY,
   RARITIES,
   RARITY_ORDER,
+  SECRET_CHANCE,
+  SECRET_MONSTER_ID,
+  SECRET_RARITY,
+  SECRET_TIMER_MINUTES,
   STREAK_MILESTONES,
   TIMERS,
   UPGRADES,
@@ -56,9 +62,16 @@ export function defaultState(): GameState {
     lastSeen: Date.now(),
     monsters: {},
     activeMonsterId: null,
+    incomeMonsterIds: [],
     books: [],
     sessions: [],
-    upgrades: { lucky_charm: 0, golden_wallet: 0, knowledge_boost: 0, streak_booster: 0 },
+    upgrades: {
+      lucky_charm: 0,
+      golden_wallet: 0,
+      knowledge_boost: 0,
+      streak_booster: 0,
+      monster_den: 0,
+    },
     unlockedTimers: [...DEFAULT_UNLOCKED_TIMERS],
     achievements: {},
     streak: { current: 0, best: 0, lastDay: null, claimed: [] },
@@ -135,6 +148,12 @@ export function hydrate() {
   } catch {
     /* ignore */
   }
+  // migração: preencher os slots de renda para quem já tinha coleção
+  if (!Array.isArray(state.incomeMonsterIds)) state.incomeMonsterIds = [];
+  state.incomeMonsterIds = state.incomeMonsterIds.filter((id) => state.monsters[id]);
+  if (state.incomeMonsterIds.length === 0) {
+    state.incomeMonsterIds = bestMonsterIds(state, incomeSlots(state));
+  }
   // rendimento offline
   const elapsed = Math.max(0, Math.floor((Date.now() - state.lastSeen) / 1000));
   const rate = moneyPerSecond(state);
@@ -152,16 +171,65 @@ export function hydrate() {
 // ------------------------------------------------------------
 // Derivados
 // ------------------------------------------------------------
-export function moneyPerSecond(s: GameState = state): number {
+/** quantos monstros podem gerar renda ao mesmo tempo */
+export function incomeSlots(s: GameState = state): number {
+  return BASE_INCOME_SLOTS + (s.upgrades.monster_den ?? 0);
+}
+
+/** ids dos monstros efetivamente gerando renda (respeita o limite de slots) */
+export function incomeMonsterIds(s: GameState = state): string[] {
+  return (s.incomeMonsterIds ?? []).filter((id) => s.monsters[id]).slice(0, incomeSlots(s));
+}
+
+function bestMonsterIds(s: GameState, count: number): string[] {
+  return Object.values(s.monsters)
+    .map((m) => ({ m, def: MONSTERS_BY_ID[m.id] }))
+    .filter((x) => x.def)
+    .sort(
+      (a, b) =>
+        RARITIES[b.def!.rarity].moneyPerSec * b.m.copies -
+        RARITIES[a.def!.rarity].moneyPerSec * a.m.copies,
+    )
+    .slice(0, count)
+    .map((x) => x.m.id);
+}
+
+export function monsterIncome(monsterId: string, s: GameState = state): number {
+  const owned = s.monsters[monsterId];
+  const def = MONSTERS_BY_ID[monsterId];
+  if (!owned || !def) return 0;
   const walletMult = 1 + s.upgrades.golden_wallet * UPGRADES.golden_wallet.effectPerLevel;
+  return (
+    RARITIES[def.rarity].moneyPerSec * owned.copies * (1 + (owned.level - 1) * 0.1) * walletMult
+  );
+}
+
+export function moneyPerSecond(s: GameState = state): number {
   let total = 0;
-  for (const owned of Object.values(s.monsters)) {
-    const def = MONSTERS_BY_ID[owned.id];
-    if (!def) continue;
-    const base = RARITIES[def.rarity].moneyPerSec;
-    total += base * owned.copies * (1 + (owned.level - 1) * 0.1);
+  for (const id of incomeMonsterIds(s)) total += monsterIncome(id, s);
+  return total;
+}
+
+/** liga/desliga um monstro da renda passiva */
+export function toggleIncomeMonster(id: string): { ok: boolean; message: string } {
+  const list = incomeMonsterIds();
+  if (list.includes(id)) {
+    setState((s) => {
+      s.incomeMonsterIds = list.filter((x) => x !== id);
+    });
+    return { ok: true, message: "Monstro removido da renda passiva." };
   }
-  return total * walletMult;
+  const slots = incomeSlots();
+  if (list.length >= slots) {
+    return {
+      ok: false,
+      message: `Você só pode ter ${slots} monstros gerando renda. Melhore o Covil de Monstros na Loja.`,
+    };
+  }
+  setState((s) => {
+    s.incomeMonsterIds = [...list, id];
+  });
+  return { ok: true, message: "Monstro agora gera renda passiva." };
 }
 
 export function userProgress(s: GameState = state) {
@@ -176,6 +244,20 @@ export function monsterProgress(monsterId: string, s: GameState = state) {
   const tier = RARITY_ORDER.indexOf(def.rarity);
   const need = monsterXpForLevel(owned.level, tier);
   return { ...owned, need, pct: Math.min(100, (owned.xp / need) * 100), def };
+}
+
+/** o monstro secreto fica invisível (dex, contagens, filtros) até ser conquistado */
+export function isSecretHidden(monsterId: string, s: GameState = state): boolean {
+  const def = MONSTERS_BY_ID[monsterId];
+  return Boolean(def && def.rarity === SECRET_RARITY && !s.monsters[monsterId]);
+}
+
+export function visibleMonsters(s: GameState = state) {
+  return MONSTERS.filter((m) => !isSecretHidden(m.id, s));
+}
+
+export function visibleRarities(s: GameState = state): RarityId[] {
+  return RARITY_ORDER.filter((r) => r !== SECRET_RARITY || Boolean(s.monsters[SECRET_MONSTER_ID]));
 }
 
 export function totals(s: GameState = state) {
@@ -195,7 +277,7 @@ export function totals(s: GameState = state) {
     sessions: s.sessions.length,
     booksDone: s.books.filter((b) => b.shelf === "concluido").length,
     discovered: Object.keys(s.monsters).length,
-    totalMonsters: MONSTERS.length,
+    totalMonsters: visibleMonsters(s).length,
   };
 }
 
@@ -292,6 +374,10 @@ function rarePenaltyFactor(completion: number): number {
 }
 
 function rollRarity(minutes: number, earlyEnd: boolean, completion = 1): RarityId {
+  // chance oculta do monstro secreto: apenas no cronômetro de 5 horas completo
+  if (minutes >= SECRET_TIMER_MINUTES && !earlyEnd && Math.random() < SECRET_CHANCE) {
+    return SECRET_RARITY;
+  }
   const cfg = timerConfig(minutes);
   const boost = 1 + state.upgrades.lucky_charm * UPGRADES.lucky_charm.effectPerLevel;
   const penalty = earlyEnd ? rarePenaltyFactor(completion) : 1;
@@ -340,6 +426,9 @@ function applyReward(s: GameState, reward: Reward) {
         },
       };
       if (!s.activeMonsterId) s.activeMonsterId = id;
+      const list = (s.incomeMonsterIds ?? []).filter((x) => s.monsters[x]);
+      if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
+      else s.incomeMonsterIds = list;
     }
   }
 
@@ -540,6 +629,44 @@ export function saveReadingSession(input: {
   return reward;
 }
 
+/**
+ * XP extra por metas de tempo no Treino Livre.
+ * Cada marco alcançado soma sua explosão de XP; após 5h, +500 a cada 50 min.
+ */
+export function freeMilestoneXp(durationSec: number): {
+  total: number;
+  reached: Array<{ minutes: number; xp: number }>;
+} {
+  const minutes = durationSec / 60;
+  const reached = FREE_XP_MILESTONES.filter((m) => minutes >= m.minutes).map((m) => ({ ...m }));
+  let total = reached.reduce((a, m) => a + m.xp, 0);
+  if (minutes >= FREE_XP_REPEAT.afterMinutes) {
+    const extra = Math.floor(
+      (minutes - FREE_XP_REPEAT.afterMinutes) / FREE_XP_REPEAT.everyMinutes,
+    );
+    for (let i = 1; i <= extra; i++) {
+      const mark = FREE_XP_REPEAT.afterMinutes + i * FREE_XP_REPEAT.everyMinutes;
+      reached.push({ minutes: mark, xp: FREE_XP_REPEAT.xp });
+      total += FREE_XP_REPEAT.xp;
+    }
+  }
+  return { total, reached };
+}
+
+/** próxima meta de XP do treino livre (para mostrar o progresso ao vivo) */
+export function nextFreeMilestone(durationSec: number): { minutes: number; xp: number } {
+  const minutes = durationSec / 60;
+  const next = FREE_XP_MILESTONES.find((m) => minutes < m.minutes);
+  if (next) return { ...next };
+  const passed = Math.floor(
+    (minutes - FREE_XP_REPEAT.afterMinutes) / FREE_XP_REPEAT.everyMinutes,
+  );
+  return {
+    minutes: FREE_XP_REPEAT.afterMinutes + (passed + 1) * FREE_XP_REPEAT.everyMinutes,
+    xp: FREE_XP_REPEAT.xp,
+  };
+}
+
 export function saveFreeSession(input: {
   timer: ActiveTimer;
   durationSec: number;
@@ -552,6 +679,8 @@ export function saveFreeSession(input: {
   levelsGained: number;
   monsterId: string | null;
   pagesRead: number;
+  milestoneXp: number;
+  milestones: Array<{ minutes: number; xp: number }>;
 } {
   const minutes = input.durationSec / 60;
   const boost = 1 + state.upgrades.knowledge_boost * UPGRADES.knowledge_boost.effectPerLevel;
@@ -560,9 +689,10 @@ export function saveFreeSession(input: {
   const startPage = input.timer.meta.startPage ?? 0;
   const endPage = input.endPage ?? startPage;
   const pagesRead = mode === "read" ? Math.max(0, endPage - startPage) : 0;
-  const monsterXp = Math.round(
-    (minutes * XP.freeStudyPerMinute + pagesRead * XP.perPage) * boost,
-  );
+  const milestone = freeMilestoneXp(input.durationSec);
+  const milestoneXp = Math.round(milestone.total * boost);
+  const monsterXp =
+    Math.round((minutes * XP.freeStudyPerMinute + pagesRead * XP.perPage) * boost) + milestoneXp;
   const monsterId = state.activeMonsterId;
   const session: FreeSession = {
     id: uid(),
@@ -579,6 +709,7 @@ export function saveFreeSession(input: {
     pagesRead: mode === "read" ? pagesRead : undefined,
     monsterId: monsterId ?? undefined,
     monsterXp,
+    milestoneXp,
   };
   setState((s) => {
     s.sessions = [session, ...s.sessions];
@@ -593,7 +724,14 @@ export function saveFreeSession(input: {
   });
   let levelsGained = 0;
   if (monsterId) levelsGained = addMonsterXp(monsterId, monsterXp).levelsGained;
-  return { monsterXp, levelsGained, monsterId, pagesRead };
+  return {
+    monsterXp,
+    levelsGained,
+    monsterId,
+    pagesRead,
+    milestoneXp,
+    milestones: milestone.reached,
+  };
 }
 
 // ------------------------------------------------------------

@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BookOpen, Brain, GraduationCap } from "lucide-react";
 import { useGame } from "@/hooks/use-game";
-import { moneyPerSecond, todayKey, totals, userProgress } from "@/lib/game/state";
+import {
+  incomeMonsterIds,
+  incomeSlots,
+  moneyPerSecond,
+  todayKey,
+  totals,
+  userProgress,
+} from "@/lib/game/state";
 import { duration, money, num } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { ActiveMonsterCard, MonsterCard } from "@/components/game/MonsterCard";
@@ -34,9 +41,8 @@ function Dashboard() {
   const rate = moneyPerSecond(state);
   const today = state.activity[todayKey()] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
   const active = state.activeMonsterId ? state.monsters[state.activeMonsterId] : undefined;
-  const recent = state.sessions
-    .flatMap((s) => ("reward" in s && s.reward?.monsterId ? [s.reward] : []))
-    .slice(0, 6);
+  const slots = incomeSlots(state);
+  const showcase = incomeMonsterIds(state).filter((id) => MONSTERS_BY_ID[id]);
 
   return (
     <div className="space-y-6">
@@ -139,23 +145,26 @@ function Dashboard() {
       </div>
 
       <div className="panel p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold">Coleção recente</h2>
-          <Link to="/monsterdex" className="text-sm text-primary hover:underline">
-            Ver MonsterDex
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-semibold">Coleção amostra</h2>
+            <p className="text-xs text-muted-foreground">
+              {showcase.length}/{slots} monstros gerando renda
+            </p>
+          </div>
+          <Link to="/monstros" className="shrink-0 text-sm text-primary hover:underline">
+            Gerenciar
           </Link>
         </div>
-        {recent.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum monstro encontrado ainda.</p>
+        {showcase.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Escolha em Meus Monstros quais criaturas vão gerar renda passiva.
+          </p>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {recent.map((r, i) => {
-              const id = r.monsterId;
-              if (!id || !MONSTERS_BY_ID[id]) return null;
-              return (
-                <MonsterCard key={`${id}-${i}`} monsterId={id} owned={state.monsters[id]} />
-              );
-            })}
+            {showcase.map((id) => (
+              <MonsterCard key={id} monsterId={id} owned={state.monsters[id]} />
+            ))}
           </div>
         )}
       </div>
