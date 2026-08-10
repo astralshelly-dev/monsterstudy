@@ -148,6 +148,12 @@ export function hydrate() {
   } catch {
     /* ignore */
   }
+  // migração: preencher os slots de renda para quem já tinha coleção
+  if (!Array.isArray(state.incomeMonsterIds)) state.incomeMonsterIds = [];
+  state.incomeMonsterIds = state.incomeMonsterIds.filter((id) => state.monsters[id]);
+  if (state.incomeMonsterIds.length === 0) {
+    state.incomeMonsterIds = bestMonsterIds(state, incomeSlots(state));
+  }
   // rendimento offline
   const elapsed = Math.max(0, Math.floor((Date.now() - state.lastSeen) / 1000));
   const rate = moneyPerSecond(state);
@@ -165,16 +171,65 @@ export function hydrate() {
 // ------------------------------------------------------------
 // Derivados
 // ------------------------------------------------------------
-export function moneyPerSecond(s: GameState = state): number {
+/** quantos monstros podem gerar renda ao mesmo tempo */
+export function incomeSlots(s: GameState = state): number {
+  return BASE_INCOME_SLOTS + (s.upgrades.monster_den ?? 0);
+}
+
+/** ids dos monstros efetivamente gerando renda (respeita o limite de slots) */
+export function incomeMonsterIds(s: GameState = state): string[] {
+  return (s.incomeMonsterIds ?? []).filter((id) => s.monsters[id]).slice(0, incomeSlots(s));
+}
+
+function bestMonsterIds(s: GameState, count: number): string[] {
+  return Object.values(s.monsters)
+    .map((m) => ({ m, def: MONSTERS_BY_ID[m.id] }))
+    .filter((x) => x.def)
+    .sort(
+      (a, b) =>
+        RARITIES[b.def!.rarity].moneyPerSec * b.m.copies -
+        RARITIES[a.def!.rarity].moneyPerSec * a.m.copies,
+    )
+    .slice(0, count)
+    .map((x) => x.m.id);
+}
+
+export function monsterIncome(monsterId: string, s: GameState = state): number {
+  const owned = s.monsters[monsterId];
+  const def = MONSTERS_BY_ID[monsterId];
+  if (!owned || !def) return 0;
   const walletMult = 1 + s.upgrades.golden_wallet * UPGRADES.golden_wallet.effectPerLevel;
+  return (
+    RARITIES[def.rarity].moneyPerSec * owned.copies * (1 + (owned.level - 1) * 0.1) * walletMult
+  );
+}
+
+export function moneyPerSecond(s: GameState = state): number {
   let total = 0;
-  for (const owned of Object.values(s.monsters)) {
-    const def = MONSTERS_BY_ID[owned.id];
-    if (!def) continue;
-    const base = RARITIES[def.rarity].moneyPerSec;
-    total += base * owned.copies * (1 + (owned.level - 1) * 0.1);
+  for (const id of incomeMonsterIds(s)) total += monsterIncome(id, s);
+  return total;
+}
+
+/** liga/desliga um monstro da renda passiva */
+export function toggleIncomeMonster(id: string): { ok: boolean; message: string } {
+  const list = incomeMonsterIds();
+  if (list.includes(id)) {
+    setState((s) => {
+      s.incomeMonsterIds = list.filter((x) => x !== id);
+    });
+    return { ok: true, message: "Monstro removido da renda passiva." };
   }
-  return total * walletMult;
+  const slots = incomeSlots();
+  if (list.length >= slots) {
+    return {
+      ok: false,
+      message: `Você só pode ter ${slots} monstros gerando renda. Melhore o Covil de Monstros na Loja.`,
+    };
+  }
+  setState((s) => {
+    s.incomeMonsterIds = [...list, id];
+  });
+  return { ok: true, message: "Monstro agora gera renda passiva." };
 }
 
 export function userProgress(s: GameState = state) {
@@ -189,6 +244,20 @@ export function monsterProgress(monsterId: string, s: GameState = state) {
   const tier = RARITY_ORDER.indexOf(def.rarity);
   const need = monsterXpForLevel(owned.level, tier);
   return { ...owned, need, pct: Math.min(100, (owned.xp / need) * 100), def };
+}
+
+/** o monstro secreto fica invisível (dex, contagens, filtros) até ser conquistado */
+export function isSecretHidden(monsterId: string, s: GameState = state): boolean {
+  const def = MONSTERS_BY_ID[monsterId];
+  return Boolean(def && def.rarity === SECRET_RARITY && !s.monsters[monsterId]);
+}
+
+export function visibleMonsters(s: GameState = state) {
+  return MONSTERS.filter((m) => !isSecretHidden(m.id, s));
+}
+
+export function visibleRarities(s: GameState = state): RarityId[] {
+  return RARITY_ORDER.filter((r) => r !== SECRET_RARITY || Boolean(s.monsters[SECRET_MONSTER_ID]));
 }
 
 export function totals(s: GameState = state) {
@@ -208,7 +277,7 @@ export function totals(s: GameState = state) {
     sessions: s.sessions.length,
     booksDone: s.books.filter((b) => b.shelf === "concluido").length,
     discovered: Object.keys(s.monsters).length,
-    totalMonsters: MONSTERS.length,
+    totalMonsters: visibleMonsters(s).length,
   };
 }
 
