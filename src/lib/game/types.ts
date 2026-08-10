@@ -84,6 +84,8 @@ export type FreeSession = {
   pagesRead?: number | undefined;
   monsterId?: string | undefined;
   monsterXp: number;
+  /** XP extra ganho por atingir metas de tempo */
+  milestoneXp?: number | undefined;
 };
 
 
