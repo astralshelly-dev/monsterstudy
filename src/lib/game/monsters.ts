@@ -367,6 +367,16 @@ const SEEDS: MonsterSeed[] = [
     description:
       "Nascida da primeira página já escrita. Sua luz reordena o tempo em favor de quem aprende.",
   },
+
+  // ---------- Secreto (oculto até ser desbloqueado) ----------
+  {
+    id: "aetheryon",
+    name: "Aetheryon",
+    rarity: "secreto",
+    habitat: "mistico",
+    description:
+      "O Serafim Prismático do Fim das Eras. Não existe registro dele em nenhum bestiário — apenas rumores de que aparece a quem atravessa cinco horas inteiras de foco absoluto.",
+  },
 ];
 
 export const MONSTERS: MonsterDef[] = SEEDS.map((m) => ({
