@@ -62,6 +62,7 @@
   --color-rarity-lendario: var(--r-lendario);
   --color-rarity-mitico: var(--r-mitico);
   --color-rarity-divino: var(--r-divino);
+  --color-rarity-secreto: var(--r-secreto);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
