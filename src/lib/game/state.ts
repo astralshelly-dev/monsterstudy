@@ -374,6 +374,10 @@ function rarePenaltyFactor(completion: number): number {
 }
 
 function rollRarity(minutes: number, earlyEnd: boolean, completion = 1): RarityId {
+  // chance oculta do monstro secreto: apenas no cronômetro de 5 horas completo
+  if (minutes >= SECRET_TIMER_MINUTES && !earlyEnd && Math.random() < SECRET_CHANCE) {
+    return SECRET_RARITY;
+  }
   const cfg = timerConfig(minutes);
   const boost = 1 + state.upgrades.lucky_charm * UPGRADES.lucky_charm.effectPerLevel;
   const penalty = earlyEnd ? rarePenaltyFactor(completion) : 1;
