@@ -151,6 +151,7 @@ export const SECRET_MONSTER_ID = "aetheryon";
 export const SECRET_TIMER_MINUTES = 300;
 export const SECRET_CHANCE = 0.005;
 
+export type HabitatId =
   | "floresta"
   | "oceano"
   | "vulcao"
