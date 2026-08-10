@@ -3,7 +3,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
-import { monsterProgress, setActiveMonster, spendShards } from "@/lib/game/state";
+import {
+  incomeMonsterIds,
+  incomeSlots,
+  monsterIncome,
+  monsterProgress,
+  setActiveMonster,
+  spendShards,
+  toggleIncomeMonster,
+} from "@/lib/game/state";
 import { EmptyState, PageHeader, StatCard } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Button } from "@/components/ui/button";
