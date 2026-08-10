@@ -10,6 +10,7 @@ const RARITY_SURFACE: Record<RarityId, string> = {
   lendario: "rarity-lendario",
   mitico: "rarity-mitico",
   divino: "rarity-divino",
+  secreto: "rarity-secreto",
 };
 
 const RARITY_HALO: Record<RarityId, string> = {
@@ -21,6 +22,7 @@ const RARITY_HALO: Record<RarityId, string> = {
   lendario: "halo-lendario",
   mitico: "halo-mitico",
   divino: "halo-divino",
+  secreto: "halo-secreto",
 };
 
 const RARITY_TEXT: Record<RarityId, string> = {
@@ -32,6 +34,7 @@ const RARITY_TEXT: Record<RarityId, string> = {
   lendario: "text-rarity-lendario",
   mitico: "text-rarity-mitico",
   divino: "text-rarity-divino",
+  secreto: "text-rarity-secreto",
 };
 
 export const raritySurface = (r: RarityId) => RARITY_SURFACE[r];
