@@ -34,9 +34,8 @@ function Dashboard() {
   const rate = moneyPerSecond(state);
   const today = state.activity[todayKey()] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
   const active = state.activeMonsterId ? state.monsters[state.activeMonsterId] : undefined;
-  const recent = state.sessions
-    .flatMap((s) => ("reward" in s && s.reward?.monsterId ? [s.reward] : []))
-    .slice(0, 6);
+  const slots = incomeSlots(state);
+  const showcase = incomeMonsterIds(state).filter((id) => MONSTERS_BY_ID[id]);
 
   return (
     <div className="space-y-6">
