@@ -14,8 +14,8 @@ import {
   YAxis,
 } from "recharts";
 import { useGame } from "@/lib/../hooks/use-game";
-import { totals, todayKey, moneyPerSecond } from "@/lib/game/state";
-import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
+import { totals, todayKey, moneyPerSecond, visibleRarities } from "@/lib/game/state";
+import { RARITIES } from "@/lib/game/config";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { duration, money, num, shortDate } from "@/lib/format";
