@@ -11,7 +11,8 @@ export type RarityId =
   | "epico"
   | "lendario"
   | "mitico"
-  | "divino";
+  | "divino"
+  | "secreto";
 
 export type Rarity = {
   id: RarityId;
