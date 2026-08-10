@@ -629,6 +629,44 @@ export function saveReadingSession(input: {
   return reward;
 }
 
+/**
+ * XP extra por metas de tempo no Treino Livre.
+ * Cada marco alcançado soma sua explosão de XP; após 5h, +500 a cada 50 min.
+ */
+export function freeMilestoneXp(durationSec: number): {
+  total: number;
+  reached: Array<{ minutes: number; xp: number }>;
+} {
+  const minutes = durationSec / 60;
+  const reached = FREE_XP_MILESTONES.filter((m) => minutes >= m.minutes).map((m) => ({ ...m }));
+  let total = reached.reduce((a, m) => a + m.xp, 0);
+  if (minutes >= FREE_XP_REPEAT.afterMinutes) {
+    const extra = Math.floor(
+      (minutes - FREE_XP_REPEAT.afterMinutes) / FREE_XP_REPEAT.everyMinutes,
+    );
+    for (let i = 1; i <= extra; i++) {
+      const mark = FREE_XP_REPEAT.afterMinutes + i * FREE_XP_REPEAT.everyMinutes;
+      reached.push({ minutes: mark, xp: FREE_XP_REPEAT.xp });
+      total += FREE_XP_REPEAT.xp;
+    }
+  }
+  return { total, reached };
+}
+
+/** próxima meta de XP do treino livre (para mostrar o progresso ao vivo) */
+export function nextFreeMilestone(durationSec: number): { minutes: number; xp: number } {
+  const minutes = durationSec / 60;
+  const next = FREE_XP_MILESTONES.find((m) => minutes < m.minutes);
+  if (next) return { ...next };
+  const passed = Math.floor(
+    (minutes - FREE_XP_REPEAT.afterMinutes) / FREE_XP_REPEAT.everyMinutes,
+  );
+  return {
+    minutes: FREE_XP_REPEAT.afterMinutes + (passed + 1) * FREE_XP_REPEAT.everyMinutes,
+    xp: FREE_XP_REPEAT.xp,
+  };
+}
+
 export function saveFreeSession(input: {
   timer: ActiveTimer;
   durationSec: number;
@@ -641,6 +679,8 @@ export function saveFreeSession(input: {
   levelsGained: number;
   monsterId: string | null;
   pagesRead: number;
+  milestoneXp: number;
+  milestones: Array<{ minutes: number; xp: number }>;
 } {
   const minutes = input.durationSec / 60;
   const boost = 1 + state.upgrades.knowledge_boost * UPGRADES.knowledge_boost.effectPerLevel;
@@ -649,9 +689,10 @@ export function saveFreeSession(input: {
   const startPage = input.timer.meta.startPage ?? 0;
   const endPage = input.endPage ?? startPage;
   const pagesRead = mode === "read" ? Math.max(0, endPage - startPage) : 0;
-  const monsterXp = Math.round(
-    (minutes * XP.freeStudyPerMinute + pagesRead * XP.perPage) * boost,
-  );
+  const milestone = freeMilestoneXp(input.durationSec);
+  const milestoneXp = Math.round(milestone.total * boost);
+  const monsterXp =
+    Math.round((minutes * XP.freeStudyPerMinute + pagesRead * XP.perPage) * boost) + milestoneXp;
   const monsterId = state.activeMonsterId;
   const session: FreeSession = {
     id: uid(),
@@ -668,6 +709,7 @@ export function saveFreeSession(input: {
     pagesRead: mode === "read" ? pagesRead : undefined,
     monsterId: monsterId ?? undefined,
     monsterXp,
+    milestoneXp,
   };
   setState((s) => {
     s.sessions = [session, ...s.sessions];
@@ -682,7 +724,14 @@ export function saveFreeSession(input: {
   });
   let levelsGained = 0;
   if (monsterId) levelsGained = addMonsterXp(monsterId, monsterXp).levelsGained;
-  return { monsterXp, levelsGained, monsterId, pagesRead };
+  return {
+    monsterXp,
+    levelsGained,
+    monsterId,
+    pagesRead,
+    milestoneXp,
+    milestones: milestone.reached,
+  };
 }
 
 // ------------------------------------------------------------
