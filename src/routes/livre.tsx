@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Pause, Play, Square } from "lucide-react";
+import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
 import {
   cancelTimer,
