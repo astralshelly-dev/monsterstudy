@@ -125,6 +125,8 @@ export type GameState = {
   lastSeen: number;
   monsters: Record<string, OwnedMonster>;
   activeMonsterId: string | null;
+  /** monstros escolhidos para gerar renda passiva (limitado pelos slots) */
+  incomeMonsterIds: string[];
   books: Book[];
   sessions: Session[];
   upgrades: Record<UpgradeId, number>;
