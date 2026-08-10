@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BookOpen, Brain, GraduationCap } from "lucide-react";
 import { useGame } from "@/hooks/use-game";
-import { moneyPerSecond, todayKey, totals, userProgress } from "@/lib/game/state";
+import {
+  incomeMonsterIds,
+  incomeSlots,
+  moneyPerSecond,
+  todayKey,
+  totals,
+  userProgress,
+} from "@/lib/game/state";
 import { duration, money, num } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { ActiveMonsterCard, MonsterCard } from "@/components/game/MonsterCard";
