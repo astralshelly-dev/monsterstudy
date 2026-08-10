@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
-import { MONSTERS, MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { visibleMonsters, visibleRarities } from "@/lib/game/state";
 import { HABITATS, RARITIES, RARITY_ORDER, type HabitatId, type RarityId } from "@/lib/game/config";
 import { PageHeader } from "@/components/game/Primitives";
 import { MonsterCard } from "@/components/game/MonsterCard";
