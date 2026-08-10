@@ -119,22 +119,63 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5">
-            {NAV.filter((n) => "primary" in n && n.primary).map((item) => {
-              const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex flex-col items-center gap-1 py-2.5 text-[10px]",
-                    active ? "text-primary" : "text-muted-foreground",
-                  )}
+            {NAV.filter((n) => "primary" in n && n.primary)
+              .slice(0, 4)
+              .map((item) => {
+                const active =
+                  pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "flex flex-col items-center gap-1 py-2.5 text-[10px]",
+                      active ? "text-primary" : "text-muted-foreground",
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  className="flex flex-col items-center gap-1 py-2.5 text-[10px] text-muted-foreground"
                 >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
+                  <Menu className="h-5 w-5" />
+                  Mais
+                </button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+                <SheetHeader className="text-left">
+                  <SheetTitle className="font-display">Todas as seções</SheetTitle>
+                </SheetHeader>
+                <div className="mt-4 grid grid-cols-2 gap-2 pb-6">
+                  {NAV.map((item) => {
+                    const active =
+                      pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
+                    return (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMoreOpen(false)}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
+                          active
+                            ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
+                            : "bg-secondary/60 text-muted-foreground",
+                        )}
+                      >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </nav>
       </div>
