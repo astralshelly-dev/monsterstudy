@@ -366,6 +366,17 @@ export const UPGRADES: Record<UpgradeId, UpgradeConfig> = {
     effectPerLevel: 0.15,
     effectLabel: (l) => `+${Math.round(l * 15)}% recompensa de streak`,
   },
+  monster_den: {
+    id: "monster_den",
+    name: "Covil de Monstros",
+    icon: "🏰",
+    description: `Amplia quantos monstros podem gerar renda ao mesmo tempo (base ${BASE_INCOME_SLOTS}).`,
+    maxLevel: 3,
+    basePrice: 9000,
+    priceGrowth: 2.4,
+    effectPerLevel: 1,
+    effectLabel: (l) => `${BASE_INCOME_SLOTS + l} monstros gerando renda`,
+  },
 };
 
 export function upgradePrice(id: UpgradeId, currentLevel: number): number {
