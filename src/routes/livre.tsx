@@ -177,6 +177,12 @@ function FreePage() {
                   ...(isRead && typeof endPage === "number" ? { endPage } : {}),
                 });
                 setEndPage("");
+                if (r.milestoneXp > 0) {
+                  toast.success(
+                    `💥 Explosão de XP! ${r.milestones.length} meta(s) de tempo alcançada(s)`,
+                    { description: `+${r.milestoneXp} XP extra para o monstro em treino` },
+                  );
+                }
                 setResult({
                   xp: r.monsterXp,
                   levels: r.levelsGained,
