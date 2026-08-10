@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Library,
   LineChart,
+  Menu,
   PawPrint,
   ScrollText,
   Settings,
@@ -22,6 +23,7 @@ import {
 import { useGame, useHydrated } from "@/hooks/use-game";
 import { moneyPerSecond, userProgress } from "@/lib/game/state";
 import { money, num } from "@/lib/format";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const NAV = [
