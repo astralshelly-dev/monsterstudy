@@ -49,6 +49,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prog = userProgress(state);
   const rate = moneyPerSecond(state);
+  const [moreOpen, setMoreOpen] = useState(false);
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [pathname]);
 
   return (
     <div className="flex min-h-screen w-full">
