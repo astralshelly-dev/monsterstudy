@@ -315,7 +315,9 @@ export type UpgradeId =
   | "golden_wallet"
   | "knowledge_boost"
   | "streak_booster"
-  | "monster_den";
+  | "monster_den"
+  | "dream_crystal";
+
 
 export type UpgradeConfig = {
   id: UpgradeId;
