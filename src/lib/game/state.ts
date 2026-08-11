@@ -71,7 +71,9 @@ export function defaultState(): GameState {
       knowledge_boost: 0,
       streak_booster: 0,
       monster_den: 0,
+      dream_crystal: 0,
     },
+
     unlockedTimers: [...DEFAULT_UNLOCKED_TIMERS],
     achievements: {},
     streak: { current: 0, best: 0, lastDay: null, claimed: [] },
