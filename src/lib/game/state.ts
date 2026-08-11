@@ -145,22 +145,28 @@ export function hydrate() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as GameState;
-      state = { ...defaultState(), ...parsed, profile: { ...defaultState().profile, ...parsed.profile } };
+      state = {
+        ...defaultState(),
+        ...parsed,
+        profile: { ...defaultState().profile, ...parsed.profile },
+        upgrades: { ...defaultState().upgrades, ...parsed.upgrades },
+      };
     }
   } catch {
     /* ignore */
   }
+  if (!state.profile.publicId) state.profile.publicId = newPublicId();
   // migração: preencher os slots de renda para quem já tinha coleção
   if (!Array.isArray(state.incomeMonsterIds)) state.incomeMonsterIds = [];
   state.incomeMonsterIds = state.incomeMonsterIds.filter((id) => state.monsters[id]);
   if (state.incomeMonsterIds.length === 0) {
     state.incomeMonsterIds = bestMonsterIds(state, incomeSlots(state));
   }
-  // rendimento offline
+  // rendimento offline (fração da renda normal, ampliada pelo Cristal dos Sonhos)
   const elapsed = Math.max(0, Math.floor((Date.now() - state.lastSeen) / 1000));
-  const rate = moneyPerSecond(state);
+  const rate = moneyPerSecond(state) * offlineIncomeFactor(state);
   if (elapsed > 60 && rate > 0) {
-    const capped = Math.min(elapsed, 60 * 60 * 12);
+    const capped = Math.min(elapsed, 60 * 60 * OFFLINE_INCOME_MAX_HOURS);
     offlineEarnings = { amount: rate * capped, seconds: capped };
     state.money += rate * capped;
   }
@@ -169,6 +175,21 @@ export function hydrate() {
   persist();
   emit();
 }
+
+/** fração da renda passiva que rende com o app fechado */
+export function offlineIncomeFactor(s: GameState = state): number {
+  const lvl = s.upgrades.dream_crystal ?? 0;
+  return Math.min(1, OFFLINE_INCOME_BASE + lvl * UPGRADES.dream_crystal.effectPerLevel);
+}
+
+/** ID público de 8 caracteres para busca de perfil */
+export function newPublicId(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < 8; i += 1) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return out;
+}
+
 
 // ------------------------------------------------------------
 // Derivados
