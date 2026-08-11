@@ -169,7 +169,7 @@ function ReadRunning() {
   const paused = Boolean(timer.pausedAt);
   const [livePage, setLivePage] = useState<number | "">("");
   const pages = typeof livePage === "number" ? Math.max(0, livePage - (timer.meta.startPage ?? 0)) : 0;
-  const speed = elapsed > 0 ? pages / (elapsed / 60) : 0;
+  const minPerPage = pages > 0 ? elapsed / 60 / pages : 0;
 
   return (
     <div className="space-y-8">
@@ -198,8 +198,8 @@ function ReadRunning() {
                 <p className="font-semibold tabular-nums">{pages}</p>
               </div>
               <div className="rounded-xl bg-secondary/60 px-3 py-2">
-                <p className="text-[10px] uppercase text-muted-foreground">Velocidade</p>
-                <p className="font-semibold tabular-nums">{num(speed, 2)} pág/min</p>
+                <p className="text-[10px] uppercase text-muted-foreground">Ritmo</p>
+                <p className="font-semibold tabular-nums">{num(minPerPage, 2)} min/pág</p>
               </div>
             </div>
           )}
@@ -240,7 +240,7 @@ function ReadCompletion() {
   const [endPage, setEndPage] = useState<number | "">("");
   const [notes, setNotes] = useState("");
   const pages = typeof endPage === "number" ? Math.max(0, endPage - startPage) : 0;
-  const speed = pages / Math.max(1, durationSec / 60);
+  const minPerPage = pages > 0 ? durationSec / 60 / pages : 0;
   const pct = book ? ((typeof endPage === "number" ? endPage : startPage) / book.totalPages) * 100 : 0;
   const earlyEnd = Boolean(timer.meta.earlyEnd);
   useEffect(() => {
@@ -272,7 +272,7 @@ function ReadCompletion() {
         {pages >= 0 && typeof endPage === "number" && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Info label="Páginas lidas" value={`${pages}`} />
-            <Info label="Velocidade" value={`${num(speed, 2)} pág/min`} />
+            <Info label="Ritmo" value={`${num(minPerPage, 2)} min/pág`} />
             <Info label="Tempo total" value={duration(durationSec)} />
             <Info label="Do livro" value={`${num(pct, 1)}%`} />
           </div>
