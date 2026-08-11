@@ -157,5 +157,8 @@ export type GameState = {
   pendingReward: Reward | null;
   /** códigos promocionais já resgatados */
   redeemedCodes: string[];
+  /** última sessão salva (base para "continuar sessão") */
+  lastSessionId?: string | null | undefined;
 };
+
 
