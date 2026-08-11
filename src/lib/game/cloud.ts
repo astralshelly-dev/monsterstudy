@@ -60,9 +60,10 @@ export async function pushToCloud(userId: string): Promise<void> {
   const s = getSnapshot();
   const summary = summarize(s);
   await supabase.from("saves").upsert(
-    { user_id: userId, state: s as unknown as Record<string, unknown> },
+    { user_id: userId, state: JSON.parse(JSON.stringify(s)) },
     { onConflict: "user_id" },
   );
+
   await supabase
     .from("profiles")
     .update({
