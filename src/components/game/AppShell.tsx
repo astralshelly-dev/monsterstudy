@@ -50,6 +50,8 @@ const NAV = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   useHydrated();
+  useCloudSync();
+
   const state = useGame();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prog = userProgress(state);
