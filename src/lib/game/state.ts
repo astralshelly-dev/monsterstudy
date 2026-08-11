@@ -961,9 +961,11 @@ export function bookStats(bookId: string, s: GameState = state) {
     sessions,
     totalSec,
     pages,
-    avgSpeed: totalSec > 0 ? Math.round((pages / (totalSec / 60)) * 100) / 100 : 0,
+    /** minutos por página (menor = mais rápido) */
+    avgMinPerPage: pages > 0 ? Math.round((totalSec / 60 / pages) * 100) / 100 : 0,
   };
 }
+
 
 // ------------------------------------------------------------
 // Perfil / configurações
