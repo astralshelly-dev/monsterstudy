@@ -27,6 +27,11 @@ export function BattleArena({
 
   const player = battle.player.fighters[battle.player.active]!;
   const foe = battle.foe.fighters[battle.foe.active]!;
+  const specialReady = isSpecialReady(player);
+  const specialPct = Math.min(
+    100,
+    ((player.ability.cooldown - Math.max(0, player.charge - 1)) / player.ability.cooldown) * 100,
+  );
 
   function digest(next: Battle) {
     const news: Float[] = [];
