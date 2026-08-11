@@ -1,4 +1,4 @@
-import { illustratedAvatar } from "@/lib/game/avatars";
+import { ILLUSTRATED_AVATARS, illustratedAvatar } from "@/lib/game/avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ export function ProfileAvatar({
 }) {
   const monster = monsterId ? MONSTERS_BY_ID[monsterId] : undefined;
   const art = illustratedAvatar(avatar);
-  const src = monster?.art ?? art?.src;
+  const src = monster?.art ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
 
   return (
     <span

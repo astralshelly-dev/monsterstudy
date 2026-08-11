@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { duration, money, num, shortDate } from "@/lib/format";
+import { ILLUSTRATED_AVATARS } from "@/lib/game/avatars";
+import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { ProfileAvatar } from "@/components/game/Avatar";
 import { cn } from "@/lib/utils";
-
-const AVATARS = ["🧙", "🧝", "🧛", "🦸", "🥷", "🧚", "🐉", "🦉", "🔮", "📚", "⚔️", "🌙"];
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -41,9 +42,11 @@ function Profile() {
 
       <div className="panel p-6">
         <div className="flex flex-wrap items-center gap-5">
-          <span className="grid h-20 w-20 place-items-center rounded-2xl bg-secondary/70 text-4xl ring-1 ring-primary/40">
-            {state.profile.avatar}
-          </span>
+          <ProfileAvatar
+            avatar={state.profile.avatar}
+            monsterId={state.profile.avatarMonsterId}
+            size="lg"
+          />
           <div className="min-w-56 flex-1">
             <p className="font-display text-2xl font-bold">{state.profile.name}</p>
             <p className="text-sm text-muted-foreground">
@@ -77,24 +80,72 @@ function Profile() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Avatar</Label>
+            <Label>Foto de perfil</Label>
+            <p className="text-xs text-muted-foreground">Escolha um retrato ilustrado.</p>
             <div className="flex flex-wrap gap-2">
-              {AVATARS.map((a) => (
+              {ILLUSTRATED_AVATARS.map((a) => (
                 <button
-                  key={a}
+                  key={a.id}
                   type="button"
-                  onClick={() => updateProfile({ avatar: a })}
+                  title={a.name}
+                  onClick={() => {
+                    updateProfile({ avatar: `art:${a.id}`, avatarMonsterId: null });
+                    toast.success(`Retrato: ${a.name}`);
+                  }}
                   className={cn(
-                    "grid h-10 w-10 place-items-center rounded-lg bg-secondary/60 text-xl transition-transform hover:scale-110",
-                    state.profile.avatar === a && "ring-2 ring-primary",
+                    "h-14 w-14 overflow-hidden rounded-xl bg-secondary/60 ring-1 ring-border/60 transition-transform hover:scale-105",
+                    state.profile.avatar === `art:${a.id}` &&
+                      !state.profile.avatarMonsterId &&
+                      "ring-2 ring-primary",
                   )}
                 >
-                  {a}
+                  <img src={a.src} alt={a.name} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="panel space-y-3 p-6">
+        <h2 className="font-display text-lg font-semibold">Usar um monstro como foto</h2>
+        <p className="text-sm text-muted-foreground">
+          Qualquer criatura que você já capturou pode ser sua foto de perfil.
+        </p>
+        {Object.keys(state.monsters).length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Você ainda não capturou monstros. Complete uma sessão para começar.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {Object.values(state.monsters).map((m) => {
+              const def = MONSTERS_BY_ID[m.id];
+              if (!def) return null;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  title={def.name}
+                  onClick={() => {
+                    updateProfile({ avatarMonsterId: m.id });
+                    toast.success(`Foto de perfil: ${def.name}`);
+                  }}
+                  className={cn(
+                    "h-14 w-14 overflow-hidden rounded-xl bg-secondary/60 ring-1 ring-border/60 transition-transform hover:scale-105",
+                    state.profile.avatarMonsterId === m.id && "ring-2 ring-primary",
+                  )}
+                >
+                  <img src={def.art} alt={def.name} className="h-full w-full object-cover" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {state.profile.avatarMonsterId && (
+          <Button variant="outline" size="sm" onClick={() => updateProfile({ avatarMonsterId: null })}>
+            Remover monstro da foto
+          </Button>
+        )}
       </div>
 
       {active && (

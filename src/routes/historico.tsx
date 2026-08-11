@@ -7,6 +7,7 @@ import { HABITATS, RARITIES, TIMERS, type RarityId } from "@/lib/game/config";
 import { EmptyState, PageHeader } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SessionShareButton } from "@/components/game/ShareCard";
 import { dateTime, duration, money, num } from "@/lib/format";
 import type { Session } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
@@ -294,6 +295,8 @@ function SessionDetails({ session: s }: { session: Session }) {
         )}
         {"notes" in s && s.notes ? <Row label="Anotações" value={s.notes} /> : null}
       </div>
+
+      <SessionShareButton session={s} className="w-full" />
     </div>
   );
 }

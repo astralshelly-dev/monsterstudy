@@ -55,7 +55,7 @@ export function defaultState(): GameState {
     version: 1,
     profile: {
       name: "Caçador",
-      avatar: "🧙",
+      avatar: "art:arcanist",
       createdAt: new Date().toISOString(),
       xp: 0,
       level: 1,
