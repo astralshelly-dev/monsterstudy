@@ -82,8 +82,14 @@ export async function pushToCloud(userId: string): Promise<void> {
     .eq("user_id", userId);
 }
 
-/** baixa o save da nuvem, se existir e for mais recente */
-export async function pullFromCloud(userId: string): Promise<boolean> {
+/**
+ * Baixa o save da nuvem. Com `force`, o save da conta sempre substitui o local
+ * (usado ao entrar na conta); sem `force`, só substitui se for mais avançado.
+ */
+export async function pullFromCloud(
+  userId: string,
+  opts?: { force?: boolean },
+): Promise<boolean> {
   const { data } = await supabase
     .from("saves")
     .select("state, updated_at")
@@ -92,9 +98,11 @@ export async function pullFromCloud(userId: string): Promise<boolean> {
   if (!data?.state) return false;
   const remote = data.state as unknown as GameState;
   const local = getSnapshot();
-  const remoteScore = (remote.sessions?.length ?? 0) + (remote.profile?.xp ?? 0);
-  const localScore = local.sessions.length + local.profile.xp;
-  if (remoteScore < localScore) return false;
+  if (!opts?.force) {
+    const remoteScore = (remote.sessions?.length ?? 0) + (remote.profile?.xp ?? 0);
+    const localScore = local.sessions.length + local.profile.xp;
+    if (remoteScore < localScore) return false;
+  }
   setState(() => ({ ...remote, timer: local.timer, pendingReward: null }));
   return true;
 }
