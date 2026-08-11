@@ -384,8 +384,17 @@ function finishTurn(b: Battle, actor: SideId) {
   b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
 }
 
-/** resolve o turno de quem está na vez (habilidade dispara sozinha quando pronta) */
-export function takeTurn(prev: Battle): Battle {
+/** o especial do jogador é manual (quando carregado); a IA dispara sozinha */
+export function isSpecialReady(f: Fighter): boolean {
+  return f.charge <= 1;
+}
+
+/**
+ * resolve o turno de quem está na vez.
+ * `useSpecial` (só faz efeito para o jogador com o especial carregado):
+ * ataque normal com 50% de dano + a habilidade especial no mesmo turno.
+ */
+export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle {
   if (prev.over || prev.awaitingSwitch) return prev;
   const b = clone(prev);
   b.events = [];
@@ -395,9 +404,18 @@ export function takeTurn(prev: Battle): Battle {
   const defSide = actor === "player" ? b.foe : b.player;
   const defSideId: SideId = actor === "player" ? "foe" : "player";
 
+  const wantsSpecial = actor === "player" && !!opts?.useSpecial && isSpecialReady(attacker);
   attacker.charge = Math.max(0, attacker.charge - 1);
-  if (attacker.charge === 0) useAbility(b, actor, attacker, defSide, defSideId);
-  else basicAttack(b, actor, attacker, defSide, defSideId);
+
+  if (wantsSpecial) {
+    basicAttack(b, actor, attacker, defSide, defSideId, 0.5);
+    if (defSide.fighters[defSide.active]!.hp > 0) useAbility(b, actor, attacker, defSide, defSideId);
+    else attacker.charge = attacker.ability.cooldown;
+  } else if (actor === "foe" && attacker.charge === 0) {
+    useAbility(b, actor, attacker, defSide, defSideId);
+  } else {
+    basicAttack(b, actor, attacker, defSide, defSideId);
+  }
 
   if (defSide.fighters[defSide.active]!.hp > 0) tickBurn(b, defSideId);
   finishTurn(b, actor);
