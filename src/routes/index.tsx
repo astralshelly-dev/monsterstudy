@@ -12,6 +12,7 @@ import {
 import { duration, money, num } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { DayShareButton } from "@/components/game/ShareCard";
+import { ProfileAvatar } from "@/components/game/Avatar";
 import { ActiveMonsterCard, MonsterCard } from "@/components/game/MonsterCard";
 import { Button } from "@/components/ui/button";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
@@ -56,9 +57,11 @@ function Dashboard() {
       <div className="panel aurora relative overflow-hidden p-6">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-primary/20 text-3xl ring-1 ring-primary/40">
-              {state.profile.avatar}
-            </span>
+            <ProfileAvatar
+              avatar={state.profile.avatar}
+              monsterId={state.profile.avatarMonsterId}
+              size="md"
+            />
             <div>
               <p className="font-display text-2xl font-bold">{state.profile.name}</p>
               <p className="text-sm text-muted-foreground">
