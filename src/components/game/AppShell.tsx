@@ -23,6 +23,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useGame, useHydrated } from "@/hooks/use-game";
+import { useCloudSync } from "@/hooks/use-auth";
 import { moneyPerSecond, userProgress } from "@/lib/game/state";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
