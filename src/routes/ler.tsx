@@ -17,6 +17,7 @@ import { EmptyState, PageHeader } from "@/components/game/Primitives";
 import { TimerDial } from "@/components/game/TimerDial";
 import { TimerPicker, useTick } from "@/components/game/TimerPicker";
 import { RewardReveal } from "@/components/game/RewardReveal";
+import { ContinueSessionPanel } from "@/components/game/ContinueSession";
 import { playTimerEndSfx } from "@/lib/game/sfx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +94,8 @@ function ReadSetup() {
         icon="📖"
         subtitle="Selecione um livro da sua biblioteca e escolha o cronômetro."
       />
+
+      <ContinueSessionPanel kind="read" />
 
       <div className="space-y-3">
         <h2 className="font-display text-lg font-semibold">Escolha o livro</h2>

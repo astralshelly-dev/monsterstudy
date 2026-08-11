@@ -11,6 +11,7 @@ import {
 } from "@/lib/game/state";
 import { duration, money, num } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
+import { DayShareButton } from "@/components/game/ShareCard";
 import { ActiveMonsterCard, MonsterCard } from "@/components/game/MonsterCard";
 import { Button } from "@/components/ui/button";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
@@ -95,6 +96,8 @@ function Dashboard() {
         />
         <StatCard label="Sessões" value={num(t.sessions)} icon={<span>🏆</span>} />
       </div>
+
+      <DayShareButton dayKey={todayKey()} className="w-full sm:w-auto" />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="panel space-y-3 p-5 lg:col-span-2">

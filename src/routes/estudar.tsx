@@ -17,6 +17,7 @@ import { PageHeader } from "@/components/game/Primitives";
 import { TimerDial } from "@/components/game/TimerDial";
 import { TimerPicker, useTick } from "@/components/game/TimerPicker";
 import { RewardReveal } from "@/components/game/RewardReveal";
+import { ContinueSessionPanel } from "@/components/game/ContinueSession";
 import { playTimerEndSfx } from "@/lib/game/sfx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,6 +118,8 @@ function StudySetup() {
         icon="📚"
         subtitle="O que você vai estudar agora? Sessões maiores atraem criaturas mais raras."
       />
+
+      <ContinueSessionPanel kind="study" />
 
       {busy && (
         <div className="panel p-4 text-sm text-muted-foreground">
