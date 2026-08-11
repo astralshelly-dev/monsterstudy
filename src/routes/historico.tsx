@@ -172,7 +172,7 @@ function History() {
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {duration(s.durationSec)}
-                    {s.kind === "read" && ` · ${s.pagesRead} páginas · ${num(s.pagesPerMin, 2)} pág/min`}
+                    {s.kind === "read" && ` · ${s.pagesRead} páginas · ${num(s.minPerPage, 2)} min/pág`}
                     {s.kind === "study" && s.topic ? ` · ${s.topic}` : ""}
                     {earlyEnd ? " · encerrada antes do fim" : ""}
                   </p>
@@ -265,7 +265,7 @@ function SessionDetails({ session: s }: { session: Session }) {
         {s.kind === "read" && (
           <>
             <Row label="Páginas" value={`${s.startPage} → ${s.endPage} (${s.pagesRead})`} />
-            <Row label="Ritmo" value={`${num(s.pagesPerMin, 2)} pág/min`} />
+            <Row label="Ritmo" value={`${num(s.minPerPage, 2)} min/pág`} />
           </>
         )}
         {s.kind === "free" && s.mode === "read" && s.pagesRead !== undefined && (

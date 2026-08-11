@@ -163,7 +163,7 @@ function BookDetail() {
                   </div>
                   <p className="mt-1 text-sm">
                     Página {s.startPage} → {s.endPage} · {s.pagesRead} páginas ·{" "}
-                    {num(s.pagesPerMin, 2)} pág/min
+                    {num(s.minPerPage, 2)} min/pág
                   </p>
                   {s.notes && <p className="mt-1 text-sm italic text-muted-foreground">"{s.notes}"</p>}
                   {def && s.reward && (
