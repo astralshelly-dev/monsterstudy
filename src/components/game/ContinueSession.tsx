@@ -28,7 +28,7 @@ export function ContinueSessionPanel({ kind }: { kind: "study" | "read" }) {
           <p className="text-sm text-muted-foreground">
             {prev.kind === "study" ? prev.subject : (book?.title ?? "Leitura")} ·{" "}
             {duration(prev.durationSec)} até agora
-            {prev.segments > 1 ? ` (${prev.segments} blocos)` : ""}
+            {(prev.segments ?? 1) > 1 ? ` (${prev.segments} blocos)` : ""}
           </p>
         </div>
         <Button variant={open ? "secondary" : "default"} onClick={() => setOpen(!open)}>
