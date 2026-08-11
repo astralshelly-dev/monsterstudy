@@ -388,7 +388,21 @@ export const UPGRADES: Record<UpgradeId, UpgradeConfig> = {
     effectPerLevel: 1,
     effectLabel: (l) => `${BASE_INCOME_SLOTS + l} monstros gerando renda`,
   },
+  dream_crystal: {
+    id: "dream_crystal",
+    name: "Cristal dos Sonhos",
+    icon: "🔮",
+    description: `Seus monstros trabalham melhor com o app fechado (base ${Math.round(
+      OFFLINE_INCOME_BASE * 100,
+    )}% da renda).`,
+    maxLevel: 5,
+    basePrice: 1800,
+    priceGrowth: 1.75,
+    effectPerLevel: 0.1,
+    effectLabel: (l) => `${Math.round((OFFLINE_INCOME_BASE + l * 0.1) * 100)}% de renda offline`,
+  },
 };
+
 
 export function upgradePrice(id: UpgradeId, currentLevel: number): number {
   const u = UPGRADES[id];
