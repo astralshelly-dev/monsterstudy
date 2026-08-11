@@ -14,13 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar: string
+          avatar_monster_id: string | null
+          created_at: string
+          display_name: string
+          level: number
+          money: number
+          monsters: Json
+          public_id: string
+          shards: number
+          stats: Json
+          streak_best: number
+          streak_current: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          avatar?: string
+          avatar_monster_id?: string | null
+          created_at?: string
+          display_name?: string
+          level?: number
+          money?: number
+          monsters?: Json
+          public_id: string
+          shards?: number
+          stats?: Json
+          streak_best?: number
+          streak_current?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          avatar?: string
+          avatar_monster_id?: string | null
+          created_at?: string
+          display_name?: string
+          level?: number
+          money?: number
+          monsters?: Json
+          public_id?: string
+          shards?: number
+          stats?: Json
+          streak_best?: number
+          streak_current?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      saves: {
+        Row: {
+          created_at: string
+          state: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          state: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          state?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_public_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
