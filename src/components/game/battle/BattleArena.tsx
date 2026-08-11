@@ -3,6 +3,7 @@ import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  isSpecialReady,
   switchPlayerFighter,
   takeTurn,
   type Battle,
