@@ -290,14 +290,21 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
   attacker.charge = a.cooldown;
 }
 
-function basicAttack(b: Battle, side: SideId, attacker: Fighter, defenderSide: Side, defSideId: SideId) {
+function basicAttack(
+  b: Battle,
+  side: SideId,
+  attacker: Fighter,
+  defenderSide: Side,
+  defSideId: SideId,
+  mult = 1,
+) {
   const mySide = side === "player" ? b.player : b.foe;
   const defender = defenderSide.fighters[defenderSide.active]!;
   const dealt = applyDamage(
     b,
     defSideId,
     defender,
-    rawDamage(effAtk(attacker, mySide.behavior), effDef(defender, defenderSide.behavior), 1),
+    rawDamage(effAtk(attacker, mySide.behavior), effDef(defender, defenderSide.behavior), mult),
   );
   b.events.push({ id: eid(), kind: "attack", side, text: `${attacker.name} atacou!` });
   b.events.push({
