@@ -14,11 +14,13 @@ import {
   Menu,
   PawPrint,
   ScrollText,
+  Search,
   Settings,
   ShoppingBag,
   Sparkles,
   Trophy,
   User,
+  UserRound,
 } from "lucide-react";
 import { useGame, useHydrated } from "@/hooks/use-game";
 import { moneyPerSecond, userProgress } from "@/lib/game/state";
@@ -39,6 +41,8 @@ const NAV = [
   { to: "/conquistas", label: "Conquistas", icon: Trophy },
   { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
   { to: "/historico", label: "Histórico", icon: ScrollText },
+  { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
+  { to: "/entrar", label: "Conta", icon: UserRound },
   { to: "/perfil", label: "Perfil", icon: User },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
