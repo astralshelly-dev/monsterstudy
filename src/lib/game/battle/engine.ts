@@ -149,9 +149,20 @@ function effDef(f: Fighter, behavior: AiBehavior): number {
   return f.def * (1 + f.defBuff) * bias;
 }
 
+/** turno em que a batalha começa a escalar para nunca ficar infinita */
+export const SUDDEN_DEATH_TURN = 40;
+export const MAX_TURNS = 100;
+
+let escalation = 1;
+
 function rawDamage(atk: number, def: number, mult: number, ignoreDef = false): number {
   const mitig = ignoreDef ? 1 : 1 - def / (def + 60);
-  return Math.max(1, Math.round(atk * mult * mitig * rand(0.92, 1.08)));
+  return Math.max(1, Math.round(atk * mult * mitig * escalation * rand(0.92, 1.08)));
+}
+
+function hpShare(side: Side): number {
+  const max = side.fighters.reduce((a, f) => a + f.maxHp, 0) || 1;
+  return side.fighters.reduce((a, f) => a + f.hp, 0) / max;
 }
 
 function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number): number {
@@ -371,6 +382,7 @@ export function takeTurn(prev: Battle): Battle {
   if (prev.over || prev.awaitingSwitch) return prev;
   const b = clone(prev);
   b.events = [];
+  escalation = b.turnNo > SUDDEN_DEATH_TURN ? 1 + (b.turnNo - SUDDEN_DEATH_TURN) * 0.06 : 1;
   const actor = b.turn;
   const attacker = activeOf(b, actor);
   const defSide = actor === "player" ? b.foe : b.player;
@@ -382,6 +394,22 @@ export function takeTurn(prev: Battle): Battle {
 
   if (defSide.fighters[defSide.active]!.hp > 0) tickBurn(b, defSideId);
   finishTurn(b, actor);
+  if (!b.over && b.turnNo >= MAX_TURNS) {
+    const winner: SideId = hpShare(b.player) >= hpShare(b.foe) ? "player" : "foe";
+    b.over = true;
+    b.winner = winner;
+    b.awaitingSwitch = false;
+    b.events.push({
+      id: eid(),
+      kind: "end",
+      side: winner,
+      text:
+        winner === "player"
+          ? "Tempo esgotado: você venceu com mais vida restante!"
+          : "Tempo esgotado: o adversário terminou com mais vida.",
+    });
+    b.log = [...b.log, b.events[b.events.length - 1]!.text].slice(-60);
+  }
   return b;
 }
 
@@ -394,7 +422,7 @@ export function switchPlayerFighter(prev: Battle, index: number): Battle {
   b.awaitingSwitch = false;
   b.events = [{ id: eid(), kind: "switch", side: "player", text: `Você envia ${f.name}` }];
   b.log = [...b.log, `Você envia ${f.name}`].slice(-60);
-  b.turn = "foe";
-  b.turnNo += 1;
+  // trocar não consome o turno (a IA também troca de graça)
+  b.turn = "player";
   return b;
 }
