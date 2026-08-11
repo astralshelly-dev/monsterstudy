@@ -14,13 +14,16 @@ import {
   Menu,
   PawPrint,
   ScrollText,
+  Search,
   Settings,
   ShoppingBag,
   Sparkles,
   Trophy,
   User,
+  UserRound,
 } from "lucide-react";
 import { useGame, useHydrated } from "@/hooks/use-game";
+import { useCloudSync } from "@/hooks/use-auth";
 import { moneyPerSecond, userProgress } from "@/lib/game/state";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -39,12 +42,16 @@ const NAV = [
   { to: "/conquistas", label: "Conquistas", icon: Trophy },
   { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
   { to: "/historico", label: "Histórico", icon: ScrollText },
+  { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
+  { to: "/entrar", label: "Conta", icon: UserRound },
   { to: "/perfil", label: "Perfil", icon: User },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   useHydrated();
+  useCloudSync();
+
   const state = useGame();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prog = userProgress(state);

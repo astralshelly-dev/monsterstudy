@@ -143,7 +143,7 @@ function BookDetail() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tempo lendo" value={duration(stats.totalSec)} />
         <StatCard label="Páginas lidas" value={num(stats.pages)} />
-        <StatCard label="Velocidade média" value={`${num(stats.avgSpeed, 2)} pág/min`} />
+        <StatCard label="Ritmo médio" value={`${num(stats.avgMinPerPage, 2)} min/pág`} />
         <StatCard label="Sessões" value={num(stats.sessions.length)} />
       </div>
 
@@ -163,7 +163,7 @@ function BookDetail() {
                   </div>
                   <p className="mt-1 text-sm">
                     Página {s.startPage} → {s.endPage} · {s.pagesRead} páginas ·{" "}
-                    {num(s.pagesPerMin, 2)} pág/min
+                    {num(s.minPerPage, 2)} min/pág
                   </p>
                   {s.notes && <p className="mt-1 text-sm italic text-muted-foreground">"{s.notes}"</p>}
                   {def && s.reward && (

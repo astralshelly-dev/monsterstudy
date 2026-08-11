@@ -191,55 +191,55 @@ export const TIMERS: TimerConfig[] = [
   {
     minutes: 60,
     label: "1 hora",
-    price: 2500,
+    price: 900,
     weights: { incomum: 40, raro: 42, super_raro: 18 },
   },
   {
     minutes: 90,
     label: "1h30",
-    price: 8000,
+    price: 2600,
     weights: { raro: 52, super_raro: 36, epico: 12 },
   },
   {
     minutes: 120,
     label: "2 horas",
-    price: 20000,
+    price: 6000,
     weights: { raro: 34, super_raro: 44, epico: 20, lendario: 2 },
   },
   {
     minutes: 150,
     label: "2h30",
-    price: 45000,
+    price: 12000,
     weights: { super_raro: 48, epico: 40, lendario: 11, mitico: 1 },
   },
   {
     minutes: 180,
     label: "3 horas",
-    price: 90000,
+    price: 22000,
     weights: { super_raro: 32, epico: 48, lendario: 18, mitico: 2 },
   },
   {
     minutes: 210,
     label: "3h30",
-    price: 160000,
+    price: 36000,
     weights: { epico: 52, lendario: 40, mitico: 7.5, divino: 0.5 },
   },
   {
     minutes: 240,
     label: "4 horas",
-    price: 280000,
+    price: 58000,
     weights: { epico: 40, lendario: 48, mitico: 11, divino: 1 },
   },
   {
     minutes: 270,
     label: "4h30",
-    price: 450000,
+    price: 88000,
     weights: { epico: 26, lendario: 54, mitico: 18, divino: 2 },
   },
   {
     minutes: 300,
     label: "5 horas",
-    price: 750000,
+    price: 140000,
     weights: { lendario: 58, mitico: 38, divino: 4 },
   },
 ];
@@ -252,6 +252,15 @@ export const EARLY_END_PENALTY = {
   rareWeightFactor: 0.08,
   xpFactor: 0.5,
 };
+
+// ------------------------------------------------------------
+// Renda offline
+// ------------------------------------------------------------
+/** fração da renda passiva que continua rendendo com o app fechado */
+export const OFFLINE_INCOME_BASE = 0.5;
+/** limite de horas de renda offline acumulada */
+export const OFFLINE_INCOME_MAX_HOURS = 12;
+
 
 // ------------------------------------------------------------
 // XP / Níveis
@@ -306,7 +315,9 @@ export type UpgradeId =
   | "golden_wallet"
   | "knowledge_boost"
   | "streak_booster"
-  | "monster_den";
+  | "monster_den"
+  | "dream_crystal";
+
 
 export type UpgradeConfig = {
   id: UpgradeId;
@@ -377,7 +388,21 @@ export const UPGRADES: Record<UpgradeId, UpgradeConfig> = {
     effectPerLevel: 1,
     effectLabel: (l) => `${BASE_INCOME_SLOTS + l} monstros gerando renda`,
   },
+  dream_crystal: {
+    id: "dream_crystal",
+    name: "Cristal dos Sonhos",
+    icon: "🔮",
+    description: `Seus monstros trabalham melhor com o app fechado (base ${Math.round(
+      OFFLINE_INCOME_BASE * 100,
+    )}% da renda).`,
+    maxLevel: 5,
+    basePrice: 1800,
+    priceGrowth: 1.75,
+    effectPerLevel: 0.1,
+    effectLabel: (l) => `${Math.round((OFFLINE_INCOME_BASE + l * 0.1) * 100)}% de renda offline`,
+  },
 };
+
 
 export function upgradePrice(id: UpgradeId, currentLevel: number): number {
   const u = UPGRADES[id];

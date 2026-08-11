@@ -42,6 +42,8 @@ export type StudySession = {
   durationSec: number;
   plannedSec: number;
   earlyEnd: boolean;
+  /** quantos cronômetros foram emendados nesta sessão */
+  segments?: number | undefined;
   subject: string;
   topic?: string | undefined;
   goal?: string | undefined;
@@ -59,14 +61,18 @@ export type ReadingSession = {
   durationSec: number;
   plannedSec: number;
   earlyEnd: boolean;
+  /** quantos cronômetros foram emendados nesta sessão */
+  segments?: number | undefined;
   bookId: string;
   startPage: number;
   endPage: number;
   pagesRead: number;
-  pagesPerMin: number;
+  /** minutos gastos por página */
+  minPerPage: number;
   notes?: string | undefined;
   reward?: Reward | undefined;
 };
+
 
 export type FreeSession = {
   id: string;
@@ -107,8 +113,9 @@ export type ActiveTimer = {
     earlyEnd?: boolean | undefined;
     /** fração do tempo planejado cumprida ao encerrar antes do fim (0-1) */
     completion?: number | undefined;
+    /** id da sessão que este cronômetro continua (sessões emendadas) */
+    continueSessionId?: string | undefined;
   };
-
 };
 
 export type GameState = {
@@ -116,6 +123,10 @@ export type GameState = {
   profile: {
     name: string;
     avatar: string;
+    /** monstro usado como foto de perfil (tem prioridade sobre avatar) */
+    avatarMonsterId?: string | null | undefined;
+    /** id público para busca de perfil por outros jogadores */
+    publicId?: string | undefined;
     createdAt: string;
     xp: number;
     level: number;
@@ -124,6 +135,7 @@ export type GameState = {
   shards: number;
   lastSeen: number;
   monsters: Record<string, OwnedMonster>;
+
   activeMonsterId: string | null;
   /** monstros escolhidos para gerar renda passiva (limitado pelos slots) */
   incomeMonsterIds: string[];
@@ -145,5 +157,8 @@ export type GameState = {
   pendingReward: Reward | null;
   /** códigos promocionais já resgatados */
   redeemedCodes: string[];
+  /** última sessão salva (base para "continuar sessão") */
+  lastSessionId?: string | null | undefined;
 };
+
 
