@@ -42,6 +42,8 @@ export type StudySession = {
   durationSec: number;
   plannedSec: number;
   earlyEnd: boolean;
+  /** quantos cronômetros foram emendados nesta sessão */
+  segments?: number | undefined;
   subject: string;
   topic?: string | undefined;
   goal?: string | undefined;
@@ -59,14 +61,18 @@ export type ReadingSession = {
   durationSec: number;
   plannedSec: number;
   earlyEnd: boolean;
+  /** quantos cronômetros foram emendados nesta sessão */
+  segments?: number | undefined;
   bookId: string;
   startPage: number;
   endPage: number;
   pagesRead: number;
-  pagesPerMin: number;
+  /** minutos gastos por página */
+  minPerPage: number;
   notes?: string | undefined;
   reward?: Reward | undefined;
 };
+
 
 export type FreeSession = {
   id: string;
