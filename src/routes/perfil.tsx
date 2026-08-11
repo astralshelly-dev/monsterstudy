@@ -112,13 +112,13 @@ function Profile() {
         <p className="text-sm text-muted-foreground">
           Qualquer criatura que você já capturou pode ser sua foto de perfil.
         </p>
-        {state.monsters.length === 0 ? (
+        {Object.keys(state.monsters).length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Você ainda não capturou monstros. Complete uma sessão para começar.
           </p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {state.monsters.map((m) => {
+            {Object.values(state.monsters).map((m) => {
               const def = MONSTERS_BY_ID[m.id];
               if (!def) return null;
               return (
