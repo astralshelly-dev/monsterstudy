@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { MONSTERS_BY_ID } from "./monsters";
 import { RARITY_ORDER } from "./config";
+import { leagueOf } from "./battle/config";
 import { getSnapshot, setState, totals } from "./state";
 import type { GameState } from "./types";
 
@@ -25,7 +26,15 @@ export type PublicProfile = {
     discovered?: number;
     createdAt?: string;
     byRarity?: Record<string, number>;
+    /** batalhas */
+    trophies?: number;
+    bestTrophies?: number;
+    wins?: number;
+    losses?: number;
+    battles?: number;
+    league?: string;
   };
+
   updatedAt: string;
 };
 
@@ -51,9 +60,16 @@ function summarize(s: GameState) {
       discovered: t.discovered,
       createdAt: s.profile.createdAt,
       byRarity,
+      trophies: s.battle?.trophies ?? 0,
+      bestTrophies: s.battle?.bestTrophies ?? 0,
+      wins: s.battle?.wins ?? 0,
+      losses: s.battle?.losses ?? 0,
+      battles: (s.battle?.wins ?? 0) + (s.battle?.losses ?? 0),
+      league: leagueOf(s.battle?.trophies ?? 0).id,
     },
   };
 }
+
 
 /** envia o save completo + o perfil público para a nuvem */
 export async function pushToCloud(userId: string): Promise<void> {
@@ -153,6 +169,19 @@ export async function topProfiles(limit = 10): Promise<PublicProfile[]> {
     .select("*")
     .order("level", { ascending: false })
     .order("xp", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((r) => mapProfile(r as unknown as Record<string, unknown>));
+}
+
+/**
+ * Lista perfis para o matchmaking aleatório.
+ * A seleção aleatória final é feita em memória (ver battle/matchmaking.ts).
+ */
+export async function randomProfiles(limit = 100): Promise<PublicProfile[]> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("updated_at", { ascending: false })
     .limit(limit);
   return (data ?? []).map((r) => mapProfile(r as unknown as Record<string, unknown>));
 }

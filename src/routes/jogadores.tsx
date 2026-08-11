@@ -9,6 +9,7 @@ import { ProfileAvatar } from "@/components/game/Avatar";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
+import { leagueOf, leagueProgress } from "@/lib/game/battle/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { duration, money, num } from "@/lib/format";
@@ -170,6 +171,33 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         <StatCard label="Melhor sequência" value={`🔥 ${p.streakBest} dias`} />
         <StatCard label="XP" value={num(p.xp)} />
       </div>
+
+      <section className="panel space-y-3 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-semibold">⚔️ Batalhas</h2>
+          <span className="font-display text-xl font-bold text-gold">
+            {num(p.stats.trophies ?? 0)} 🏆
+          </span>
+        </div>
+        <p className="text-sm">
+          {leagueOf(p.stats.trophies ?? 0).icon} Liga {leagueOf(p.stats.trophies ?? 0).name}
+        </p>
+        <div className="h-2 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+            style={{ width: `${leagueProgress(p.stats.trophies ?? 0).pct}%` }}
+          />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Vitórias" value={num(p.stats.wins ?? 0)} />
+          <StatCard label="Derrotas" value={num(p.stats.losses ?? 0)} />
+          <StatCard
+            label="Total de batalhas"
+            value={num(p.stats.battles ?? (p.stats.wins ?? 0) + (p.stats.losses ?? 0))}
+          />
+          <StatCard label="Maior troféus" value={num(p.stats.bestTrophies ?? 0)} />
+        </div>
+      </section>
 
       {p.stats.byRarity && (
         <div className="panel flex flex-wrap gap-2 p-4">

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BatalhasRouteImport } from './routes/batalhas'
 import { Route as CodigosRouteImport } from './routes/codigos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ConquistasRouteImport } from './routes/conquistas'
@@ -30,6 +31,11 @@ import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookI
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BatalhasRoute = BatalhasRouteImport.update({
+  id: '/batalhas',
+  path: '/batalhas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CodigosRoute = CodigosRouteImport.update({
@@ -115,6 +121,7 @@ const BibliotecaBookIdRoute = BibliotecaBookIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/conquistas': typeof ConquistasRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/conquistas': typeof ConquistasRoute
@@ -154,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/conquistas': typeof ConquistasRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/batalhas'
     | '/codigos'
     | '/configuracoes'
     | '/conquistas'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/batalhas'
     | '/codigos'
     | '/configuracoes'
     | '/conquistas'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/batalhas'
     | '/codigos'
     | '/configuracoes'
     | '/conquistas'
@@ -233,6 +245,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BatalhasRoute: typeof BatalhasRoute
   CodigosRoute: typeof CodigosRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   ConquistasRoute: typeof ConquistasRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/batalhas': {
+      id: '/batalhas'
+      path: '/batalhas'
+      fullPath: '/batalhas'
+      preLoaderRoute: typeof BatalhasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/codigos': {
@@ -377,6 +397,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BatalhasRoute: BatalhasRoute,
   CodigosRoute: CodigosRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   ConquistasRoute: ConquistasRoute,
@@ -397,13 +418,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

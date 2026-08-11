@@ -118,6 +118,35 @@ export type ActiveTimer = {
   };
 };
 
+export type BattleTeam = { monsterId: string; level: number };
+
+export type BattleRecord = {
+  id: string;
+  at: string;
+  mode: "ranked" | "training";
+  result: "win" | "loss";
+  opponentName: string;
+  opponentId?: string | null | undefined;
+  opponentSource: "player" | "bot";
+  trophiesDelta: number;
+  trophiesBefore: number;
+  trophiesAfter: number;
+  league: string;
+  turns: number;
+  team: string[];
+  opponentTeam: string[];
+};
+
+export type BattleData = {
+  trophies: number;
+  bestTrophies: number;
+  wins: number;
+  losses: number;
+  /** equipe salva do jogador (ids de monstros) */
+  team: string[];
+  history: BattleRecord[];
+};
+
 export type GameState = {
   version: number;
   profile: {
@@ -157,6 +186,8 @@ export type GameState = {
   pendingReward: Reward | null;
   /** códigos promocionais já resgatados */
   redeemedCodes: string[];
+  /** progresso do sistema de batalhas */
+  battle: BattleData;
   /** última sessão salva (base para "continuar sessão") */
   lastSessionId?: string | null | undefined;
 };
