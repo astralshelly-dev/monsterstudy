@@ -134,7 +134,11 @@ export function SessionShareButton({
 
   const reward = session.kind === "free" ? null : session.reward;
   const def = reward?.monsterId ? MONSTERS_BY_ID[reward.monsterId] : null;
-  const book = session.bookId ? state.books.find((b) => b.id === session.bookId) : null;
+  // em sessões de estudo mostramos o assunto informado, nunca o livro
+  const book =
+    session.kind !== "study" && session.bookId
+      ? state.books.find((b) => b.id === session.bookId)
+      : null;
   const isRead = session.kind === "read" || (session.kind === "free" && session.mode === "read");
 
   const title =
