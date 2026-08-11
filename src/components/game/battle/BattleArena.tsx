@@ -136,18 +136,41 @@ export function BattleArena({
         </div>
       ) : (
         !battle.over && (
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              size="lg"
-              disabled={battle.turn !== "player"}
-              onClick={() => digest(takeTurn(battle))}
-            >
-              ⚔️ Atacar
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              {player.ability.icon} {player.ability.name} dispara automaticamente em{" "}
-              {Math.max(1, player.charge)} turno(s) — {player.ability.description}
-            </p>
+          <div className="panel space-y-3 p-4">
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="font-display font-semibold">
+                {player.ability.icon} {player.ability.name}
+              </span>
+              <span className="tabular-nums text-muted-foreground">
+                {specialReady ? "Pronto!" : `${Math.max(1, player.charge)} turno(s)`}
+              </span>
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-500",
+                  specialReady ? "bg-gold animate-pulse" : "bg-primary",
+                )}
+                style={{ width: `${specialPct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">{player.ability.description}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button size="lg" disabled={battle.turn !== "player"} onClick={() => digest(takeTurn(battle))}>
+                ⚔️ Atacar
+              </Button>
+              <Button
+                size="lg"
+                variant="secondary"
+                disabled={battle.turn !== "player" || !specialReady}
+                onClick={() => digest(takeTurn(battle, { useSpecial: true }))}
+              >
+                {player.ability.icon} Usar especial
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                O especial soma o ataque normal com 50% de dano + {player.ability.name}.
+              </p>
+            </div>
           </div>
         )
       )}
