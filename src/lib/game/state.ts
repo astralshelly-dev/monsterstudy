@@ -576,28 +576,38 @@ export function saveStudySession(input: {
 }): Reward {
   const minutes = Math.max(1, Math.round((input.timer.durationSec ?? input.durationSec) / 60));
   const reward = buildReward(minutes, input.earlyEnd, 0, input.timer.meta.completion ?? 1);
+  const continueId = input.timer.meta.continueSessionId;
+  const previous = continueId
+    ? (state.sessions.find((s) => s.id === continueId && s.kind === "study") as
+        | StudySession
+        | undefined)
+    : undefined;
   const session: StudySession = {
-    id: uid(),
+    id: previous?.id ?? uid(),
     kind: "study",
-    startedAt: new Date(input.timer.startedAt).toISOString(),
+    startedAt: previous?.startedAt ?? new Date(input.timer.startedAt).toISOString(),
     endedAt: new Date().toISOString(),
-    durationSec: input.durationSec,
-    plannedSec: input.timer.durationSec ?? input.durationSec,
+    durationSec: (previous?.durationSec ?? 0) + input.durationSec,
+    plannedSec: (previous?.plannedSec ?? 0) + (input.timer.durationSec ?? input.durationSec),
     earlyEnd: input.earlyEnd,
-    subject: input.timer.meta.subject ?? "Estudo",
-    topic: input.timer.meta.topic,
-    goal: input.timer.meta.goal,
-    bookId: input.timer.meta.bookId,
-    learned: input.learned,
-    notes: input.notes,
+    segments: (previous?.segments ?? (previous ? 1 : 0)) + 1,
+    subject: previous?.subject ?? input.timer.meta.subject ?? "Estudo",
+    topic: input.timer.meta.topic ?? previous?.topic,
+    goal: input.timer.meta.goal ?? previous?.goal,
+    bookId: input.timer.meta.bookId ?? previous?.bookId,
+    learned: [previous?.learned, input.learned].filter(Boolean).join(" · ") || undefined,
+    notes: [previous?.notes, input.notes].filter(Boolean).join(" · ") || undefined,
     reward,
   };
   setState((s) => {
-    s.sessions = [session, ...s.sessions];
+    s.sessions = previous
+      ? [session, ...s.sessions.filter((x) => x.id !== previous.id)]
+      : [session, ...s.sessions];
     markActivity(s, "study", input.durationSec);
     applyReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
+    s.lastSessionId = session.id;
   });
   return reward;
 }
@@ -619,24 +629,35 @@ export function saveReadingSession(input: {
     input.timer.meta.completion ?? 1,
   );
   const bookId = input.timer.meta.bookId!;
+  const continueId = input.timer.meta.continueSessionId;
+  const previous = continueId
+    ? (state.sessions.find((s) => s.id === continueId && s.kind === "read" && s.bookId === bookId) as
+        | ReadingSession
+        | undefined)
+    : undefined;
+  const totalDuration = (previous?.durationSec ?? 0) + input.durationSec;
+  const totalPages = (previous?.pagesRead ?? 0) + pagesRead;
   const session: ReadingSession = {
-    id: uid(),
+    id: previous?.id ?? uid(),
     kind: "read",
-    startedAt: new Date(input.timer.startedAt).toISOString(),
+    startedAt: previous?.startedAt ?? new Date(input.timer.startedAt).toISOString(),
     endedAt: new Date().toISOString(),
-    durationSec: input.durationSec,
-    plannedSec: input.timer.durationSec ?? input.durationSec,
+    durationSec: totalDuration,
+    plannedSec: (previous?.plannedSec ?? 0) + (input.timer.durationSec ?? input.durationSec),
     earlyEnd: input.earlyEnd,
+    segments: (previous?.segments ?? (previous ? 1 : 0)) + 1,
     bookId,
-    startPage,
+    startPage: previous?.startPage ?? startPage,
     endPage: input.endPage,
-    pagesRead,
-    pagesPerMin: Math.round((pagesRead / Math.max(1, input.durationSec / 60)) * 100) / 100,
-    notes: input.notes,
+    pagesRead: totalPages,
+    minPerPage: totalPages > 0 ? Math.round((totalDuration / 60 / totalPages) * 100) / 100 : 0,
+    notes: [previous?.notes, input.notes].filter(Boolean).join(" · ") || undefined,
     reward,
   };
   setState((s) => {
-    s.sessions = [session, ...s.sessions];
+    s.sessions = previous
+      ? [session, ...s.sessions.filter((x) => x.id !== previous.id)]
+      : [session, ...s.sessions];
     s.books = s.books.map((b) =>
       b.id === bookId
         ? {
@@ -651,9 +672,49 @@ export function saveReadingSession(input: {
     applyReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
+    s.lastSessionId = session.id;
   });
   return reward;
 }
+
+/**
+ * Continua a última sessão: inicia um novo cronômetro que será emendado
+ * na sessão anterior (aparece como uma única sessão maior no histórico).
+ */
+export function continueSession(minutes: number, extra?: { startPage?: number }) {
+  const id = state.lastSessionId;
+  const prev = id ? state.sessions.find((s) => s.id === id) : undefined;
+  if (!prev || prev.kind === "free") return false;
+  startTimer({
+    kind: prev.kind,
+    durationSec: minutes * 60,
+    meta:
+      prev.kind === "read"
+        ? {
+            bookId: prev.bookId,
+            startPage: extra?.startPage ?? prev.endPage,
+            continueSessionId: prev.id,
+          }
+        : {
+            subject: prev.subject,
+            topic: prev.topic,
+            goal: prev.goal,
+            bookId: prev.bookId,
+            continueSessionId: prev.id,
+          },
+  });
+  return true;
+}
+
+/** a última sessão salva pode receber continuação? */
+export function continuableSession(s: GameState = state): StudySession | ReadingSession | null {
+  const id = s.lastSessionId;
+  if (!id) return null;
+  const found = s.sessions.find((x) => x.id === id);
+  if (!found || found.kind === "free") return null;
+  return found;
+}
+
 
 /**
  * XP extra por metas de tempo no Treino Livre.
