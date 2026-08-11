@@ -2,7 +2,8 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
-import { monsterProgress, totals, updateProfile, userProgress } from "@/lib/game/state";
+import { battleData, monsterProgress, totals, updateProfile, userProgress } from "@/lib/game/state";
+import { leagueProgress } from "@/lib/game/battle/config";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ function Profile() {
   const up = userProgress(state);
   const active = state.activeMonsterId ? monsterProgress(state.activeMonsterId, state) : null;
   const [name, setName] = useState(state.profile.name);
+  const bd = battleData(state);
+  const lp = leagueProgress(bd.trophies);
 
   return (
     <div className="space-y-6">
@@ -172,6 +175,35 @@ function Profile() {
         <StatCard label="Dinheiro" value={money(state.money)} />
         <StatCard label="Melhor streak" value={`🔥 ${state.streak.best} dias`} />
       </div>
+
+      <section className="panel space-y-4 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-semibold">⚔️ Batalhas</h2>
+          <span className="font-display text-xl font-bold text-gold">{num(bd.trophies)} 🏆</span>
+        </div>
+        <div>
+          <p className="text-sm">
+            {lp.league.icon} Liga {lp.league.name}
+          </p>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+              style={{ width: `${lp.pct}%` }}
+            />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {lp.next
+              ? `Faltam ${num(lp.missing)} troféus para ${lp.next.name}`
+              : "Liga máxima alcançada."}
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label="Vitórias" value={num(bd.wins)} />
+          <StatCard label="Derrotas" value={num(bd.losses)} />
+          <StatCard label="Total de batalhas" value={num(bd.wins + bd.losses)} />
+          <StatCard label="Maior troféus" value={num(bd.bestTrophies)} />
+        </div>
+      </section>
     </div>
   );
 }

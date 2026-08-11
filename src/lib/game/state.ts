@@ -27,6 +27,8 @@ import {
 } from "./config";
 import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
+import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
+import type { BattleRecord } from "./types";
 import type {
   ActiveTimer,
   Book,
@@ -85,6 +87,7 @@ export function defaultState(): GameState {
     timer: null,
     pendingReward: null,
     redeemedCodes: [],
+    battle: { trophies: 0, bestTrophies: 0, wins: 0, losses: 0, team: [], history: [] },
   };
 }
 
@@ -153,6 +156,7 @@ export function hydrate() {
         ...parsed,
         profile: { ...defaultState().profile, ...parsed.profile },
         upgrades: { ...defaultState().upgrades, ...parsed.upgrades },
+        battle: { ...defaultState().battle, ...(parsed.battle ?? {}) },
       };
     }
   } catch {
@@ -1011,3 +1015,86 @@ function checkAchievements() {
 export function allSessions(): Session[] {
   return state.sessions;
 }
+
+
+// ------------------------------------------------------------
+// Batalhas
+// ------------------------------------------------------------
+export function battleData(s: GameState = state) {
+  return s.battle ?? defaultState().battle;
+}
+
+/** equipe salva do jogador, filtrada pelos monstros realmente possuídos */
+export function battleTeamIds(s: GameState = state): string[] {
+  return battleData(s)
+    .team.filter((id) => s.monsters[id] && MONSTERS_BY_ID[id])
+    .slice(0, TEAM_SIZE);
+}
+
+export function setBattleTeam(ids: string[]) {
+  setState((s) => {
+    s.battle = { ...battleData(s), team: ids.slice(0, TEAM_SIZE) };
+  });
+}
+
+
+
+/** troféus sorteados para uma partida ranqueada (nunca deixa ficar abaixo de 0) */
+export function rollTrophyDelta(result: "win" | "loss", trophies: number): number {
+  if (result === "win") return randInt(TROPHY_WIN.min, TROPHY_WIN.max);
+  const loss = randInt(TROPHY_LOSS.min, TROPHY_LOSS.max);
+  return -Math.min(loss, trophies);
+}
+
+export type BattleOutcome = {
+  record: BattleRecord;
+  trophiesBefore: number;
+  trophiesAfter: number;
+  delta: number;
+};
+
+/** grava o resultado da batalha e atualiza troféus/estatísticas do jogador */
+export function recordBattle(input: {
+  mode: "ranked" | "training";
+  result: "win" | "loss";
+  opponentName: string;
+  opponentId?: string | null | undefined;
+  opponentSource: "player" | "bot";
+  turns: number;
+  team: string[];
+  opponentTeam: string[];
+}): BattleOutcome {
+  const before = battleData().trophies;
+  const delta = input.mode === "ranked" ? rollTrophyDelta(input.result, before) : 0;
+  const after = Math.max(0, before + delta);
+  const record: BattleRecord = {
+    id: uid(),
+    at: new Date().toISOString(),
+    mode: input.mode,
+    result: input.result,
+    opponentName: input.opponentName,
+    opponentId: input.opponentId ?? null,
+    opponentSource: input.opponentSource,
+    trophiesDelta: delta,
+    trophiesBefore: before,
+    trophiesAfter: after,
+    league: leagueOf(after).id,
+    turns: input.turns,
+    team: input.team,
+    opponentTeam: input.opponentTeam,
+  };
+  setState((s) => {
+    const b = battleData(s);
+    s.battle = {
+      ...b,
+      trophies: after,
+      bestTrophies: Math.max(b.bestTrophies, after),
+      wins: b.wins + (input.mode === "ranked" && input.result === "win" ? 1 : 0),
+      losses: b.losses + (input.mode === "ranked" && input.result === "loss" ? 1 : 0),
+      history: [record, ...b.history].slice(0, 200),
+    };
+  });
+  return { record, trophiesBefore: before, trophiesAfter: after, delta };
+}
+
+export const BATTLE_LEAGUES = LEAGUES;
