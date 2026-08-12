@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { duration, num } from "@/lib/format";
+import { duration, num, minSec } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BookCover } from "@/components/game/BookCover";
 
@@ -202,7 +202,7 @@ function ReadRunning() {
               </div>
               <div className="rounded-xl bg-secondary/60 px-3 py-2">
                 <p className="text-[10px] uppercase text-muted-foreground">Ritmo</p>
-                <p className="font-semibold tabular-nums">{num(minPerPage, 2)} min/pág</p>
+                <p className="font-semibold tabular-nums">{minSec(minPerPage)} min/pág</p>
               </div>
             </div>
           )}
@@ -275,7 +275,7 @@ function ReadCompletion() {
         {pages >= 0 && typeof endPage === "number" && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Info label="Páginas lidas" value={`${pages}`} />
-            <Info label="Ritmo" value={`${num(minPerPage, 2)} min/pág`} />
+            <Info label="Ritmo" value={`${minSec(minPerPage)} min/pág`} />
             <Info label="Tempo total" value={duration(durationSec)} />
             <Info label="Do livro" value={`${num(pct, 1)}%`} />
           </div>

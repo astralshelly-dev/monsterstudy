@@ -8,7 +8,7 @@ import { EmptyState, PageHeader } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SessionShareButton } from "@/components/game/ShareCard";
-import { dateTime, duration, money, num } from "@/lib/format";
+import { dateTime, duration, money, num, minSec } from "@/lib/format";
 import type { Session } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 
@@ -173,7 +173,7 @@ function History() {
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {duration(s.durationSec)}
-                    {s.kind === "read" && ` · ${s.pagesRead} páginas · ${num(s.minPerPage, 2)} min/pág`}
+                    {s.kind === "read" && ` · ${s.pagesRead} páginas · ${minSec(s.minPerPage)} min/pág`}
                     {s.kind === "study" && s.topic ? ` · ${s.topic}` : ""}
                     {earlyEnd ? " · encerrada antes do fim" : ""}
                   </p>
@@ -266,7 +266,7 @@ function SessionDetails({ session: s }: { session: Session }) {
         {s.kind === "read" && (
           <>
             <Row label="Páginas" value={`${s.startPage} → ${s.endPage} (${s.pagesRead})`} />
-            <Row label="Ritmo" value={`${num(s.minPerPage, 2)} min/pág`} />
+            <Row label="Ritmo" value={`${minSec(s.minPerPage)} min/pág`} />
           </>
         )}
         {s.kind === "free" && s.mode === "read" && s.pagesRead !== undefined && (

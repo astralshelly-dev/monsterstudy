@@ -43,3 +43,11 @@ export function shortDate(key: string): string {
   const [, m, d] = key.split("-");
   return `${d}/${m}`;
 }
+
+/** minutos decimais → "m:ss" (ex.: 2.5 → "2:30") */
+export function minSec(minutes: number): string {
+  const total = Math.max(0, Math.round(minutes * 60));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}

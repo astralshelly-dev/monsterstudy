@@ -8,7 +8,7 @@ import { BookCover } from "@/components/game/BookCover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { dateTime, duration, num } from "@/lib/format";
+import { dateTime, duration, num, minSec } from "@/lib/format";
 import {
   Select,
   SelectContent,
@@ -143,7 +143,7 @@ function BookDetail() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tempo lendo" value={duration(stats.totalSec)} />
         <StatCard label="Páginas lidas" value={num(stats.pages)} />
-        <StatCard label="Ritmo médio" value={`${num(stats.avgMinPerPage, 2)} min/pág`} />
+        <StatCard label="Ritmo médio" value={`${minSec(stats.avgMinPerPage)} min/pág`} />
         <StatCard label="Sessões" value={num(stats.sessions.length)} />
       </div>
 
@@ -163,7 +163,7 @@ function BookDetail() {
                   </div>
                   <p className="mt-1 text-sm">
                     Página {s.startPage} → {s.endPage} · {s.pagesRead} páginas ·{" "}
-                    {num(s.minPerPage, 2)} min/pág
+                    {minSec(s.minPerPage)} min/pág
                   </p>
                   {s.notes && <p className="mt-1 text-sm italic text-muted-foreground">"{s.notes}"</p>}
                   {def && s.reward && (
