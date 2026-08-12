@@ -10,6 +10,7 @@ import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { money, num } from "@/lib/format";
+import { abilityFor, battleStats } from "@/lib/game/battle/config";
 import { monsterProgress, setActiveMonster } from "@/lib/game/state";
 import { cn } from "@/lib/utils";
 
@@ -163,6 +164,8 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
               {prog ? def.description : "Continue estudando para descobrir esta criatura."}
             </p>
 
+            <BaseStats id={def.id} rarity={def.rarity} />
+
             {prog && (
               <>
                 <div className="grid grid-cols-3 gap-2 text-sm">
@@ -197,6 +200,36 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BaseStats({ id, rarity }: { id: string; rarity: keyof typeof RARITIES }) {
+  const s = battleStats(rarity, 1);
+  const ab = abilityFor(id);
+  return (
+    <div className="space-y-2 rounded-2xl bg-secondary/40 p-3 text-left">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        Atributos base (nível 1)
+      </p>
+      <div className="grid grid-cols-4 gap-2 text-sm">
+        <Cell label="Vida" value={num(s.maxHp)} />
+        <Cell label="Ataque" value={num(s.atk)} />
+        <Cell label="Defesa" value={num(s.def)} />
+        <Cell label="Renda/s" value={money(RARITIES[rarity].moneyPerSec)} />
+      </div>
+      <div className="rounded-xl bg-background/60 px-3 py-2">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          Habilidade especial
+        </p>
+        <p className="font-display text-sm font-semibold">
+          {ab.icon} {ab.name}
+        </p>
+        <p className="text-xs text-muted-foreground">{ab.description}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Carrega em {ab.cooldown} turnos · XP x{RARITIES[rarity].xpMultiplier}
+        </p>
+      </div>
+    </div>
   );
 }
 

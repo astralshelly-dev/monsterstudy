@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { applyOpponentTrophies } from "@/lib/battle.functions";
 import { createFileRoute } from "@tanstack/react-router";
 import { Swords } from "lucide-react";
 import { toast } from "sonner";
@@ -58,6 +60,8 @@ function BattlesPage() {
   const { user, publicId } = useCloudSync();
   const bd = battleData(state);
   const prog = leagueProgress(bd.trophies);
+  const applyOpponentElo = useServerFn(applyOpponentTrophies);
+
 
   const [phase, setPhase] = useState<Phase>("home");
   const [mode, setMode] = useState<Mode>("ranked");
@@ -151,6 +155,12 @@ function BattlesPage() {
     });
     setOutcome({ ...out, result });
     setPhase("result");
+    // batalha assíncrona: o oponente real recebe 70% do efeito invertido
+    if (mode === "ranked" && opponent.source === "player" && opponent.publicId && out.delta !== 0) {
+      void applyOpponentElo({
+        data: { publicId: opponent.publicId, playerDelta: out.delta },
+      }).catch(() => undefined);
+    }
   }
 
   // ---------------- fases ----------------

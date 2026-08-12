@@ -23,8 +23,9 @@ export function useHydrated() {
     hydrate();
     const offline = takeOfflineEarnings();
     if (offline) {
-      toast.success("Seus monstros trabalharam enquanto você esteve fora", {
-        description: `+${fmtMoney(offline.amount)} em ${duration(offline.seconds)}`,
+      toast.success("Que bom te ver de volta, caçador!", {
+        description: `Seus monstros trabalharam por ${duration(offline.seconds)} e juntaram +${fmtMoney(offline.amount)} para você. Bora estudar?`,
+        duration: 8000,
       });
     }
   }, []);
