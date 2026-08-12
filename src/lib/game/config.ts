@@ -259,7 +259,7 @@ export const EARLY_END_PENALTY = {
 /** fração da renda passiva que continua rendendo com o app fechado */
 export const OFFLINE_INCOME_BASE = 0.5;
 /** limite de horas de renda offline acumulada */
-export const OFFLINE_INCOME_MAX_HOURS = 12;
+export const OFFLINE_INCOME_MAX_HOURS = 24;
 
 
 // ------------------------------------------------------------

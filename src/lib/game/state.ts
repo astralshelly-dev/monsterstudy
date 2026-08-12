@@ -172,7 +172,7 @@ export function hydrate() {
   // rendimento offline (fração da renda normal, ampliada pelo Cristal dos Sonhos)
   const elapsed = Math.max(0, Math.floor((Date.now() - state.lastSeen) / 1000));
   const rate = moneyPerSecond(state) * offlineIncomeFactor(state);
-  if (elapsed > 60 && rate > 0) {
+  if (elapsed >= 60 && rate > 0) {
     const capped = Math.min(elapsed, 60 * 60 * OFFLINE_INCOME_MAX_HOURS);
     offlineEarnings = { amount: rate * capped, seconds: capped };
     state.money += rate * capped;
@@ -886,11 +886,14 @@ export function clearPendingReward() {
 export function tickMoney(seconds: number) {
   const rate = moneyPerSecond();
   if (rate <= 0) {
-    state.lastSeen = Date.now();
+    state = { ...state, lastSeen: Date.now() };
+    persist();
+    emit();
     return;
   }
-  state.money += rate * seconds;
-  state.lastSeen = Date.now();
+  // novo objeto: o useSyncExternalStore precisa de nova referência para
+  // atualizar a tela a cada segundo
+  state = { ...state, money: state.money + rate * seconds, lastSeen: Date.now() };
   persist();
   emit();
 }
