@@ -19,6 +19,7 @@ import {
   UPGRADES,
   XP,
   monsterXpForLevel,
+  MONSTER_MAX_LEVEL,
   upgradePrice,
   userXpForLevel,
   type RarityId,
