@@ -4,7 +4,7 @@
 // ============================================================
 import { MONSTERS_BY_ID } from "../monsters";
 import type { RarityId } from "../config";
-import { abilityFor, battleStats, type Ability } from "./config";
+import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
 
@@ -197,9 +197,11 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
   const atk = effAtk(attacker, mySide.behavior);
   const dfn = effDef(defender, defenderSide.behavior);
   const e = a.effect;
+  /** o nível do monstro amplifica todo o efeito da habilidade */
+  const k = abilityScale(attacker.level);
 
   const hit = (mult: number, ignoreDef = false) => {
-    const dealt = applyDamage(b, defSideId, defender, rawDamage(atk, dfn, mult, ignoreDef));
+    const dealt = applyDamage(b, defSideId, defender, rawDamage(atk, dfn, mult * k, ignoreDef));
     b.events.push({
       id: eid(),
       kind: "damage",
@@ -225,14 +227,14 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
     }
     case "drain": {
       const dealt = hit(e.mult);
-      const heal = Math.round(dealt * e.healPct);
+      const heal = Math.round(dealt * e.healPct * k);
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
       b.events.push({ id: eid(), kind: "heal", side, text: `${attacker.name} recupera ${heal}`, heal });
       break;
     }
     case "burn": {
       hit(e.mult);
-      defender.burn = { turns: e.turns, dmg: Math.max(1, Math.round(atk * e.dotPct)) };
+      defender.burn = { turns: e.turns, dmg: Math.max(1, Math.round(atk * e.dotPct * k)) };
       b.events.push({ id: eid(), kind: "buff", side, text: `${defender.name} está queimando` });
       break;
     }
@@ -240,7 +242,7 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       hit(e.mult);
       for (const f of defenderSide.fighters) {
         if (f === defender || f.hp <= 0) continue;
-        const dealt = applyDamage(b, defSideId, f, Math.max(1, Math.round(rawDamage(atk, f.def, e.mult) * e.benchPct)));
+        const dealt = applyDamage(b, defSideId, f, Math.max(1, Math.round(rawDamage(atk, f.def, e.mult * k) * e.benchPct)));
         b.events.push({
           id: eid(),
           kind: "damage",
@@ -255,7 +257,7 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
     case "team_heal": {
       for (const f of mySide.fighters) {
         if (f.hp <= 0) continue;
-        const heal = Math.round(f.maxHp * e.pct);
+        const heal = Math.round(f.maxHp * e.pct * k);
         f.hp = Math.min(f.maxHp, f.hp + heal);
       }
       b.events.push({
@@ -263,25 +265,25 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
         kind: "heal",
         side,
         text: `A equipe de ${mySide.name} recupera vida`,
-        heal: Math.round(attacker.maxHp * e.pct),
+        heal: Math.round(attacker.maxHp * e.pct * k),
       });
       break;
     }
     case "rage":
-      attacker.atkBuff += e.atkPct;
+      attacker.atkBuff += e.atkPct * k;
       b.events.push({ id: eid(), kind: "buff", side, text: `${attacker.name} está enfurecido (+ataque)` });
       break;
     case "weaken":
-      defender.atkBuff = Math.max(-0.7, defender.atkBuff - e.atkPct);
+      defender.atkBuff = Math.max(-0.7, defender.atkBuff - e.atkPct * k);
       b.events.push({ id: eid(), kind: "buff", side, text: `${defender.name} teve o ataque reduzido` });
       break;
     case "shield":
-      attacker.shield += Math.round(attacker.maxHp * e.pct);
+      attacker.shield += Math.round(attacker.maxHp * e.pct * k);
       b.events.push({ id: eid(), kind: "buff", side, text: `${attacker.name} ergue um escudo` });
       break;
     case "fortify": {
-      attacker.defBuff += e.defPct;
-      const heal = Math.round(attacker.maxHp * e.healPct);
+      attacker.defBuff += e.defPct * k;
+      const heal = Math.round(attacker.maxHp * e.healPct * k);
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
       b.events.push({ id: eid(), kind: "buff", side, text: `${attacker.name} se fortifica (+defesa)`, heal });
       break;
@@ -449,5 +451,33 @@ export function switchPlayerFighter(prev: Battle, index: number): Battle {
   b.log = [...b.log, `Você envia ${f.name}`].slice(-60);
   // trocar não consome o turno (a IA também troca de graça)
   b.turn = "player";
+  return b;
+}
+
+/** troca voluntária no meio da batalha: consome o turno do jogador */
+export function voluntarySwitch(prev: Battle, index: number): Battle {
+  if (prev.over || prev.awaitingSwitch || prev.turn !== "player") return prev;
+  if (index === prev.player.active) return prev;
+  const b = clone(prev);
+  const f = b.player.fighters[index];
+  if (!f || f.hp <= 0) return prev;
+  b.player.active = index;
+  b.events = [{ id: eid(), kind: "switch", side: "player", text: `Você troca para ${f.name} (gastou o turno)` }];
+  tickBurn(b, "player");
+  if (f.hp <= 0) {
+    b.events.push({ id: eid(), kind: "ko", side: "player", text: `${f.name} foi derrotado!` });
+    if (alive(b.player).length === 0) {
+      b.over = true;
+      b.winner = "foe";
+      b.events.push({ id: eid(), kind: "end", side: "foe", text: "Você foi derrotado." });
+    } else {
+      b.awaitingSwitch = true;
+    }
+  }
+  if (!b.over && !b.awaitingSwitch) {
+    b.turn = "foe";
+    b.turnNo += 1;
+  }
+  b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
   return b;
 }
