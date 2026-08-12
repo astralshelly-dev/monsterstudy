@@ -211,6 +211,11 @@ export function abilityFor(monsterId: string): Ability {
 // ------------------------------------------------------------
 // Atributos de combate
 // ------------------------------------------------------------
+/** força dos efeitos da habilidade especial conforme o nível (dano, cura, escudo…) */
+export function abilityScale(level: number): number {
+  return 1 + (Math.max(1, level) - 1) * 0.06;
+}
+
 export type MonsterBattleStats = {
   maxHp: number;
   atk: number;
@@ -221,9 +226,9 @@ export function battleStats(rarity: RarityId, level: number): MonsterBattleStats
   const tier = RARITY_ORDER.indexOf(rarity);
   const lv = Math.max(1, level);
   return {
-    maxHp: Math.round((72 + tier * 16) * (1 + (lv - 1) * 0.07)),
-    atk: Math.round((18 + tier * 5.4) * (1 + (lv - 1) * 0.07)),
-    def: Math.round((6 + tier * 2.6) * (1 + (lv - 1) * 0.05)),
+    maxHp: Math.round((72 + tier * 16) * (1 + (lv - 1) * 0.09)),
+    atk: Math.round((18 + tier * 5.4) * (1 + (lv - 1) * 0.09)),
+    def: Math.round((6 + tier * 2.6) * (1 + (lv - 1) * 0.07)),
   };
 }
 

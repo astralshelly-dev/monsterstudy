@@ -135,7 +135,7 @@ function MonsterRow({ id }: { id: string }) {
             />
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            {num(prog.xp)} / {num(prog.need)} XP
+            {prog.maxed ? "Nível máximo" : `${num(prog.xp)} / ${num(prog.need)} XP`}
           </p>
 
           <div className="mt-3 flex flex-wrap gap-2">

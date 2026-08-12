@@ -297,7 +297,11 @@ export function userXpForLevel(level: number): number {
   return Math.floor(120 * Math.pow(level, 1.45));
 }
 
+/** nível máximo de um monstro */
+export const MONSTER_MAX_LEVEL = 10;
+
 export function monsterXpForLevel(level: number, rarityTier: number): number {
+  if (level >= MONSTER_MAX_LEVEL) return Infinity;
   return Math.floor(500 * Math.pow(level, 1.35) * (1 + rarityTier * 0.25));
 }
 

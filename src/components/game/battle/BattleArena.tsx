@@ -6,6 +6,7 @@ import {
   isSpecialReady,
   switchPlayerFighter,
   takeTurn,
+  voluntarySwitch,
   type Battle,
   type Fighter,
   type SideId,
@@ -177,6 +178,32 @@ export function BattleArena({
                 O especial soma o ataque normal com 50% de dano + {player.ability.name}.
               </p>
             </div>
+            {benchAlive.length > 0 && (
+              <div className="border-t border-border/60 pt-3">
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Trocar de monstro (gasta o seu turno)
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {benchAlive.map(({ f, i }) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      disabled={battle.turn !== "player"}
+                      onClick={() => digest(voluntarySwitch(battle, i))}
+                      className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-left text-sm ring-1 ring-border/60 transition hover:bg-secondary disabled:opacity-50"
+                    >
+                      <MonsterArt art={f.art} rarity={f.rarity} size="sm" animate={false} />
+                      <span>
+                        <span className="block font-medium">{f.name}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          Nv {f.level} · {f.hp}/{f.maxHp} PV
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )
       )}

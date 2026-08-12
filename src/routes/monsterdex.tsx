@@ -184,7 +184,7 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
                     />
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    XP: {num(prog.xp)} / {num(prog.need)}
+                    {prog.maxed ? "Nível máximo" : `XP: ${num(prog.xp)} / ${num(prog.need)}`}
                   </p>
                 </div>
                 <Button

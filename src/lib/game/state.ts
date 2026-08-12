@@ -19,6 +19,7 @@ import {
   UPGRADES,
   XP,
   monsterXpForLevel,
+  MONSTER_MAX_LEVEL,
   upgradePrice,
   userXpForLevel,
   type RarityId,
@@ -272,8 +273,15 @@ export function monsterProgress(monsterId: string, s: GameState = state) {
   const def = MONSTERS_BY_ID[monsterId];
   if (!owned || !def) return null;
   const tier = RARITY_ORDER.indexOf(def.rarity);
-  const need = monsterXpForLevel(owned.level, tier);
-  return { ...owned, need, pct: Math.min(100, (owned.xp / need) * 100), def };
+  const maxed = owned.level >= MONSTER_MAX_LEVEL;
+  const need = maxed ? 0 : monsterXpForLevel(owned.level, tier);
+  return {
+    ...owned,
+    need,
+    maxed,
+    pct: maxed ? 100 : Math.min(100, (owned.xp / need) * 100),
+    def,
+  };
 }
 
 /** o monstro secreto fica invisível (dex, contagens, filtros) até ser conquistado */
@@ -487,11 +495,12 @@ export function addMonsterXp(monsterId: string, amount: number): { levelsGained:
     const tier = RARITY_ORDER.indexOf(def.rarity);
     let xp = owned.xp + amount;
     let level = owned.level;
-    while (xp >= monsterXpForLevel(level, tier)) {
+    while (level < MONSTER_MAX_LEVEL && xp >= monsterXpForLevel(level, tier)) {
       xp -= monsterXpForLevel(level, tier);
       level += 1;
       levelsGained += 1;
     }
+    if (level >= MONSTER_MAX_LEVEL) xp = 0;
     s.monsters = { ...s.monsters, [monsterId]: { ...owned, xp, level } };
   });
   return { levelsGained };
