@@ -60,6 +60,8 @@ function BattlesPage() {
   const { user, publicId } = useCloudSync();
   const bd = battleData(state);
   const prog = leagueProgress(bd.trophies);
+  const applyOpponentElo = useServerFn(applyOpponentTrophies);
+
 
   const [phase, setPhase] = useState<Phase>("home");
   const [mode, setMode] = useState<Mode>("ranked");
