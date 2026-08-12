@@ -40,5 +40,27 @@ export const applyOpponentTrophies = createServerFn({ method: "POST" })
       .from("profiles")
       .update({ stats: nextStats })
       .eq("user_id", row.user_id);
+
+    // mantém o save do oponente coerente para quando ele voltar ao jogo
+    const { data: save } = await supabaseAdmin
+      .from("saves")
+      .select("state")
+      .eq("user_id", row.user_id)
+      .maybeSingle();
+    const saved = save?.state as Record<string, unknown> | null | undefined;
+    if (saved && typeof saved === "object") {
+      const battle = (saved['battle'] ?? {}) as Record<string, unknown>;
+      const nextState = {
+        ...saved,
+        battle: {
+          ...battle,
+          trophies: after,
+          bestTrophies: Math.max(Number(battle['bestTrophies'] ?? 0), after),
+          wins: Number(battle['wins'] ?? 0) + (opponentDelta > 0 ? 1 : 0),
+          losses: Number(battle['losses'] ?? 0) + (opponentDelta < 0 ? 1 : 0),
+        },
+      };
+      await supabaseAdmin.from("saves").update({ state: nextState }).eq("user_id", row.user_id);
+    }
     return { ok: true, applied: opponentDelta };
   });
