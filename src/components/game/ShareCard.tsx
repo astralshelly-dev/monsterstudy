@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import { Download, Share2 } from "lucide-react";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 type ShareOptions = {
   showBook: boolean;
   showSubject: boolean;
+  showTopic: boolean;
   showPages: boolean;
   showMonster: boolean;
   showRewards: boolean;
@@ -27,6 +28,7 @@ type ShareOptions = {
 const DEFAULT_OPTIONS: ShareOptions = {
   showBook: true,
   showSubject: true,
+  showTopic: true,
   showPages: true,
   showMonster: true,
   showRewards: true,
@@ -35,17 +37,16 @@ const DEFAULT_OPTIONS: ShareOptions = {
 };
 
 const CARD_W = 1080;
-const CARD_H = 1350;
 const PREVIEW_W = 300;
+const RADIUS = 56;
 
 async function download(node: HTMLElement, filename: string) {
   const url = await toPng(node, {
-    width: CARD_W,
-    height: CARD_H,
+    width: node.offsetWidth,
+    height: node.offsetHeight,
     pixelRatio: 1,
     cacheBust: true,
-    backgroundColor: "#0b0716",
-    // o preview é exibido com scale(); a imagem precisa sair no tamanho real
+    // fundo transparente para preservar as bordas arredondadas
     style: { transform: "none", transformOrigin: "top left", margin: "0" },
   });
   const a = document.createElement("a");
@@ -61,20 +62,28 @@ function Frame({
   children: React.ReactNode;
   innerRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const [h, setH] = useState(0);
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
+    ro.observe(el);
+    setH(el.offsetHeight);
+    return () => ro.disconnect();
+  }, [innerRef]);
+  const scale = PREVIEW_W / CARD_W;
+
   return (
-    <div
-      className="mx-auto overflow-hidden rounded-2xl ring-1 ring-border/60"
-      style={{ width: PREVIEW_W, height: Math.round((PREVIEW_W * CARD_H) / CARD_W) }}
-    >
+    <div className="mx-auto" style={{ width: PREVIEW_W, height: Math.round(h * scale) }}>
       <div
         ref={innerRef}
         style={{
           width: CARD_W,
-          height: CARD_H,
-          transform: `scale(${PREVIEW_W / CARD_W})`,
+          transform: `scale(${scale})`,
           transformOrigin: "top left",
+          borderRadius: RADIUS,
         }}
-        className="relative flex flex-col justify-between overflow-hidden bg-[#0b0716] px-[64px] py-[56px] text-white"
+        className="relative flex flex-col gap-8 overflow-hidden bg-[#0b0716] px-[48px] py-[40px] text-white"
       >
         <div className="pointer-events-none absolute -left-40 -top-40 h-[700px] w-[700px] rounded-full bg-[#7c3aed] opacity-40 blur-[160px]" />
         <div className="pointer-events-none absolute -bottom-52 -right-32 h-[700px] w-[700px] rounded-full bg-[#22d3ee] opacity-25 blur-[170px]" />
@@ -87,13 +96,14 @@ function Frame({
 function Brand() {
   return (
     <div className="relative flex items-center gap-4">
-      <span className="grid h-[64px] w-[64px] place-items-center rounded-2xl bg-white/10 text-[34px]">
+      <span className="grid h-[56px] w-[56px] place-items-center rounded-2xl bg-white/10 text-[30px]">
         🐲
       </span>
-      <p className="font-display text-[34px] font-bold leading-none">M.S</p>
+      <p className="font-display text-[32px] font-bold leading-none">M.S</p>
     </div>
   );
 }
+
 
 function Big({ label, value }: { label: string; value: string }) {
   return (
