@@ -326,10 +326,11 @@ export function DayShareButton({
 
         <Frame innerRef={ref}>
           <Brand />
-          <div className="relative flex flex-1 flex-col justify-center gap-7">
-            <p className="text-[30px] uppercase tracking-[0.3em] text-white/50">
+          <div className="relative flex flex-col gap-6">
+            <p className="text-[28px] uppercase tracking-[0.3em] text-white/50">
               Meu dia · {shortDate(dayKey)}
             </p>
+
             <div className="grid grid-cols-2 gap-6">
               <Big label="Estudo" value={duration(day.studySec)} />
               <Big label="Leitura" value={duration(day.readSec)} />
