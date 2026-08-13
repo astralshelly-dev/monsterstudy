@@ -1,13 +1,28 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { resetProgress } from "@/lib/game/state";
 import { PageHeader } from "@/components/game/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 export const Route = createFileRoute("/entrar")({
   head: () => ({
@@ -34,6 +49,8 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const removeAccount = useServerFn(deleteMyAccount);
+
 
   async function submit() {
     setBusy(true);
@@ -89,9 +106,54 @@ function AuthPage() {
             Sair da conta
           </Button>
         </div>
+
+        <div className="panel space-y-3 border-destructive/40 p-6">
+          <h2 className="font-display text-lg font-semibold text-destructive">Apagar conta</h2>
+          <p className="text-sm text-muted-foreground">
+            Isso remove sua conta, seu save na nuvem e seu perfil público para sempre. Não dá para
+            desfazer.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={busy}>
+                Apagar minha conta
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-display">Apagar a conta?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Todos os monstros, sessões e troféus serão perdidos definitivamente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      await removeAccount();
+                      await supabase.auth.signOut();
+                      resetProgress();
+                      toast.success("Conta apagada.");
+                      void navigate({ to: "/" });
+                    } catch {
+                      toast.error("Não foi possível apagar a conta.");
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  Apagar para sempre
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     );
   }
+
 
   return (
     <div className="space-y-6">

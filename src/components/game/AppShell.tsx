@@ -28,7 +28,9 @@ import { useCloudSync } from "@/hooks/use-auth";
 import { moneyPerSecond, userProgress } from "@/lib/game/state";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { WelcomeBack } from "@/components/game/WelcomeBack";
 import { cn } from "@/lib/utils";
+
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, primary: true },
@@ -51,10 +53,11 @@ const NAV = [
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
-  useHydrated();
+  const { offline, dismissOffline } = useHydrated();
   useCloudSync();
 
   const state = useGame();
+
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prog = userProgress(state);
   const rate = moneyPerSecond(state);
@@ -192,11 +195,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
           </div>
-        </nav>
+      </nav>
       </div>
+      {offline && <WelcomeBack offline={offline} onClose={dismissOffline} />}
     </div>
   );
 }
+
 
 function Pill({ icon, value }: { icon: ReactNode; value: string }) {
   return (

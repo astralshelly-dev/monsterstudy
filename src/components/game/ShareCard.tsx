@@ -35,7 +35,8 @@ const DEFAULT_OPTIONS: ShareOptions = {
 };
 
 const CARD_W = 1080;
-const CARD_H = 1920;
+const CARD_H = 1350;
+const PREVIEW_W = 300;
 
 async function download(node: HTMLElement, filename: string) {
   const url = await toPng(node, {
@@ -44,6 +45,8 @@ async function download(node: HTMLElement, filename: string) {
     pixelRatio: 1,
     cacheBust: true,
     backgroundColor: "#0b0716",
+    // o preview é exibido com scale(); a imagem precisa sair no tamanho real
+    style: { transform: "none", transformOrigin: "top left", margin: "0" },
   });
   const a = document.createElement("a");
   a.href = url;
@@ -59,16 +62,19 @@ function Frame({
   innerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div className="mx-auto overflow-hidden rounded-2xl ring-1 ring-border/60" style={{ width: 300, height: 533 }}>
+    <div
+      className="mx-auto overflow-hidden rounded-2xl ring-1 ring-border/60"
+      style={{ width: PREVIEW_W, height: Math.round((PREVIEW_W * CARD_H) / CARD_W) }}
+    >
       <div
         ref={innerRef}
         style={{
           width: CARD_W,
           height: CARD_H,
-          transform: `scale(${300 / CARD_W})`,
+          transform: `scale(${PREVIEW_W / CARD_W})`,
           transformOrigin: "top left",
         }}
-        className="relative flex flex-col justify-between overflow-hidden bg-[#0b0716] px-[70px] py-[110px] text-white"
+        className="relative flex flex-col justify-between overflow-hidden bg-[#0b0716] px-[64px] py-[56px] text-white"
       >
         <div className="pointer-events-none absolute -left-40 -top-40 h-[700px] w-[700px] rounded-full bg-[#7c3aed] opacity-40 blur-[160px]" />
         <div className="pointer-events-none absolute -bottom-52 -right-32 h-[700px] w-[700px] rounded-full bg-[#22d3ee] opacity-25 blur-[170px]" />
@@ -80,12 +86,11 @@ function Frame({
 
 function Brand() {
   return (
-    <div className="relative flex items-center gap-5">
-      <span className="grid h-[92px] w-[92px] place-items-center rounded-3xl bg-white/10 text-[52px]">🐲</span>
-      <div>
-        <p className="font-display text-[46px] font-bold leading-none">Monster Study</p>
-        <p className="text-[26px] text-white/60">Estude. Colecione.</p>
-      </div>
+    <div className="relative flex items-center gap-4">
+      <span className="grid h-[64px] w-[64px] place-items-center rounded-2xl bg-white/10 text-[34px]">
+        🐲
+      </span>
+      <p className="font-display text-[34px] font-bold leading-none">M.S</p>
     </div>
   );
 }
@@ -162,7 +167,7 @@ export function SessionShareButton({
 
         <Frame innerRef={ref}>
           <Brand />
-          <div className="relative space-y-8">
+          <div className="relative flex flex-1 flex-col justify-center gap-7">
             <p className="text-[30px] uppercase tracking-[0.3em] text-white/50">{title}</p>
             {opt.showSubject && session.kind === "study" && (
               <p className="font-display text-[74px] font-bold leading-tight">{session.subject}</p>
@@ -199,7 +204,7 @@ export function SessionShareButton({
             )}
           </div>
           <div className="relative flex items-center justify-between text-[28px] text-white/60">
-            <span>{opt.showName ? state.profile.name : "Caçador anônimo"}</span>
+            <span>{opt.showName ? state.profile.name : ""}</span>
             <span>{shortDate(session.endedAt.slice(0, 10))}</span>
           </div>
         </Frame>
@@ -207,7 +212,7 @@ export function SessionShareButton({
         <div className="space-y-2">
           {session.kind === "study" && (
             <OptionRow
-              label="Mostrar matéria"
+              label="Mostrar assunto"
               checked={opt.showSubject}
               onChange={(v) => setOpt({ ...opt, showSubject: v })}
             />
@@ -299,7 +304,7 @@ export function DayShareButton({
 
         <Frame innerRef={ref}>
           <Brand />
-          <div className="relative space-y-8">
+          <div className="relative flex flex-1 flex-col justify-center gap-7">
             <p className="text-[30px] uppercase tracking-[0.3em] text-white/50">
               Meu dia · {shortDate(dayKey)}
             </p>
@@ -313,7 +318,7 @@ export function DayShareButton({
             </div>
           </div>
           <div className="relative flex items-center justify-between text-[28px] text-white/60">
-            <span>{opt.showName ? state.profile.name : "Caçador anônimo"}</span>
+            <span>{opt.showName ? state.profile.name : ""}</span>
             <span>monsterstudy</span>
           </div>
         </Frame>
