@@ -177,14 +177,18 @@ export function SessionShareButton({
 
         <Frame innerRef={ref}>
           <Brand />
-          <div className="relative flex flex-1 flex-col justify-center gap-7">
-            <p className="text-[30px] uppercase tracking-[0.3em] text-white/50">{title}</p>
+          <div className="relative flex flex-col gap-6">
+            <p className="text-[28px] uppercase tracking-[0.3em] text-white/50">{title}</p>
             {opt.showSubject && session.kind === "study" && (
-              <p className="font-display text-[74px] font-bold leading-tight">{session.subject}</p>
+              <p className="font-display text-[68px] font-bold leading-tight">{session.subject}</p>
+            )}
+            {opt.showTopic && session.kind === "study" && session.topic && (
+              <p className="text-[38px] leading-tight text-white/70">📌 {session.topic}</p>
             )}
             {opt.showBook && book && (
-              <p className="font-display text-[64px] font-bold leading-tight">{book.title}</p>
+              <p className="font-display text-[60px] font-bold leading-tight">{book.title}</p>
             )}
+
             <div className="grid grid-cols-2 gap-6">
               <Big label="Tempo" value={duration(session.durationSec)} />
               {opt.showPages && isRead && session.kind === "read" && (
