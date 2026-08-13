@@ -167,7 +167,7 @@ export function SessionShareButton({
 
         <Frame innerRef={ref}>
           <Brand />
-          <div className="relative space-y-8">
+          <div className="relative flex flex-1 flex-col justify-center gap-7">
             <p className="text-[30px] uppercase tracking-[0.3em] text-white/50">{title}</p>
             {opt.showSubject && session.kind === "study" && (
               <p className="font-display text-[74px] font-bold leading-tight">{session.subject}</p>
@@ -304,7 +304,7 @@ export function DayShareButton({
 
         <Frame innerRef={ref}>
           <Brand />
-          <div className="relative space-y-8">
+          <div className="relative flex flex-1 flex-col justify-center gap-7">
             <p className="text-[30px] uppercase tracking-[0.3em] text-white/50">
               Meu dia · {shortDate(dayKey)}
             </p>
