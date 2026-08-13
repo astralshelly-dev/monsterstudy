@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import {
   getServerSnapshot,
@@ -9,9 +9,10 @@ import {
   takeAchievementQueue,
   takeOfflineEarnings,
   tickMoney,
+  type OfflineEarnings,
 } from "@/lib/game/state";
 import { ACHIEVEMENTS } from "@/lib/game/achievements";
-import { money as fmtMoney, duration } from "@/lib/format";
+import { money as fmtMoney } from "@/lib/format";
 
 export function useGame() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -19,15 +20,10 @@ export function useGame() {
 
 export function useHydrated() {
   const state = useGame();
+  const [offline, setOffline] = useState<OfflineEarnings>(null);
   useEffect(() => {
     hydrate();
-    const offline = takeOfflineEarnings();
-    if (offline) {
-      toast.success("Que bom te ver de volta, caçador!", {
-        description: `Seus monstros trabalharam por ${duration(offline.seconds)} e juntaram +${fmtMoney(offline.amount)} para você. Bora estudar?`,
-        duration: 8000,
-      });
-    }
+    setOffline(takeOfflineEarnings());
   }, []);
   useEffect(() => {
     const id = setInterval(() => tickMoney(1), 1000);
@@ -44,5 +40,6 @@ export function useHydrated() {
       }
     }
   }, [state]);
-  return isHydrated();
+  return { hydrated: isHydrated(), offline, dismissOffline: () => setOffline(null) };
 }
+
