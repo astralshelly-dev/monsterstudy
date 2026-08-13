@@ -193,11 +193,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
           </div>
-        </nav>
+      </nav>
       </div>
+      {offline && <WelcomeBack offline={offline} onClose={dismissOffline} />}
     </div>
   );
 }
+
 
 function Pill({ icon, value }: { icon: ReactNode; value: string }) {
   return (
