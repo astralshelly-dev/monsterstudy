@@ -226,11 +226,19 @@ export function SessionShareButton({
         <div className="space-y-2">
           {session.kind === "study" && (
             <OptionRow
-              label="Mostrar assunto"
+              label="Mostrar matéria"
               checked={opt.showSubject}
               onChange={(v) => setOpt({ ...opt, showSubject: v })}
             />
           )}
+          {session.kind === "study" && session.topic && (
+            <OptionRow
+              label="Mostrar assunto específico"
+              checked={opt.showTopic}
+              onChange={(v) => setOpt({ ...opt, showTopic: v })}
+            />
+          )}
+
           {book && (
             <OptionRow
               label="Mostrar nome do livro"
