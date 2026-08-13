@@ -89,9 +89,54 @@ function AuthPage() {
             Sair da conta
           </Button>
         </div>
+
+        <div className="panel space-y-3 border-destructive/40 p-6">
+          <h2 className="font-display text-lg font-semibold text-destructive">Apagar conta</h2>
+          <p className="text-sm text-muted-foreground">
+            Isso remove sua conta, seu save na nuvem e seu perfil público para sempre. Não dá para
+            desfazer.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={busy}>
+                Apagar minha conta
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-display">Apagar a conta?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Todos os monstros, sessões e troféus serão perdidos definitivamente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      await removeAccount();
+                      await supabase.auth.signOut();
+                      resetProgress();
+                      toast.success("Conta apagada.");
+                      void navigate({ to: "/" });
+                    } catch {
+                      toast.error("Não foi possível apagar a conta.");
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  Apagar para sempre
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     );
   }
+
 
   return (
     <div className="space-y-6">
