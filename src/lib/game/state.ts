@@ -193,6 +193,7 @@ export function hydrate() {
     const capped = Math.min(elapsed, 60 * 60 * OFFLINE_INCOME_MAX_HOURS);
     offlineEarnings = { amount: rate * capped, seconds: capped };
     state.money += rate * capped;
+    state.lastModifiedAt = Date.now();
   }
   state.lastSeen = Date.now();
   refreshStreak();
