@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
@@ -14,6 +14,7 @@ import { ILLUSTRATED_AVATARS } from "@/lib/game/avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { ProfileAvatar } from "@/components/game/Avatar";
 import { cn } from "@/lib/utils";
+import { useCloudSync } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -32,10 +33,12 @@ export const Route = createFileRoute("/perfil")({
 
 function Profile() {
   const state = useGame();
+  const { saveNow, ready } = useCloudSync();
   const t = totals(state);
   const up = userProgress(state);
   const active = state.activeMonsterId ? monsterProgress(state.activeMonsterId, state) : null;
   const [name, setName] = useState(state.profile.name);
+  useEffect(() => setName(state.profile.name), [state.profile.name]);
   const bd = battleData(state);
   const lp = leagueProgress(bd.trophies);
 
@@ -73,9 +76,16 @@ function Profile() {
             <div className="flex gap-2">
               <Input value={name} onChange={(e) => setName(e.target.value)} />
               <Button
-                onClick={() => {
+                disabled={!name.trim()}
+                onClick={async () => {
                   updateProfile({ name: name.trim() || "Caçador" });
-                  toast.success("Perfil atualizado");
+                  if (!ready) {
+                    toast.success("Perfil salvo neste dispositivo");
+                    return;
+                  }
+                  const saved = await saveNow();
+                  if (saved) toast.success("Perfil salvo e sincronizado");
+                  else toast.error("Salvo neste dispositivo; sincronização pendente");
                 }}
               >
                 Salvar

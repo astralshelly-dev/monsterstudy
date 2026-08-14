@@ -56,6 +56,7 @@ function uid() {
 export function defaultState(): GameState {
   return {
     version: 1,
+    lastModifiedAt: Date.now(),
     profile: {
       name: "Caçador",
       avatar: "art:arcanist",
@@ -116,8 +117,22 @@ function persist() {
 export function setState(updater: (s: GameState) => GameState | void) {
   const draft: GameState = { ...state };
   const next = updater(draft);
-  state = (next ?? draft) as GameState;
+  state = { ...((next ?? draft) as GameState), lastModifiedAt: Date.now() };
   checkAchievements();
+  persist();
+  emit();
+}
+
+/** Substitui o save durante a hidratação da conta sem fingir uma alteração local. */
+export function replaceState(next: GameState) {
+  state = {
+    ...defaultState(),
+    ...next,
+    profile: { ...defaultState().profile, ...next.profile },
+    upgrades: { ...defaultState().upgrades, ...next.upgrades },
+    battle: { ...defaultState().battle, ...(next.battle ?? {}) },
+    lastModifiedAt: next.lastModifiedAt ?? next.lastSeen,
+  };
   persist();
   emit();
 }
@@ -158,6 +173,7 @@ export function hydrate() {
         profile: { ...defaultState().profile, ...parsed.profile },
         upgrades: { ...defaultState().upgrades, ...parsed.upgrades },
         battle: { ...defaultState().battle, ...(parsed.battle ?? {}) },
+        lastModifiedAt: parsed.lastModifiedAt ?? parsed.lastSeen,
       };
     }
   } catch {
@@ -177,6 +193,7 @@ export function hydrate() {
     const capped = Math.min(elapsed, 60 * 60 * OFFLINE_INCOME_MAX_HOURS);
     offlineEarnings = { amount: rate * capped, seconds: capped };
     state.money += rate * capped;
+    state.lastModifiedAt = Date.now();
   }
   state.lastSeen = Date.now();
   refreshStreak();
@@ -895,14 +912,19 @@ export function clearPendingReward() {
 export function tickMoney(seconds: number) {
   const rate = moneyPerSecond();
   if (rate <= 0) {
-    state = { ...state, lastSeen: Date.now() };
+    state = { ...state, lastSeen: Date.now(), lastModifiedAt: Date.now() };
     persist();
     emit();
     return;
   }
   // novo objeto: o useSyncExternalStore precisa de nova referência para
   // atualizar a tela a cada segundo
-  state = { ...state, money: state.money + rate * seconds, lastSeen: Date.now() };
+  state = {
+    ...state,
+    money: state.money + rate * seconds,
+    lastSeen: Date.now(),
+    lastModifiedAt: Date.now(),
+  };
   persist();
   emit();
 }

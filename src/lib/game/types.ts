@@ -149,6 +149,8 @@ export type BattleData = {
 
 export type GameState = {
   version: number;
+  /** instante da última alteração local persistível, usado para reconciliar com a nuvem */
+  lastModifiedAt?: number | undefined;
   profile: {
     name: string;
     avatar: string;
