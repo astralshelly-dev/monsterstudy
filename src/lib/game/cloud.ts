@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MONSTERS_BY_ID } from "./monsters";
 import { RARITY_ORDER } from "./config";
 import { leagueOf } from "./battle/config";
-import { getSnapshot, setState, totals } from "./state";
+import { getSnapshot, replaceState, totals } from "./state";
 import type { GameState } from "./types";
 
 export type PublicProfile = {
@@ -75,12 +75,13 @@ function summarize(s: GameState) {
 export async function pushToCloud(userId: string): Promise<void> {
   const s = getSnapshot();
   const summary = summarize(s);
-  await supabase.from("saves").upsert(
+  const { error: saveError } = await supabase.from("saves").upsert(
     { user_id: userId, state: JSON.parse(JSON.stringify(s)) },
     { onConflict: "user_id" },
   );
+  if (saveError) throw saveError;
 
-  await supabase
+  const { error: profileError } = await supabase
     .from("profiles")
     .update({
       display_name: s.profile.name,
@@ -96,6 +97,7 @@ export async function pushToCloud(userId: string): Promise<void> {
       stats: summary.stats,
     })
     .eq("user_id", userId);
+  if (profileError) throw profileError;
 }
 
 /**
@@ -104,32 +106,39 @@ export async function pushToCloud(userId: string): Promise<void> {
  */
 export async function pullFromCloud(
   userId: string,
-  opts?: { force?: boolean },
-): Promise<boolean> {
-  const { data } = await supabase
+  opts?: { force?: boolean; preferNewest?: boolean },
+): Promise<"pulled" | "local-newer" | "missing"> {
+  const { data, error } = await supabase
     .from("saves")
     .select("state, updated_at")
     .eq("user_id", userId)
     .maybeSingle();
-  if (!data?.state) return false;
+  if (error) throw error;
+  if (!data?.state) return "missing";
   const remote = data.state as unknown as GameState;
   const local = getSnapshot();
+  if (opts?.preferNewest && !opts.force) {
+    const localModified = local.lastModifiedAt ?? local.lastSeen ?? 0;
+    const remoteModified = remote.lastModifiedAt ?? Date.parse(data.updated_at) ?? 0;
+    if (localModified > remoteModified) return "local-newer";
+  }
   if (!opts?.force) {
     const remoteScore = (remote.sessions?.length ?? 0) + (remote.profile?.xp ?? 0);
     const localScore = local.sessions.length + local.profile.xp;
-    if (remoteScore < localScore) return false;
+    if (!opts?.preferNewest && remoteScore < localScore) return "local-newer";
   }
-  setState(() => ({ ...remote, timer: local.timer, pendingReward: null }));
-  return true;
+  replaceState({ ...remote, timer: local.timer, pendingReward: null });
+  return "pulled";
 }
 
 /** meu ID público (criado automaticamente no cadastro) */
 export async function myPublicId(userId: string): Promise<string | null> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .select("public_id")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw error;
   return data?.public_id ?? null;
 }
 
