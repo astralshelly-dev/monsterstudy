@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
@@ -38,6 +38,7 @@ function Profile() {
   const up = userProgress(state);
   const active = state.activeMonsterId ? monsterProgress(state.activeMonsterId, state) : null;
   const [name, setName] = useState(state.profile.name);
+  useEffect(() => setName(state.profile.name), [state.profile.name]);
   const bd = battleData(state);
   const lp = leagueProgress(bd.trophies);
 

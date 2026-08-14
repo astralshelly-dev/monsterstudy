@@ -119,7 +119,8 @@ export async function pullFromCloud(
   const local = getSnapshot();
   if (opts?.preferNewest && !opts.force) {
     const localModified = local.lastModifiedAt ?? local.lastSeen ?? 0;
-    const remoteModified = remote.lastModifiedAt ?? Date.parse(data.updated_at) ?? 0;
+    const remoteUpdatedAt = Date.parse(data.updated_at);
+    const remoteModified = remote.lastModifiedAt ?? (Number.isFinite(remoteUpdatedAt) ? remoteUpdatedAt : 0);
     if (localModified > remoteModified) return "local-newer";
   }
   if (!opts?.force) {
