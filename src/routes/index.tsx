@@ -15,6 +15,7 @@ import { DayShareButton } from "@/components/game/ShareCard";
 import { ProfileAvatar } from "@/components/game/Avatar";
 import { ActiveMonsterCard, MonsterCard } from "@/components/game/MonsterCard";
 import { Button } from "@/components/ui/button";
+import { useCloudSync } from "@/hooks/use-auth";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 
 export const Route = createFileRoute("/")({
@@ -53,6 +54,8 @@ function Dashboard() {
         subtitle="Cada minuto de foco aumenta suas chances de encontrar algo lendário."
         icon="🐲"
       />
+
+      <SignupCallout />
 
       <div className="panel aurora relative overflow-hidden p-6">
         <div className="flex flex-wrap items-center justify-between gap-6">
@@ -174,6 +177,27 @@ function Dashboard() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** convite para criar conta (com as recompensas de boas-vindas) */
+function SignupCallout() {
+  const { user } = useCloudSync();
+  if (user) return null;
+  return (
+    <div className="panel flex flex-wrap items-center justify-between gap-4 border border-primary/40 p-5">
+      <div className="min-w-0">
+        <p className="font-display text-lg font-semibold">🎁 Crie sua conta e ganhe recompensas</p>
+        <p className="text-sm text-muted-foreground">
+          Ao criar a conta você recebe <strong>1 monstro raro</strong>,{" "}
+          <strong>10.000 moedas</strong> e <strong>60 fragmentos</strong> — além de salvar seu
+          progresso na nuvem, ganhar um ID de jogador e liberar as batalhas online.
+        </p>
+      </div>
+      <Button asChild size="lg" className="shrink-0">
+        <Link to="/entrar">Ir criar conta</Link>
+      </Button>
     </div>
   );
 }
