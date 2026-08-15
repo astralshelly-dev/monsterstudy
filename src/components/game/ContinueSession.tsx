@@ -49,7 +49,7 @@ export function ContinueSessionPanel({ kind }: { kind: "study" | "read" }) {
           <p className="mt-0.5 text-xs text-muted-foreground">
             {expired
               ? "O tempo para emendar essa sessão acabou."
-              : `Disponível por ${minSec(left)}`}
+              : `Disponível por ${minSec(left / 60)}`}
           </p>
         </div>
         <Button
@@ -57,7 +57,7 @@ export function ContinueSessionPanel({ kind }: { kind: "study" | "read" }) {
           disabled={expired}
           onClick={() => setOpen(!open)}
         >
-          {expired ? "Tempo esgotado" : open ? "Cancelar" : `Continuar sessão (${minSec(left)})`}
+          {expired ? "Tempo esgotado" : open ? "Cancelar" : `Continuar sessão (${minSec(left / 60)})`}
         </Button>
       </div>
 
