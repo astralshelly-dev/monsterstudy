@@ -347,7 +347,9 @@ export function pickAiSwitch(side: Side): number {
     return options[Math.floor(Math.random() * options.length)]!.i;
   }
   const score = (f: Fighter) =>
-    side.behavior === "defensivo" ? f.hp + f.def * 8 : f.atk * 8 + f.hp * 0.6;
+    side.behavior === "defensivo"
+      ? f.hp + f.def * 8 + f.spd * 1.5
+      : f.atk * 8 + f.hp * 0.6 + f.spd * 4;
   return options.sort((a, z) => score(z.f) - score(a.f))[0]!.i;
 }
 
