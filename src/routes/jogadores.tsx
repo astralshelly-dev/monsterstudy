@@ -161,6 +161,20 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         </div>
       </div>
 
+      <div className="panel flex flex-wrap items-center justify-between gap-3 p-4">
+        <div>
+          <p className="font-display text-base font-semibold">🤝 Batalha amistosa</p>
+          <p className="text-xs text-muted-foreground">
+            Enfrente a equipe de {p.displayName} sem ganhar nem perder troféus.
+          </p>
+        </div>
+        <Button asChild>
+          <Link to="/batalhas" search={{ amistoso: p.publicId }}>
+            Desafiar
+          </Link>
+        </Button>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tempo estudando" value={duration(p.stats.studySec ?? 0)} />
         <StatCard label="Tempo lendo" value={duration(p.stats.readSec ?? 0)} />

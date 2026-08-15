@@ -19,6 +19,7 @@ export type Fighter = {
   hp: number;
   atk: number;
   def: number;
+  spd: number;
   ability: Ability;
   /** turnos restantes para a habilidade disparar */
   charge: number;
@@ -80,6 +81,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     hp: s.maxHp,
     atk: s.atk,
     def: s.def,
+    spd: s.spd,
     ability: abilityFor(monsterId),
     charge: abilityFor(monsterId).cooldown,
     atkBuff: 0,
@@ -117,7 +119,7 @@ export function createBattle(input: {
     mode: input.mode,
     player,
     foe,
-    turn: "player",
+    turn: firstMover(player, foe),
     turnNo: 1,
     events: [],
     log: [],
@@ -125,6 +127,24 @@ export function createBattle(input: {
     winner: null,
     awaitingSwitch: false,
   };
+}
+
+/** velocidade efetiva: comportamento da IA muda um pouco a iniciativa */
+export function effSpd(f: Fighter, behavior: AiBehavior): number {
+  const bias = behavior === "ofensivo" ? 1.06 : behavior === "defensivo" ? 0.96 : 1;
+  return f.spd * bias;
+}
+
+/** quem age primeiro: o monstro em campo com mais velocidade (empate = sorteio) */
+function firstMover(player: Side, foe: Side): SideId {
+  const p = player.fighters[player.active];
+  const f = foe.fighters[foe.active];
+  if (!p) return "foe";
+  if (!f) return "player";
+  const ps = effSpd(p, player.behavior);
+  const fs = effSpd(f, foe.behavior);
+  if (ps === fs) return Math.random() < 0.5 ? "player" : "foe";
+  return ps > fs ? "player" : "foe";
 }
 
 const clone = (b: Battle): Battle => JSON.parse(JSON.stringify(b)) as Battle;
@@ -327,7 +347,9 @@ export function pickAiSwitch(side: Side): number {
     return options[Math.floor(Math.random() * options.length)]!.i;
   }
   const score = (f: Fighter) =>
-    side.behavior === "defensivo" ? f.hp + f.def * 8 : f.atk * 8 + f.hp * 0.6;
+    side.behavior === "defensivo"
+      ? f.hp + f.def * 8 + f.spd * 1.5
+      : f.atk * 8 + f.hp * 0.6 + f.spd * 4;
   return options.sort((a, z) => score(z.f) - score(a.f))[0]!.i;
 }
 
@@ -374,6 +396,11 @@ function finishTurn(b: Battle, actor: SideId) {
         side: foeSideId,
         text: `${defSide.name} envia ${defSide.fighters[defSide.active]!.name}`,
       });
+      // o novo monstro pode ser mais rápido e roubar a iniciativa
+      b.turn = firstMover(b.player, b.foe);
+      b.turnNo += 1;
+      b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
+      return;
     }
   }
 
@@ -384,6 +411,25 @@ function finishTurn(b: Battle, actor: SideId) {
     b.turn = "player";
   }
   b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
+}
+
+/**
+ * A IA decide quando soltar a habilidade conforme o estilo:
+ * ofensivo dispara sempre; defensivo guarda para habilidades de proteção ou
+ * quando está machucado; equilibrado alterna.
+ */
+function aiWantsAbility(b: Battle, f: Fighter): boolean {
+  const style = f.ability.effect.type;
+  const support = ["shield", "fortify", "team_heal", "drain", "weaken"].includes(style);
+  const hurt = f.hp / f.maxHp <= 0.6;
+  switch (b.foe.behavior) {
+    case "ofensivo":
+      return true;
+    case "defensivo":
+      return support || hurt;
+    default:
+      return support ? hurt || Math.random() < 0.6 : Math.random() < 0.8;
+  }
 }
 
 /** o especial do jogador é manual (quando carregado); a IA dispara sozinha */
@@ -413,7 +459,7 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
     basicAttack(b, actor, attacker, defSide, defSideId, 0.5);
     if (defSide.fighters[defSide.active]!.hp > 0) useAbility(b, actor, attacker, defSide, defSideId);
     else attacker.charge = attacker.ability.cooldown;
-  } else if (actor === "foe" && attacker.charge === 0) {
+  } else if (actor === "foe" && attacker.charge === 0 && aiWantsAbility(b, attacker)) {
     useAbility(b, actor, attacker, defSide, defSideId);
   } else {
     basicAttack(b, actor, attacker, defSide, defSideId);
@@ -449,8 +495,8 @@ export function switchPlayerFighter(prev: Battle, index: number): Battle {
   b.awaitingSwitch = false;
   b.events = [{ id: eid(), kind: "switch", side: "player", text: `Você envia ${f.name}` }];
   b.log = [...b.log, `Você envia ${f.name}`].slice(-60);
-  // trocar não consome o turno (a IA também troca de graça)
-  b.turn = "player";
+  // trocar não consome o turno, mas a velocidade define quem age primeiro
+  b.turn = firstMover(b.player, b.foe);
   return b;
 }
 

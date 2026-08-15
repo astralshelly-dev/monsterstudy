@@ -8,7 +8,7 @@
 import { randomProfiles, type PublicProfile } from "../cloud";
 import { MONSTERS, MONSTERS_BY_ID } from "../monsters";
 import { RARITY_ORDER } from "../config";
-import { monsterPower, TEAM_SIZE } from "./config";
+import { abilityStyle, monsterPower, TEAM_SIZE } from "./config";
 import type { AiBehavior } from "./engine";
 
 export type TeamSlot = { monsterId: string; level: number };
@@ -33,6 +33,8 @@ export type MatchContext = {
   myTrophies: number;
   /** média de nível dos meus monstros — usado para os bots */
   myTeamLevel: number;
+  /** maior tier de raridade que eu já tenho — a IA acompanha esse patamar */
+  myTeamTier?: number;
   authenticated: boolean;
 };
 
@@ -41,7 +43,7 @@ export type Matchmaker = (ctx: MatchContext) => Promise<Opponent>;
 const BEHAVIORS: AiBehavior[] = ["ofensivo", "defensivo", "equilibrado"];
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]!;
 
-function teamFromProfile(p: PublicProfile): TeamSlot[] {
+export function teamFromProfile(p: PublicProfile): TeamSlot[] {
   return Object.entries(p.monsters)
     .filter(([id]) => MONSTERS_BY_ID[id])
     .map(([id, v]) => ({ monsterId: id, level: Math.max(1, v.level) }))
@@ -49,22 +51,59 @@ function teamFromProfile(p: PublicProfile): TeamSlot[] {
     .slice(0, TEAM_SIZE);
 }
 
-/** monta uma equipe de bot próxima do nível do jogador, com monstros variados */
-export function botTeam(teamLevel: number, playerLevel: number, exclude: string[] = []): TeamSlot[] {
-  const maxTier = Math.min(RARITY_ORDER.length - 2, 1 + Math.floor(playerLevel / 4));
-  const pool = MONSTERS.filter(
-    (m) => m.rarity !== "secreto" && RARITY_ORDER.indexOf(m.rarity) <= maxTier && !exclude.includes(m.id),
+/**
+ * Monta a equipe do bot acompanhando o patamar do jogador e o estilo pedido:
+ * ofensivo prioriza habilidades de dano, defensivo prioriza proteção/cura e
+ * equilibrado mistura os dois.
+ */
+export function botTeam(
+  teamLevel: number,
+  playerLevel: number,
+  exclude: string[] = [],
+  opts?: { behavior?: AiBehavior; tier?: number },
+): TeamSlot[] {
+  const maxIndex = RARITY_ORDER.length - 2; // sem "secreto"
+  const byLevel = 1 + Math.floor(playerLevel / 3);
+  const maxTier = Math.min(maxIndex, Math.max(byLevel, (opts?.tier ?? 0)));
+  const minTier = Math.max(0, maxTier - 2);
+  const inRange = MONSTERS.filter(
+    (m) =>
+      m.rarity !== "secreto" &&
+      RARITY_ORDER.indexOf(m.rarity) <= maxTier &&
+      RARITY_ORDER.indexOf(m.rarity) >= minTier &&
+      !exclude.includes(m.id),
   );
+  const pool = inRange.length >= TEAM_SIZE
+    ? inRange
+    : MONSTERS.filter((m) => m.rarity !== "secreto" && !exclude.includes(m.id));
+
+  const behavior = opts?.behavior ?? "equilibrado";
+  const offensive = pool.filter((m) => abilityStyle(m.id) === "ofensivo");
+  const defensive = pool.filter((m) => abilityStyle(m.id) === "defensivo");
+  /** quantos monstros de suporte o estilo pede */
+  const wantSupport = behavior === "defensivo" ? TEAM_SIZE - 1 : behavior === "ofensivo" ? 0 : 1;
+
   const chosen: TeamSlot[] = [];
   const used = new Set<string>();
-  while (chosen.length < TEAM_SIZE && pool.length > used.size) {
-    const m = pick(pool);
-    if (used.has(m.id)) continue;
+  const take = (from: typeof pool) => {
+    const options = from.filter((m) => !used.has(m.id));
+    if (options.length === 0) return false;
+    const m = pick(options);
     used.add(m.id);
-    const lvl = Math.max(1, Math.round(teamLevel + (Math.random() * 2 - 1)));
+    // times mais alinhados ao estilo ficam com raridade mais alta
+    const bonus = behavior === "equilibrado" ? 0 : 1;
+    const lvl = Math.max(1, Math.min(10, Math.round(teamLevel + bonus + (Math.random() * 2 - 1))));
     chosen.push({ monsterId: m.id, level: lvl });
+    return true;
+  };
+
+  for (let i = 0; i < wantSupport; i += 1) if (!take(defensive)) take(pool);
+  while (chosen.length < TEAM_SIZE) {
+    const ok = behavior === "defensivo" ? take(pool) : take(offensive) || take(pool);
+    if (!ok && !take(pool)) break;
   }
-  return chosen;
+  // as raridades mais fortes entram primeiro em campo
+  return chosen.sort((a, z) => monsterPower(z.monsterId, z.level) - monsterPower(a.monsterId, a.level));
 }
 
 const BOT_NAMES = [
@@ -76,7 +115,11 @@ const BOT_NAMES = [
   "Domador Nômade",
 ];
 
-export function makeBotOpponent(ctx: MatchContext, opts?: { exclude?: string[] }): Opponent {
+export function makeBotOpponent(
+  ctx: MatchContext,
+  opts?: { exclude?: string[]; behavior?: AiBehavior },
+): Opponent {
+  const behavior = opts?.behavior ?? pick(BEHAVIORS);
   return {
     source: "bot",
     name: pick(BOT_NAMES),
@@ -85,7 +128,25 @@ export function makeBotOpponent(ctx: MatchContext, opts?: { exclude?: string[] }
     avatarMonsterId: null,
     level: Math.max(1, ctx.myLevel + Math.round(Math.random() * 2 - 1)),
     trophies: ctx.myTrophies,
-    team: botTeam(ctx.myTeamLevel, ctx.myLevel, opts?.exclude ?? []),
+    team: botTeam(ctx.myTeamLevel, ctx.myLevel, opts?.exclude ?? [], {
+      behavior,
+      ...(typeof ctx.myTeamTier === "number" ? { tier: ctx.myTeamTier } : {}),
+    }),
+    behavior,
+  };
+}
+
+/** transforma um perfil público em adversário (usado na batalha amistosa) */
+export function opponentFromProfile(p: PublicProfile): Opponent {
+  return {
+    source: "player",
+    name: p.displayName,
+    publicId: p.publicId,
+    avatar: p.avatar,
+    avatarMonsterId: p.avatarMonsterId,
+    level: p.level,
+    trophies: Number(p.stats.trophies ?? 0),
+    team: teamFromProfile(p),
     behavior: pick(BEHAVIORS),
   };
 }
@@ -158,10 +219,6 @@ export function findOpponent(ctx: MatchContext): Promise<Opponent> {
 
 /** adversário de treino (IA) — sempre com monstros diferentes dos do jogador */
 export function trainingOpponent(ctx: MatchContext, ownedIds: string[], behavior?: AiBehavior): Opponent {
-  const bot = makeBotOpponent(ctx, { exclude: ownedIds });
-  return {
-    ...bot,
-    name: `IA ${behavior ?? bot.behavior}`,
-    behavior: behavior ?? bot.behavior,
-  };
+  const bot = makeBotOpponent(ctx, { exclude: ownedIds, ...(behavior ? { behavior } : {}) });
+  return { ...bot, name: `IA ${bot.behavior}` };
 }
