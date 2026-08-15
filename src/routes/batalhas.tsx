@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { applyOpponentTrophies } from "@/lib/battle.functions";
 import { createFileRoute } from "@tanstack/react-router";
@@ -17,9 +17,12 @@ import { LEAGUES, TEAM_SIZE, leagueOf, leagueProgress } from "@/lib/game/battle/
 import { createBattle, type Battle, type SideId } from "@/lib/game/battle/engine";
 import {
   findOpponent,
+  opponentFromProfile,
   trainingOpponent,
   type Opponent,
 } from "@/lib/game/battle/matchmaking";
+import { findProfile } from "@/lib/game/cloud";
+import { RARITY_ORDER } from "@/lib/game/config";
 import { BattleArena } from "@/components/game/battle/BattleArena";
 import { TeamPicker } from "@/components/game/battle/TeamPicker";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
@@ -49,15 +52,19 @@ export const Route = createFileRoute("/batalhas")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    amistoso: typeof search['amistoso'] === "string" ? search['amistoso'] : "",
+  }),
   component: BattlesPage,
 });
 
 type Phase = "home" | "team" | "searching" | "preview" | "battle" | "result";
-type Mode = "ranked" | "training";
+type Mode = "ranked" | "training" | "friendly";
 
 function BattlesPage() {
   const state = useGame();
   const { user, publicId } = useCloudSync();
+  const { amistoso } = Route.useSearch();
   const bd = battleData(state);
   const prog = leagueProgress(bd.trophies);
   const applyOpponentElo = useServerFn(applyOpponentTrophies);
@@ -70,6 +77,9 @@ function BattlesPage() {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [outcome, setOutcome] = useState<(BattleOutcome & { result: "win" | "loss" }) | null>(null);
   const [behavior, setBehavior] = useState<AiBehavior>("equilibrado");
+  const [friendly, setFriendly] = useState<Opponent | null>(null);
+  /** modo aceito pelo motor: só a ranqueada vale troféus */
+  const engineMode: "ranked" | "training" = mode === "ranked" ? "ranked" : "training";
 
   const ownedIds = useMemo(() => Object.keys(state.monsters), [state.monsters]);
   const teamLevel = useMemo(() => {
@@ -77,13 +87,44 @@ function BattlesPage() {
     return lv.length ? Math.round(lv.reduce((a, b) => a + b, 0) / lv.length) : 1;
   }, [team, state.monsters]);
 
+  const myTeamTier = useMemo(
+    () =>
+      Object.keys(state.monsters).reduce((best, id) => {
+        const def = MONSTERS_BY_ID[id];
+        return def ? Math.max(best, RARITY_ORDER.indexOf(def.rarity)) : best;
+      }, 0),
+    [state.monsters],
+  );
+
   const ctx = {
     myPublicId: publicId ?? state.profile.publicId ?? null,
     myLevel: state.profile.level,
     myTrophies: bd.trophies,
     myTeamLevel: teamLevel,
+    myTeamTier,
     authenticated: !!user,
   };
+
+  // chegada pelo perfil de outro jogador: batalha amistosa (sem troféus)
+  useEffect(() => {
+    if (!amistoso) return;
+    void findProfile(amistoso).then((p) => {
+      if (!p) {
+        toast.error("Não encontramos esse jogador para a amistosa.");
+        return;
+      }
+      const opp = opponentFromProfile(p);
+      if (opp.team.length === 0) {
+        toast.error(`${p.displayName} ainda não tem monstros para batalhar.`);
+        return;
+      }
+      setFriendly(opp);
+      setMode("friendly");
+      setTeam((t) => (t.length > 0 ? t : battleTeamIds(state)));
+      setPhase("team");
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amistoso]);
 
   function toggle(id: string) {
     setTeam((t) => {
@@ -112,6 +153,16 @@ function BattlesPage() {
       return;
     }
     setBattleTeam(team);
+    if (mode === "friendly") {
+      if (!friendly) {
+        toast.error("Adversário da amistosa indisponível.");
+        setPhase("home");
+        return;
+      }
+      setOpponent(friendly);
+      setPhase("preview");
+      return;
+    }
     if (mode === "ranked") {
       setPhase("searching");
       const found = await new Promise<Opponent>((resolve) => {
@@ -129,7 +180,7 @@ function BattlesPage() {
     if (!opponent) return;
     setBattle(
       createBattle({
-        mode,
+        mode: engineMode,
         playerName: state.profile.name,
         playerTeam: team.map((id) => ({ monsterId: id, level: state.monsters[id]?.level ?? 1 })),
         foeName: opponent.name,
@@ -144,7 +195,7 @@ function BattlesPage() {
     if (!opponent) return;
     const result = winner === "player" ? "win" : "loss";
     const out = recordBattle({
-      mode,
+      mode: engineMode,
       result,
       opponentName: opponent.name,
       opponentId: opponent.publicId,
@@ -168,7 +219,13 @@ function BattlesPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title={mode === "ranked" ? "Montar equipe · Ranqueada" : "Montar equipe · Batalha virtual"}
+          title={
+            mode === "ranked"
+              ? "Montar equipe · Ranqueada"
+              : mode === "friendly"
+                ? `Montar equipe · Amistosa vs ${friendly?.name ?? "jogador"}`
+                : "Montar equipe · Batalha virtual"
+          }
           icon="🧩"
           subtitle="Sua equipe é salva e reutilizada nas próximas batalhas."
           action={
@@ -202,7 +259,11 @@ function BattlesPage() {
         )}
         <TeamPicker state={state} selected={team} onToggle={toggle} />
         <Button size="lg" onClick={() => void confirmTeam()} disabled={team.length === 0}>
-          {mode === "ranked" ? "⚔️ Encontrar oponente" : "🤖 Chamar a IA"}
+          {mode === "ranked"
+            ? "⚔️ Encontrar oponente"
+            : mode === "friendly"
+              ? "🤝 Começar amistosa"
+              : "🤖 Chamar a IA"}
         </Button>
       </div>
     );
@@ -277,9 +338,21 @@ function BattlesPage() {
     return (
       <div className="space-y-5">
         <PageHeader
-          title={mode === "ranked" ? "Batalha ranqueada" : "Batalha virtual"}
+          title={
+            mode === "ranked"
+              ? "Batalha ranqueada"
+              : mode === "friendly"
+                ? "Batalha amistosa"
+                : "Batalha virtual"
+          }
           icon="⚔️"
-          subtitle={mode === "ranked" ? `Liga ${prog.league.name} · ${num(bd.trophies)} 🏆` : "Treino livre"}
+          subtitle={
+            mode === "ranked"
+              ? `Liga ${prog.league.name} · ${num(bd.trophies)} 🏆`
+              : mode === "friendly"
+                ? "Nenhum troféu em jogo"
+                : "Treino livre"
+          }
         />
         <BattleArena battle={battle} setBattle={setBattle} onFinish={finish} />
       </div>
@@ -300,7 +373,12 @@ function BattlesPage() {
           <span className="text-6xl">{win ? "🏆" : "💀"}</span>
           <p className="font-display text-4xl font-bold">{win ? "VITÓRIA" : "DERROTA"}</p>
           <p className="text-sm text-muted-foreground">
-            {mode === "ranked" ? "Partida ranqueada" : "Batalha virtual (sem troféus)"} contra{" "}
+            {mode === "ranked"
+              ? "Partida ranqueada"
+              : mode === "friendly"
+                ? "Batalha amistosa (sem troféus)"
+                : "Batalha virtual (sem troféus)"}{" "}
+            contra{" "}
             {outcome.record.opponentName}
           </p>
           {mode === "ranked" && (
