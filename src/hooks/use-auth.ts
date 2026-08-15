@@ -2,7 +2,7 @@ import { createContext, createElement, useCallback, useContext, useEffect, useRe
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { myPublicId, pullFromCloud, pushToCloud } from "@/lib/game/cloud";
-import { resetProgress } from "@/lib/game/state";
+import { claimSignupReward, resetProgress } from "@/lib/game/state";
 import { useGame } from "@/hooks/use-game";
 
 export function useAuth() {
@@ -105,6 +105,15 @@ function useCloudSyncController(): CloudSyncValue {
         window.localStorage.setItem(OWNER_KEY, user.id);
         setPublicId(id);
         setReady(true);
+        // presente de boas-vindas por criar a conta (só na primeira vez)
+        const gift = claimSignupReward();
+        if (gift.ok) {
+          const { toast } = await import("sonner");
+          toast.success("🎁 Recompensa de boas-vindas!", {
+            description: `+10.000 moedas · +60 fragmentos${gift.monsterName ? ` · monstro raro ${gift.monsterName}` : ""}`,
+          });
+          await pushToCloud(user.id);
+        }
       } catch (error) {
         console.error("Falha ao sincronizar progresso", error);
       }
