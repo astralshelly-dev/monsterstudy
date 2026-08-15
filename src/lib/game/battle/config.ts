@@ -220,6 +220,8 @@ export type MonsterBattleStats = {
   maxHp: number;
   atk: number;
   def: number;
+  /** iniciativa: quem tem mais velocidade ataca primeiro */
+  spd: number;
 };
 
 export function battleStats(rarity: RarityId, level: number): MonsterBattleStats {
@@ -229,6 +231,8 @@ export function battleStats(rarity: RarityId, level: number): MonsterBattleStats
     maxHp: Math.round((72 + tier * 16) * (1 + (lv - 1) * 0.09)),
     atk: Math.round((18 + tier * 5.4) * (1 + (lv - 1) * 0.09)),
     def: Math.round((6 + tier * 2.6) * (1 + (lv - 1) * 0.07)),
+    // a raridade influencia pouco a velocidade; o nível é o que mais pesa
+    spd: Math.round((28 + tier * 1.1) * (1 + (lv - 1) * 0.05) * 10) / 10,
   };
 }
 
@@ -236,5 +240,15 @@ export function monsterPower(monsterId: string, level: number): number {
   const def = MONSTERS_BY_ID[monsterId];
   if (!def) return 0;
   const s = battleStats(def.rarity, level);
-  return s.maxHp * 0.5 + s.atk * 6 + s.def * 4;
+  return s.maxHp * 0.5 + s.atk * 6 + s.def * 4 + s.spd * 2;
 }
+
+/** estilos de habilidade — usados pela IA para montar times coerentes */
+export const OFFENSIVE_EFFECTS = ["damage", "damage_hits", "execute", "burn", "splash", "rage"] as const;
+export const DEFENSIVE_EFFECTS = ["shield", "fortify", "team_heal", "drain", "weaken"] as const;
+
+export function abilityStyle(monsterId: string): "ofensivo" | "defensivo" {
+  const t = abilityFor(monsterId).effect.type;
+  return (DEFENSIVE_EFFECTS as readonly string[]).includes(t) ? "defensivo" : "ofensivo";
+}
+
