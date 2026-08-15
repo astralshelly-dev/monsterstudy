@@ -211,12 +211,14 @@ function BaseStats({ id, rarity }: { id: string; rarity: keyof typeof RARITIES }
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
         Atributos base (nível 1)
       </p>
-      <div className="grid grid-cols-4 gap-2 text-sm">
+      <div className="grid grid-cols-3 gap-2 text-sm sm:grid-cols-5">
         <Cell label="Vida" value={num(s.maxHp)} />
         <Cell label="Ataque" value={num(s.atk)} />
         <Cell label="Defesa" value={num(s.def)} />
+        <Cell label="Velocidade" value={String(s.spd)} />
         <Cell label="Renda/s" value={money(RARITIES[rarity].moneyPerSec)} />
       </div>
+
       <div className="rounded-xl bg-background/60 px-3 py-2">
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
           Habilidade especial
