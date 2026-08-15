@@ -899,6 +899,38 @@ export function redeemCode(input: string): { ok: boolean; message: string } {
   return { ok: true, message: `${found.label}: ${parts.join(" · ")}` };
 }
 
+// ------------------------------------------------------------
+// Recompensa de boas-vindas por criar a conta (uma vez por conta)
+// ------------------------------------------------------------
+export const SIGNUP_REWARD = { money: 10000, shards: 60, rarity: "raro" as RarityId };
+const SIGNUP_FLAG = "SIGNUP-BONUS";
+
+export function hasSignupReward(s: GameState = state): boolean {
+  return s.redeemedCodes.includes(SIGNUP_FLAG);
+}
+
+/** entrega 10.000 moedas, 60 fragmentos e 1 monstro raro na criação da conta */
+export function claimSignupReward(): { ok: boolean; monsterName: string | null } {
+  if (hasSignupReward()) return { ok: false, monsterName: null };
+  const pool = MONSTERS_BY_RARITY[SIGNUP_REWARD.rarity] ?? [];
+  const def = pool[Math.floor(Math.random() * pool.length)] ?? null;
+  setState((s) => {
+    if (s.redeemedCodes.includes(SIGNUP_FLAG)) return;
+    s.redeemedCodes = [...s.redeemedCodes, SIGNUP_FLAG];
+    applyReward(s, {
+      monsterId: def?.id ?? null,
+      rarity: SIGNUP_REWARD.rarity,
+      duplicate: false,
+      xp: 0,
+      money: SIGNUP_REWARD.money,
+      shards: SIGNUP_REWARD.shards,
+    });
+  });
+  return { ok: true, monsterName: def?.name ?? null };
+}
+
+
+
 
 export function clearPendingReward() {
   setState((s) => {
