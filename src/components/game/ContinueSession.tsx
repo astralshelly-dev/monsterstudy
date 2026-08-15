@@ -4,15 +4,15 @@ import { useGame } from "@/hooks/use-game";
 import { continuableSession, continueSession } from "@/lib/game/state";
 import { TimerPicker } from "@/components/game/TimerPicker";
 import { Button } from "@/components/ui/button";
-import { duration } from "@/lib/format";
+import { duration, minSec } from "@/lib/format";
 
 /** janela para emendar a sessão anterior */
-const WINDOW_SEC = 30;
+const WINDOW_SEC = 180;
 
 /**
  * Painel de "continuar sessão": emenda um novo cronômetro na última sessão,
  * que aparece no histórico como uma única sessão maior.
- * A opção só fica disponível nos primeiros 30 segundos após o fim da sessão.
+ * A opção só fica disponível nos primeiros 3 minutos após o fim da sessão.
  */
 export function ContinueSessionPanel({ kind }: { kind: "study" | "read" }) {
   const state = useGame();
@@ -49,7 +49,7 @@ export function ContinueSessionPanel({ kind }: { kind: "study" | "read" }) {
           <p className="mt-0.5 text-xs text-muted-foreground">
             {expired
               ? "O tempo para emendar essa sessão acabou."
-              : `Disponível por ${left}s`}
+              : `Disponível por ${minSec(left)}`}
           </p>
         </div>
         <Button
@@ -57,7 +57,7 @@ export function ContinueSessionPanel({ kind }: { kind: "study" | "read" }) {
           disabled={expired}
           onClick={() => setOpen(!open)}
         >
-          {expired ? "Tempo esgotado" : open ? "Cancelar" : `Continuar sessão (${left}s)`}
+          {expired ? "Tempo esgotado" : open ? "Cancelar" : `Continuar sessão (${minSec(left)})`}
         </Button>
       </div>
 

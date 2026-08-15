@@ -130,7 +130,7 @@ export function makeBotOpponent(
     trophies: ctx.myTrophies,
     team: botTeam(ctx.myTeamLevel, ctx.myLevel, opts?.exclude ?? [], {
       behavior,
-      tier: ctx.myTeamTier,
+      ...(typeof ctx.myTeamTier === "number" ? { tier: ctx.myTeamTier } : {}),
     }),
     behavior,
   };
