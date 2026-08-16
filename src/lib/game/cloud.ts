@@ -2,7 +2,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { MONSTERS_BY_ID } from "./monsters";
 import { RARITY_ORDER } from "./config";
 import { leagueOf } from "./battle/config";
-import { getSnapshot, replaceState, totals } from "./state";
+import { getSnapshot, replaceState, subjectList, totals } from "./state";
+import { COSMETICS_BY_ID } from "./cosmetics";
+import { currentSeason } from "./seasons";
 import type { GameState } from "./types";
 
 export type PublicProfile = {
@@ -33,6 +35,16 @@ export type PublicProfile = {
     losses?: number;
     battles?: number;
     league?: string;
+    /** níveis por matéria (top 8) */
+    subjects?: Array<{ key: string; name: string; icon: string; level: number; totalXp: number; minutes: number }>;
+    /** cosméticos equipados */
+    title?: string | null;
+    frame?: string | null;
+    badge?: string | null;
+    /** temporada atual e melhor desempenho */
+    season?: number;
+    seasonMaxTrophies?: number;
+    seasonsPlayed?: number;
   };
 
   updatedAt: string;
@@ -66,6 +78,22 @@ function summarize(s: GameState) {
       losses: s.battle?.losses ?? 0,
       battles: (s.battle?.wins ?? 0) + (s.battle?.losses ?? 0),
       league: leagueOf(s.battle?.trophies ?? 0).id,
+      subjects: subjectList(s)
+        .slice(0, 8)
+        .map((x) => ({
+          key: x.key,
+          name: x.name,
+          icon: x.icon,
+          level: x.level,
+          totalXp: x.totalXp,
+          minutes: Math.round(x.totalSec / 60),
+        })),
+      title: s.cosmetics?.title ? COSMETICS_BY_ID[s.cosmetics.title]?.name ?? null : null,
+      frame: s.cosmetics?.frame ?? null,
+      badge: s.cosmetics?.badge ? COSMETICS_BY_ID[s.cosmetics.badge]?.icon ?? null : null,
+      season: currentSeason().number,
+      seasonMaxTrophies: s.seasons?.maxTrophies ?? 0,
+      seasonsPlayed: s.seasons?.history?.length ?? 0,
     },
   };
 }
@@ -230,4 +258,20 @@ export async function randomProfiles(limit = 100): Promise<PublicProfile[]> {
     .order("updated_at", { ascending: false })
     .limit(limit);
   return (data ?? []).map((r) => mapProfile(r as unknown as Record<string, unknown>));
+}
+
+/**
+ * Ranking da temporada por troféus.
+ * O PostgREST ordena JSON como texto, então a ordenação final é feita aqui.
+ */
+export async function trophyLeaderboard(limit = 100): Promise<PublicProfile[]> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(500);
+  return (data ?? [])
+    .map((r) => mapProfile(r as unknown as Record<string, unknown>))
+    .sort((a, b) => (b.stats.trophies ?? 0) - (a.stats.trophies ?? 0))
+    .slice(0, limit);
 }
