@@ -577,7 +577,13 @@ function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0, completion
 // ------------------------------------------------------------
 // Streak / atividade
 // ------------------------------------------------------------
-function markActivity(s: GameState, kind: "study" | "read", seconds: number, pages = 0) {
+function markActivity(
+  s: GameState,
+  kind: "study" | "read",
+  seconds: number,
+  pages = 0,
+  subject?: string | undefined,
+) {
   const key = todayKey();
   const cur = s.activity[key] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
   s.activity = {
@@ -589,6 +595,16 @@ function markActivity(s: GameState, kind: "study" | "read", seconds: number, pag
       sessions: cur.sessions + 1,
     },
   };
+  // ---- expansão: matérias, itens e missões acompanham o tempo real ----
+  if (kind === "study") {
+    addSubjectProgress(s, subject, seconds);
+    bumpQuest(s, "study_minutes", Math.round(seconds / 60));
+  } else {
+    bumpQuest(s, "read_minutes", Math.round(seconds / 60));
+    bumpQuest(s, "read_pages", pages);
+  }
+  accumulateItemProgress(s, seconds);
+
   // streak
   const today = key;
   if (s.streak.lastDay !== today) {
@@ -611,6 +627,7 @@ function markActivity(s: GameState, kind: "study" | "read", seconds: number, pag
       s.streak = { ...s.streak, claimed: [...s.streak.claimed, milestone.days] };
     }
   }
+  bumpQuest(s, "streak_kept", 1);
 }
 
 export function refreshStreak() {
@@ -661,7 +678,10 @@ export function saveStudySession(input: {
     s.sessions = previous
       ? [session, ...s.sessions.filter((x) => x.id !== previous.id)]
       : [session, ...s.sessions];
-    markActivity(s, "study", input.durationSec);
+    markActivity(s, "study", input.durationSec, 0, session.subject);
+    bumpQuest(s, "study_sessions", 1);
+    bumpQuest(s, "money_earned", Math.round(reward.money));
+    if (reward.monsterId) bumpQuest(s, "monsters_found", 1);
     applyReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
@@ -727,6 +747,8 @@ export function saveReadingSession(input: {
         : b,
     );
     markActivity(s, "read", input.durationSec, pagesRead);
+    bumpQuest(s, "money_earned", Math.round(reward.money));
+    if (reward.monsterId) bumpQuest(s, "monsters_found", 1);
     applyReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
@@ -858,7 +880,8 @@ export function saveFreeSession(input: {
   };
   setState((s) => {
     s.sessions = [session, ...s.sessions];
-    markActivity(s, mode, input.durationSec, pagesRead);
+    markActivity(s, mode, input.durationSec, pagesRead, input.timer.meta.subject);
+    if (mode === "study") bumpQuest(s, "study_sessions", 1);
     addUserXp(s, Math.round((minutes * XP.perMinute + pagesRead * XP.perPage) * boost));
     if (mode === "read" && bookId) {
       s.books = s.books.map((b) =>
@@ -969,6 +992,8 @@ export function clearPendingReward() {
 // ------------------------------------------------------------
 // Economia / loja
 // ------------------------------------------------------------
+let passiveAcc = 0;
+
 export function tickMoney(seconds: number) {
   const rate = moneyPerSecond();
   if (rate <= 0) {
@@ -979,12 +1004,19 @@ export function tickMoney(seconds: number) {
   }
   // novo objeto: o useSyncExternalStore precisa de nova referência para
   // atualizar a tela a cada segundo
-  state = {
+  const next: GameState = {
     ...state,
     money: state.money + rate * seconds,
     lastSeen: Date.now(),
     lastModifiedAt: Date.now(),
   };
+  passiveAcc += rate * seconds;
+  if (passiveAcc >= 1) {
+    const whole = Math.floor(passiveAcc);
+    passiveAcc -= whole;
+    bumpQuest(next, "money_earned", whole);
+  }
+  state = next;
   persist();
   emit();
 }
@@ -1231,6 +1263,19 @@ export function recordBattle(input: {
       losses: b.losses + (input.mode === "ranked" && input.result === "loss" ? 1 : 0),
       history: [record, ...b.history].slice(0, 200),
     };
+    if (input.mode === "ranked") {
+      if (input.result === "win") bumpQuest(s, "battles_won", 1);
+      if (delta > 0) bumpQuest(s, "trophies_gained", delta);
+      const st = s.seasons ?? { current: currentSeason().number, maxTrophies: 0, wins: 0, losses: 0, history: [] };
+      s.seasons = {
+        ...st,
+        maxTrophies: Math.max(st.maxTrophies, after),
+        wins: st.wins + (input.result === "win" ? 1 : 0),
+        losses: st.losses + (input.result === "loss" ? 1 : 0),
+      };
+    } else if (input.result === "win") {
+      bumpQuest(s, "battles_won", 1);
+    }
   });
   return { record, trophiesBefore: before, trophiesAfter: after, delta };
 }
