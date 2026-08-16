@@ -155,13 +155,13 @@ function Particles({ theme }: { theme: SceneTheme }) {
       const a = rnd(base + i * 3 + 1);
       const b = rnd(base + i * 3 + 2);
       const c = rnd(base + i * 3 + 3);
-      const size = spec.min + a * (spec.max - spec.min);
+      const r2 = (n: number) => Math.round(n * 100) / 100;
       return {
-        left: b * 100,
-        top: c * 100,
-        size,
-        delay: a * 12,
-        duration: spec.duration[0] + c * (spec.duration[1] - spec.duration[0]),
+        left: r2(b * 100),
+        top: r2(c * 100),
+        size: r2(spec.min + a * (spec.max - spec.min)),
+        delay: r2(a * 12),
+        duration: r2(spec.duration[0] + c * (spec.duration[1] - spec.duration[0])),
       };
     });
   }, [theme.particle, theme.art, spec]);
@@ -175,8 +175,8 @@ function Particles({ theme }: { theme: SceneTheme }) {
           style={{
             left: `${p.left}%`,
             top: `${p.top}%`,
-            width: p.size,
-            height: p.size,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
             backgroundColor: spec.shape === "star" ? "transparent" : theme.ink,
             boxShadow: spec.shape === "star" ? `0 0 ${p.size * 2}px ${p.size / 2}px ${theme.ink}` : undefined,
             borderRadius: spec.shape === "dot" ? "999px" : spec.shape === "diamond" ? "2px" : "999px",
