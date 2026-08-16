@@ -617,7 +617,7 @@ function PlayerConsole({ player, busy, run, onClose }: { player: PlayerDetail; b
         <div className="flex flex-wrap gap-2">
           {player.monsters.map((m) => (
             <div key={m.id} className="flex items-center gap-2 rounded-xl border border-border/50 bg-background/40 p-2">
-              <MonsterArt id={m.id} size="sm" />
+              <MonsterArt art={MONSTERS_BY_ID[m.id]?.art ?? "🐲"} rarity={MONSTERS_BY_ID[m.id]?.rarity ?? "comum"} size="sm" />
               <div className="text-xs">
                 <p className="font-semibold">{m.name}</p>
                 <p className="text-muted-foreground">
@@ -880,7 +880,7 @@ function MonstersSection() {
             {sorted.map((m) => (
               <tr key={m.id} className="border-t border-border/40">
                 <td className="flex items-center gap-2 py-1.5">
-                  <MonsterArt id={m.id} size="sm" />
+                  <MonsterArt art={MONSTERS_BY_ID[m.id]?.art ?? "🐲"} rarity={MONSTERS_BY_ID[m.id]?.rarity ?? "comum"} size="sm" />
                   {m.name}
                 </td>
                 <td>
