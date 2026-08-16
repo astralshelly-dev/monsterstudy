@@ -9,8 +9,12 @@ import { useCloudSync } from "@/hooks/use-auth";
 import {
   battleData,
   battleTeamIds,
+  clearPendingBattle,
+  forfeitPendingBattle,
+  pendingBattle,
   recordBattle,
   setBattleTeam,
+  startPendingBattle,
   type BattleOutcome,
 } from "@/lib/game/state";
 import { LEAGUES, TEAM_SIZE, leagueOf, leagueProgress } from "@/lib/game/battle/config";
