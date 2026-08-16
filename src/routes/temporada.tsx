@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
 import { battleData, finishSeasonIfNeeded, seasonState } from "@/lib/game/state";
-import { RANK_REWARDS, SEASON_TROPHY_KEEP, leagueById, leagueReward } from "@/lib/game/seasons";
+import {
+  RANK_REWARDS,
+  SEASON_DAYS,
+  SEASON_TROPHY_KEEP,
+  leagueById,
+  leagueReward,
+} from "@/lib/game/seasons";
 import { LEAGUES, leagueOf, leagueProgress } from "@/lib/game/battle/config";
 import { trophyLeaderboard, myPublicId, type PublicProfile } from "@/lib/game/cloud";
 import { useCloudSync } from "@/hooks/use-auth";
@@ -68,9 +74,9 @@ function SeasonPage() {
       <PageHeader
         title={`Temporada ${ss.season.number} — ${ss.season.name}`}
         icon="🗓️"
-        subtitle={`Ciclo de 60 dias. Termina em ${shortDate(ss.season.endsAt.slice(0, 10))}.`}
+        subtitle={`Ciclo de 60 dias. Termina em ${shortDate(new Date(ss.season.endsAt).toISOString().slice(0, 10))}.`}
         action={
-          <Link to="/batalhas">
+          <Link to="/batalhas" search={{ amistoso: "" }}>
             <Button variant="outline">Ir para as batalhas</Button>
           </Link>
         }
@@ -79,10 +85,11 @@ function SeasonPage() {
       <div className="panel p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="font-display text-lg font-semibold">
-            {ss.season.icon} {ss.season.name}
+            🗓️ {ss.season.name}
           </p>
           <span className="text-sm text-muted-foreground">
-            {ss.season.daysLeft} dia(s) restante(s) · dia {ss.season.dayIndex + 1}/60
+            {ss.season.daysLeft} dia(s) restante(s) · dia {SEASON_DAYS - ss.season.daysLeft + 1}/
+            {SEASON_DAYS}
           </span>
         </div>
         <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
