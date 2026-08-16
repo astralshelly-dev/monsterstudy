@@ -6,12 +6,17 @@ import {
   hydrate,
   isHydrated,
   subscribe,
+  ensureDailyQuests,
   takeAchievementQueue,
+  takeCosmeticQueue,
+  takeItemQueue,
   takeOfflineEarnings,
   tickMoney,
   type OfflineEarnings,
 } from "@/lib/game/state";
 import { ACHIEVEMENTS } from "@/lib/game/achievements";
+import { ITEM_RARITY_BY_ID } from "@/lib/game/items";
+import { COSMETICS_BY_ID } from "@/lib/game/cosmetics";
 import { money as fmtMoney } from "@/lib/format";
 
 export function useGame() {
@@ -24,6 +29,7 @@ export function useHydrated() {
   useEffect(() => {
     hydrate();
     setOffline(takeOfflineEarnings());
+    ensureDailyQuests();
   }, []);
   useEffect(() => {
     const id = setInterval(() => tickMoney(1), 1000);
@@ -36,6 +42,21 @@ export function useHydrated() {
       if (a) {
         toast.success(`${a.icon} Conquista desbloqueada: ${a.name}`, {
           description: `${a.description} · +${fmtMoney(a.reward)}`,
+        });
+      }
+    }
+  }, [state]);
+  useEffect(() => {
+    for (const item of takeItemQueue()) {
+      toast.success(`${item.icon} Item encontrado: ${item.name}`, {
+        description: `${ITEM_RARITY_BY_ID[item.rarity].name} · veja no Inventário`,
+      });
+    }
+    for (const id of takeCosmeticQueue()) {
+      const c = COSMETICS_BY_ID[id];
+      if (c) {
+        toast.success(`${c.icon} Cosmético desbloqueado: ${c.name}`, {
+          description: "Equipe no seu Perfil",
         });
       }
     }
