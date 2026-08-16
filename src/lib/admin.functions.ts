@@ -158,7 +158,7 @@ export const adminGetPlayer = createServerFn({ method: "POST" })
       money: num(p.money),
       shards: num(p.shards),
       streak: { current: num(p.streak_current), best: num(p.streak_best) },
-      stats: (p.stats ?? {}) as Record<string, unknown>,
+      stats: (JSON.parse(JSON.stringify(p.stats ?? {})) as Record<string, number | string>),
       trophies: num(battle['trophies'] ?? (p.stats as Record<string, unknown> | null)?.['trophies']),
       wins: num(battle['wins']),
       losses: num(battle['losses']),
