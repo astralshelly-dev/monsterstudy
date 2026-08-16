@@ -122,7 +122,7 @@ export const ABILITIES: Ability[] = [
     name: "Casca Arcana",
     icon: "🛡️",
     description: "Cria um escudo que absorve o próximo dano recebido.",
-    cooldown: 3,
+    cooldown: 4,
     effect: { type: "shield", pct: 0.4 },
   },
   {
@@ -224,22 +224,96 @@ export type MonsterBattleStats = {
   spd: number;
 };
 
-export function battleStats(rarity: RarityId, level: number): MonsterBattleStats {
+/**
+ * Velocidade é uma característica de CADA monstro (não da raridade):
+ * criaturas ágeis (felinos, aves, faíscas) correm muito mais que
+ * criaturas pesadas (golens, baleias, tanques de pedra). Um lendário
+ * pode perfeitamente ser mais lento que um comum.
+ */
+export const SPEED_FACTOR: Record<string, number> = {
+  // comuns
+  mosslet: 0.72,
+  pebbly: 0.78,
+  drippet: 1.02,
+  sparkid: 1.34,
+  frostnib: 0.95,
+  vinelet: 0.85,
+  twiglin: 0.98,
+  sandpip: 1.16,
+  // incomuns
+  thornhop: 1.28,
+  tidewhisk: 1.12,
+  cindertail: 1.22,
+  glaciva: 0.9,
+  dunecoil: 1.05,
+  lumibug: 1.3,
+  mistmote: 1.24,
+  glowfin: 1.08,
+  // raros
+  ashmole: 0.8,
+  emberfang: 1.26,
+  moonfang: 1.36,
+  abyssquill: 0.94,
+  barkgolem: 0.6,
+  mirasand: 1.1,
+  petalynx: 1.42,
+  quartzox: 0.66,
+  bloomserp: 1.04,
+  starkit: 1.32,
+  // super raros
+  stormhorn: 1.14,
+  voidbloom: 0.86,
+  kraveel: 1.2,
+  magmaw: 0.7,
+  thornmaw: 0.9,
+  voltyx: 1.46,
+  // épicos
+  aurelith: 0.96,
+  cryotaur: 0.82,
+  sylvaqueen: 1.06,
+  obsidrake: 1.18,
+  tempestrix: 1.4,
+  dunephar: 0.88,
+  // lendários
+  solmyrr: 1.1,
+  nebulith: 1.0,
+  thundrix: 1.44,
+  seraphae: 1.3,
+  // míticos
+  eclipsaur: 0.76,
+  arcanyx: 1.08,
+  abyssaria: 0.68,
+  umbraleth: 1.34,
+  // divinos
+  astraeon: 1.02,
+  luminara: 1.22,
+  // secreto
+  aetheryon: 1.38,
+};
+
+export function speedFactor(monsterId: string): number {
+  return SPEED_FACTOR[monsterId] ?? 1;
+}
+
+export function battleStats(rarity: RarityId, level: number, monsterId?: string): MonsterBattleStats {
   const tier = RARITY_ORDER.indexOf(rarity);
   const lv = Math.max(1, level);
   return {
     maxHp: Math.round((72 + tier * 16) * (1 + (lv - 1) * 0.09)),
     atk: Math.round((18 + tier * 5.4) * (1 + (lv - 1) * 0.09)),
     def: Math.round((6 + tier * 2.6) * (1 + (lv - 1) * 0.07)),
-    // a raridade influencia pouco a velocidade; o nível é o que mais pesa
-    spd: Math.round((28 + tier * 1.1) * (1 + (lv - 1) * 0.05) * 10) / 10,
+    // a velocidade vem das características do monstro; a raridade quase não conta
+    spd:
+      Math.round(
+        (24 + tier * 0.6) * (monsterId ? speedFactor(monsterId) : 1) * (1 + (lv - 1) * 0.05) * 10,
+      ) / 10,
   };
 }
 
 export function monsterPower(monsterId: string, level: number): number {
   const def = MONSTERS_BY_ID[monsterId];
   if (!def) return 0;
-  const s = battleStats(def.rarity, level);
+  const s = battleStats(def.rarity, level, monsterId);
   return s.maxHp * 0.5 + s.atk * 6 + s.def * 4 + s.spd * 2;
 }
 

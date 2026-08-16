@@ -204,7 +204,7 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
 }
 
 function BaseStats({ id, rarity }: { id: string; rarity: keyof typeof RARITIES }) {
-  const s = battleStats(rarity, 1);
+  const s = battleStats(rarity, 1, id);
   const ab = abilityFor(id);
   return (
     <div className="space-y-2 rounded-2xl bg-secondary/40 p-3 text-left">

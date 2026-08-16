@@ -43,7 +43,7 @@ export function TeamPicker({
       </p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {owned.map(({ owned: m, def }) => {
-          const s = battleStats(def!.rarity, m.level);
+          const s = battleStats(def!.rarity, m.level, m.id);
           const ab = abilityFor(m.id);
           const on = selected.includes(m.id);
           return (

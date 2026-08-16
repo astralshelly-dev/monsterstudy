@@ -16,6 +16,7 @@ import {
   ScrollText,
   Search,
   Settings,
+  ShieldAlert,
   ShoppingBag,
   Swords,
   Sparkles,
@@ -24,7 +25,8 @@ import {
   UserRound,
 } from "lucide-react";
 import { useGame, useHydrated } from "@/hooks/use-game";
-import { CloudSyncProvider } from "@/hooks/use-auth";
+import { CloudSyncProvider, useCloudSync } from "@/hooks/use-auth";
+import { isAdminEmail } from "@/lib/admin";
 import { moneyPerSecond, userProgress } from "@/lib/game/state";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -52,6 +54,8 @@ const NAV = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
+const ADMIN_NAV = { to: "/adm", label: "Painel ADM", icon: ShieldAlert } as const;
+
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <CloudSyncProvider>
@@ -62,6 +66,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 function AppShellContent({ children }: { children: ReactNode }) {
   const { offline, dismissOffline } = useHydrated();
+  const { user } = useCloudSync();
+  const nav = isAdminEmail(user?.email) ? [...NAV, ADMIN_NAV] : [...NAV];
 
   const state = useGame();
 
@@ -87,7 +93,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
         </Link>
 
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
             return (
               <Link
@@ -144,7 +150,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5">
-            {NAV.filter((n) => "primary" in n && n.primary)
+            {nav.filter((n) => "primary" in n && n.primary)
               .slice(0, 4)
               .map((item) => {
                 const active =
@@ -178,7 +184,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                   <SheetTitle className="font-display">Todas as seções</SheetTitle>
                 </SheetHeader>
                 <div className="mt-4 grid grid-cols-2 gap-2 pb-6">
-                  {NAV.map((item) => {
+                  {nav.map((item) => {
                     const active =
                       pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
                     return (
