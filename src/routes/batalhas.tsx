@@ -529,6 +529,23 @@ function BattlesPage() {
         subtitle="Coloque sua coleção à prova: ranqueada assíncrona contra outros caçadores ou treino contra a IA."
       />
 
+      {forfeited && (
+        <div className="panel border border-ember/40 bg-ember/10 p-4">
+          <p className="font-display text-sm font-semibold text-ember">
+            💀 Batalha perdida por abandono
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Você saiu da ranqueada contra {forfeited.opponentName} antes de terminar. A partida foi
+            registrada como derrota: {forfeited.delta} troféus (agora {num(forfeited.trophiesAfter)}{" "}
+            🏆).
+          </p>
+          <Button size="sm" variant="outline" className="mt-3" onClick={() => setForfeited(null)}>
+            Entendi
+          </Button>
+        </div>
+      )}
+
+
       <div className="panel aurora p-5">
         <div className="flex flex-wrap items-center gap-4">
           <span className="grid h-16 w-16 place-items-center rounded-2xl bg-primary/15 text-3xl ring-1 ring-primary/40">
