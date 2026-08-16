@@ -207,61 +207,191 @@
   }
 }
 
+/* ------------------------------------------------------------
+   Partículas de cena — movimento vertical no invólucro,
+   oscilação/brilho no elemento interno (camadas independentes).
+------------------------------------------------------------ */
 @keyframes scene-drift-up {
   0% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 8vh, 0);
   }
   100% {
-    transform: translate3d(18px, -120vh, 0);
+    transform: translate3d(0, -108vh, 0);
   }
 }
 
 @keyframes scene-rise {
   0% {
-    transform: translate3d(0, 20vh, 0) scale(0.7);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
+    transform: translate3d(0, 12vh, 0);
   }
   100% {
-    transform: translate3d(-12px, -110vh, 0) scale(1.1);
-    opacity: 0;
+    transform: translate3d(0, -112vh, 0);
   }
 }
 
 @keyframes scene-fall {
   0% {
-    transform: translate3d(0, -20vh, 0);
+    transform: translate3d(0, -12vh, 0);
   }
   100% {
-    transform: translate3d(-24px, 115vh, 0);
+    transform: translate3d(0, 112vh, 0);
   }
 }
 
 @keyframes scene-sway {
   0% {
-    transform: translate3d(0, -15vh, 0) rotate(45deg);
-  }
-  50% {
-    transform: translate3d(30px, 45vh, 0) rotate(120deg);
+    transform: translate3d(0, -12vh, 0);
   }
   100% {
-    transform: translate3d(-10px, 112vh, 0) rotate(220deg);
+    transform: translate3d(0, 112vh, 0);
   }
 }
 
 @keyframes scene-twinkle {
   0%,
   100% {
-    transform: scale(0.5);
-    opacity: 0.15;
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: scale(1.15);
-    opacity: 1;
+    transform: translate3d(0, -3vh, 0);
   }
 }
+
+/* oscilação horizontal suave (invólucro interno) */
+@keyframes scene-swing {
+  0% {
+    transform: translate3d(-14px, 0, 0);
+  }
+  50% {
+    transform: translate3d(14px, 0, 0);
+  }
+  100% {
+    transform: translate3d(-14px, 0, 0);
+  }
+}
+
+/* respiração de opacidade/escala do ponto */
+@keyframes scene-breathe {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* aparecer/desaparecer nas pontas do trajeto (evita "pop" nas bordas) */
+@keyframes scene-life {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes scene-tumble {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------
+   Cores de nome por título (raridade do título)
+------------------------------------------------------------ */
+.name-plain {
+  color: var(--foreground);
+}
+
+.name-soft {
+  color: color-mix(in oklab, var(--primary) 65%, var(--foreground));
+}
+
+/* metálicos: gradiente curto e sóbrio, sem animação forte */
+.name-metal {
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--metal-a) 70%, white 10%),
+    var(--metal-b),
+    color-mix(in oklab, var(--metal-a) 85%, black 8%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.name-metal-bronze {
+  --metal-a: oklch(0.72 0.09 62);
+  --metal-b: oklch(0.86 0.06 78);
+}
+.name-metal-silver {
+  --metal-a: oklch(0.8 0.015 250);
+  --metal-b: oklch(0.95 0.008 250);
+}
+.name-metal-gold {
+  --metal-a: oklch(0.8 0.11 88);
+  --metal-b: oklch(0.94 0.09 92);
+}
+
+/* elite: gradiente animado suave + brilho fraco mas visível */
+.name-elite {
+  background-image: linear-gradient(
+    100deg,
+    var(--elite-a),
+    var(--elite-b),
+    var(--elite-c),
+    var(--elite-a)
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: name-shift 7s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--elite-b) 55%, transparent));
+}
+
+.name-elite-arcane {
+  --elite-a: oklch(0.82 0.13 300);
+  --elite-b: oklch(0.88 0.12 265);
+  --elite-c: oklch(0.86 0.1 330);
+}
+.name-elite-legend {
+  --elite-a: oklch(0.86 0.13 60);
+  --elite-b: oklch(0.92 0.11 90);
+  --elite-c: oklch(0.82 0.14 35);
+}
+.name-elite-pro {
+  --elite-a: oklch(0.88 0.14 195);
+  --elite-b: oklch(0.94 0.1 215);
+  --elite-c: oklch(0.85 0.15 170);
+}
+
+@keyframes name-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .name-elite {
+    animation: none;
+  }
+}
+
 
 @utility panel {
   background: color-mix(in oklab, var(--surface) 86%, transparent);
