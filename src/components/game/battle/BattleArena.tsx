@@ -281,7 +281,7 @@ function FighterView({
         </div>
         <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
           {fighter.hp}/{fighter.maxHp} PV · ATQ {Math.round(fighter.atk * (1 + fighter.atkBuff))} · DEF{" "}
-          {Math.round(fighter.def * (1 + fighter.defBuff))}
+          {Math.round(fighter.def * (1 + fighter.defBuff))} · VEL {fighter.spd}
           {fighter.shield > 0 && ` · 🛡️ ${fighter.shield}`}
         </p>
         <div className={cn("mt-1 flex items-center gap-1", side === "foe" && "justify-end")}>
