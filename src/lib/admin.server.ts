@@ -382,6 +382,50 @@ export function grantAchievementInState(state: Json, id: string, granted: boolea
   return { ...state, achievements };
 }
 
+/** entrega itens do inventário (expansão: itens) */
+export function giveItemInState(state: Json, itemId: string, qty: number): Json {
+  const inventory = { ...obj(state['inventory']) };
+  const cur = num(inventory[itemId], 0);
+  const next = Math.max(0, cur + qty);
+  if (next === 0) delete inventory[itemId];
+  else inventory[itemId] = next;
+  return { ...state, inventory };
+}
+
+/** libera ou remove um cosmético */
+export function grantCosmeticInState(state: Json, id: string, granted: boolean): Json {
+  const cos = { ...obj(state['cosmetics']) };
+  const owned = new Set(arr(cos['owned']).map((x) => String(x)));
+  if (granted) owned.add(id);
+  else owned.delete(id);
+  cos['owned'] = [...owned];
+  for (const kind of ["frame", "title", "background", "badge", "effect"]) {
+    if (!granted && cos[kind] === id) cos[kind] = null;
+  }
+  return { ...state, cosmetics: cos };
+}
+
+/** conclui todas as missões do dia (recompensas ficam disponíveis para coletar) */
+export function completeQuestsInState(state: Json): Json {
+  const q = obj(state['quests']);
+  const list = arr(q['list']).map((raw) => {
+    const item = obj(raw);
+    return { ...item, progress: num(item['target'], num(item['progress'], 0)) };
+  });
+  return { ...state, quests: { ...q, list } };
+}
+
+/** reinicia a temporada do jogador: troféus zerados e histórico de batalhas limpo */
+export function resetSeasonInState(state: Json): Json {
+  const battle = obj(state['battle']);
+  const seasons = obj(state['seasons']);
+  return {
+    ...state,
+    battle: { ...battle, trophies: 0, history: [], pending: null },
+    seasons: { ...seasons, maxTrophies: 0, wins: 0, losses: 0 },
+  };
+}
+
 export function clearCodesInState(state: Json): Json {
   return { ...state, redeemedCodes: [] };
 }
@@ -809,6 +853,66 @@ export async function runAchievement(input: Ctx & { publicId: string; achievemen
     async () => {
       const out = await mutatePlayer(p.public_id, (s) =>
         grantAchievementInState(s, input.achievementId, input.granted),
+      );
+      return { before: out.before, after: out.after, result: out };
+    },
+  );
+}
+
+export async function runItem(input: Ctx & { publicId: string; itemId: string; qty: number }) {
+  const p = await loadProfile(input.publicId);
+  if (!input.itemId) throw new Error("Informe o item.");
+  return audited(
+    {
+      claims: input.claims,
+      adminUserId: input.adminUserId,
+      action: input.qty >= 0 ? "Entregar item" : "Remover item",
+      category: "item",
+      target: { userId: p.user_id, publicId: p.public_id, name: p.display_name },
+      details: { itemId: input.itemId, qty: input.qty },
+    },
+    async () => {
+      const out = await mutatePlayer(p.public_id, (s) => giveItemInState(s, input.itemId, input.qty));
+      return { before: out.before, after: out.after, result: out };
+    },
+  );
+}
+
+export async function runCosmetic(input: Ctx & { publicId: string; cosmeticId: string; granted: boolean }) {
+  const p = await loadProfile(input.publicId);
+  if (!input.cosmeticId) throw new Error("Informe o cosmético.");
+  return audited(
+    {
+      claims: input.claims,
+      adminUserId: input.adminUserId,
+      action: input.granted ? "Liberar cosmético" : "Remover cosmético",
+      category: "cosmetic",
+      target: { userId: p.user_id, publicId: p.public_id, name: p.display_name },
+      details: { cosmeticId: input.cosmeticId },
+    },
+    async () => {
+      const out = await mutatePlayer(p.public_id, (s) =>
+        grantCosmeticInState(s, input.cosmeticId, input.granted),
+      );
+      return { before: out.before, after: out.after, result: out };
+    },
+  );
+}
+
+export async function runProgressOp(input: Ctx & { publicId: string; op: "completeQuests" | "resetSeason" }) {
+  const p = await loadProfile(input.publicId);
+  return audited(
+    {
+      claims: input.claims,
+      adminUserId: input.adminUserId,
+      action: input.op === "completeQuests" ? "Concluir missões do dia" : "Reiniciar temporada",
+      category: input.op === "completeQuests" ? "quest" : "season",
+      target: { userId: p.user_id, publicId: p.public_id, name: p.display_name },
+      details: { op: input.op },
+    },
+    async () => {
+      const out = await mutatePlayer(p.public_id, (s) =>
+        input.op === "completeQuests" ? completeQuestsInState(s) : resetSeasonInState(s),
       );
       return { before: out.before, after: out.after, result: out };
     },
