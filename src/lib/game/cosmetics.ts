@@ -27,7 +27,7 @@ export type CosmeticDef = {
   className?: string;
 };
 
-export const COSMETICS: CosmeticDef[] = [
+const BASE_COSMETICS: CosmeticDef[] = [
   // ---------- Molduras ----------
   { id: "frame_none", kind: "frame", name: "Sem moldura", icon: "⬜", description: "Visual limpo.", unlock: { type: "free" }, className: "" },
   { id: "frame_bronze", kind: "frame", name: "Moldura Bronze", icon: "🥉", description: "Para quem começou a jornada.", unlock: { type: "level", n: 5 }, className: "ring-4 ring-rarity-comum/70" },
@@ -42,7 +42,7 @@ export const COSMETICS: CosmeticDef[] = [
   { id: "title_bibliotecario", kind: "title", name: "Bibliotecário", icon: "📖", description: "Leia 1.000 páginas.", unlock: { type: "pages", n: 1000 } },
   { id: "title_imparavel", kind: "title", name: "Imparável", icon: "🔥", description: "Sequência de 30 dias.", unlock: { type: "streak", n: 30 } },
   { id: "title_veterano", kind: "title", name: "Veterano", icon: "⚔️", description: "Vença 100 batalhas.", unlock: { type: "wins", n: 100 } },
-  { id: "title_campeao", kind: "title", name: "Campeão", icon: "👑", description: "Alcance a liga PRO ou o topo do ranking.", unlock: { type: "trophies", n: 5200 } },
+  { id: "title_campeao", kind: "title", name: "PRO", icon: "⚡", description: "Alcance a liga PRO.", unlock: { type: "trophies", n: 5200 } },
   { id: "title_top100", kind: "title", name: "Top 100", icon: "🏅", description: "Termine uma temporada entre os 100 melhores.", unlock: { type: "season" } },
   { id: "title_mestre_materia", kind: "title", name: "Mestre da Matéria", icon: "🧮", description: "Desbloqueie 25 conquistas.", unlock: { type: "achievements", n: 25 } },
   { id: "title_lenda", kind: "title", name: "Lenda Viva", icon: "🌌", description: "Chegue ao nível 40.", unlock: { type: "level", n: 40 } },
@@ -66,6 +66,50 @@ export const COSMETICS: CosmeticDef[] = [
   { id: "fx_glow", kind: "effect", name: "Brilho Arcano", icon: "✨", description: "Nível 10.", unlock: { type: "level", n: 10 }, className: "animate-pulse-soft" },
   { id: "fx_aura", kind: "effect", name: "Aura Divina", icon: "🌟", description: "40 conquistas desbloqueadas.", unlock: { type: "achievements", n: 40 }, className: "drop-shadow-[0_0_18px_hsl(var(--gold)/0.7)]" },
 ];
+
+// ---------- Conjuntos de liga (um título + um fundo para cada rank) ----------
+/** ligas espelhando src/lib/game/battle/config.ts (mantido local para evitar ciclos) */
+const RANK_LADDER: Array<{
+  id: string;
+  name: string;
+  icon: string;
+  min: number;
+  title: string;
+  bg: string;
+}> = [
+  { id: "bronze", name: "Bronze", icon: "🥉", min: 0, title: "Aspirante de Bronze", bg: "bg-gradient-to-br from-rarity-comum/25 via-background to-background" },
+  { id: "prata", name: "Prata", icon: "🥈", min: 400, title: "Guardião de Prata", bg: "bg-gradient-to-br from-rarity-incomum/25 via-background to-background" },
+  { id: "ouro", name: "Ouro", icon: "🥇", min: 900, title: "Sentinela de Ouro", bg: "bg-gradient-to-br from-gold/30 via-background to-background" },
+  { id: "diamante", name: "Diamante", icon: "💎", min: 1500, title: "Lâmina de Diamante", bg: "bg-gradient-to-br from-rarity-super/30 via-background to-primary/10" },
+  { id: "mitico", name: "Mítico", icon: "🔮", min: 2200, title: "Arcanista Mítico", bg: "bg-gradient-to-br from-rarity-epico/30 via-background to-arcane/20" },
+  { id: "lendario", name: "Lendário", icon: "🐉", min: 3000, title: "Domador Lendário", bg: "bg-gradient-to-br from-rarity-lendario/30 via-background to-gold/15" },
+  { id: "mestre", name: "Mestre", icon: "👑", min: 4000, title: "Grão-Mestre", bg: "bg-gradient-to-br from-rarity-mitico/30 via-background to-arcane/20" },
+  { id: "pro", name: "PRO", icon: "⚡", min: 5200, title: "PRO", bg: "bg-gradient-to-br from-rarity-divino/35 via-arcane/20 to-background shadow-[inset_0_0_60px_hsl(var(--rarity-divino)/0.25)]" },
+];
+
+const RANK_COSMETICS: CosmeticDef[] = RANK_LADDER.flatMap((r) => [
+  {
+    id: `title_rank_${r.id}`,
+    kind: "title" as const,
+    name: r.title,
+    icon: r.icon,
+    description: `Título exclusivo da liga ${r.name}.`,
+    unlock: r.min === 0 ? { type: "free" as const } : { type: "trophies" as const, n: r.min },
+  },
+  {
+    id: `bg_rank_${r.id}`,
+    kind: "background" as const,
+    name: `Arena ${r.name}`,
+    icon: r.icon,
+    description: `Fundo de perfil da liga ${r.name}.`,
+    unlock: r.min === 0 ? { type: "free" as const } : { type: "trophies" as const, n: r.min },
+    className: r.bg,
+  },
+]);
+
+export const COSMETICS: CosmeticDef[] = [...BASE_COSMETICS, ...RANK_COSMETICS];
+
+
 
 export const COSMETICS_BY_ID: Record<string, CosmeticDef> = Object.fromEntries(
   COSMETICS.map((c) => [c.id, c]),

@@ -4,6 +4,8 @@ import {
   FREE_XP_MILESTONES,
   FREE_XP_REPEAT,
   GIFT_CODES,
+  ITEM_SHOP_PRICES,
+
   OFFLINE_INCOME_BASE,
   OFFLINE_INCOME_MAX_HOURS,
   EARLY_END_PENALTY,
@@ -34,6 +36,8 @@ import { generateDailyQuests, QUESTS_BY_ID, questDone, type DailyQuest, type Que
 import { ITEMS_BY_ID, ITEM_DROP_SECONDS, rollItem, type ItemDef } from "./items";
 import { subjectKey, subjectLevelFromXp, subjectIcon, SUBJECT_XP_PER_MINUTE, type SubjectProgress } from "./subjects";
 import { COSMETICS, COSMETICS_BY_ID, type CosmeticKind } from "./cosmetics";
+import { sanitizeName } from "./names";
+
 import {
   currentSeason,
   leagueReward,
@@ -91,7 +95,12 @@ export function defaultState(): GameState {
       streak_booster: 0,
       monster_den: 0,
       dream_crystal: 0,
+      shard_magnet: 0,
+      item_hunter: 0,
+      monster_trainer: 0,
+      quest_master: 0,
     },
+
 
     unlockedTimers: [...DEFAULT_UNLOCKED_TIMERS],
     achievements: {},
@@ -534,14 +543,18 @@ function addUserXp(s: GameState, amount: number) {
 
 export function addMonsterXp(monsterId: string, amount: number): { levelsGained: number } {
   let levelsGained = 0;
+  const trainerMult =
+    1 + (state.upgrades.monster_trainer ?? 0) * UPGRADES.monster_trainer.effectPerLevel;
+  const boosted = Math.round(amount * trainerMult);
   setState((s) => {
     const owned = s.monsters[monsterId];
     if (!owned) return;
     const def = MONSTERS_BY_ID[monsterId];
     if (!def) return;
     const tier = RARITY_ORDER.indexOf(def.rarity);
-    let xp = owned.xp + amount;
+    let xp = owned.xp + boosted;
     let level = owned.level;
+
     while (level < MONSTER_MAX_LEVEL && xp >= monsterXpForLevel(level, tier)) {
       xp -= monsterXpForLevel(level, tier);
       level += 1;
@@ -572,7 +585,10 @@ function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0, completion
     duplicate: granted.duplicate,
     xp,
     money,
-    shards: granted.duplicate ? 10 * (RARITY_ORDER.indexOf(rarity) + 1) : 0,
+    shards: granted.duplicate
+      ? Math.round(10 * (RARITY_ORDER.indexOf(rarity) + 1) * shardMultiplier())
+      : 0,
+
   };
 }
 
@@ -1104,9 +1120,12 @@ export function bookStats(bookId: string, s: GameState = state) {
 // ------------------------------------------------------------
 export function updateProfile(patch: Partial<GameState["profile"]>) {
   setState((s) => {
-    s.profile = { ...s.profile, ...patch };
+    const next = { ...s.profile, ...patch };
+    if (patch.name !== undefined) next.name = sanitizeName(patch.name) || "Caçador";
+    s.profile = next;
   });
 }
+
 
 export function updateSettings(patch: Partial<GameState["settings"]>) {
   setState((s) => {
@@ -1348,18 +1367,48 @@ function grantRandomItems(s: GameState, count: number) {
  */
 function accumulateItemProgress(s: GameState, seconds: number) {
   if (seconds <= 0) return;
+  const target = itemDropTarget(s);
   let acc = (s.itemProgressSec ?? 0) + seconds;
-  while (acc >= ITEM_DROP_SECONDS) {
-    acc -= ITEM_DROP_SECONDS;
+  while (acc >= target) {
+    acc -= target;
     grantRandomItems(s, 1);
   }
   s.itemProgressSec = acc;
 }
 
+/** tempo necessário para o próximo item, reduzido pelo Caçador de Relíquias */
+export function itemDropTarget(s: GameState = state): number {
+  const lvl = s.upgrades?.item_hunter ?? 0;
+  return Math.max(
+    60,
+    Math.round(ITEM_DROP_SECONDS * (1 - lvl * UPGRADES.item_hunter.effectPerLevel)),
+  );
+}
+
+/** multiplicador de fragmentos do Ímã de Fragmentos */
+export function shardMultiplier(s: GameState = state): number {
+  return 1 + (s.upgrades?.shard_magnet ?? 0) * UPGRADES.shard_magnet.effectPerLevel;
+}
+
 export function itemDropProgress(s: GameState = state) {
   const cur = s.itemProgressSec ?? 0;
-  return { current: cur, target: ITEM_DROP_SECONDS, pct: Math.min(100, (cur / ITEM_DROP_SECONDS) * 100) };
+  const target = itemDropTarget(s);
+  return { current: cur, target, pct: Math.min(100, (cur / target) * 100) };
 }
+
+/** compra um item no bazar da loja pagando com fragmentos */
+export function buyItem(itemId: string): { ok: boolean; message: string } {
+  const def = ITEMS_BY_ID[itemId];
+  if (!def) return { ok: false, message: "Item desconhecido." };
+  const price = ITEM_SHOP_PRICES[def.rarity] ?? 0;
+  if (state.shards < price) return { ok: false, message: "Fragmentos insuficientes." };
+  setState((s) => {
+    s.shards -= price;
+    grantItemTo(s, itemId, 1);
+  });
+  return { ok: true, message: `${def.icon} ${def.name} comprado por ${price} fragmentos.` };
+}
+
 
 export function inventoryEntries(s: GameState = state) {
   return Object.entries(s.inventory ?? {})
@@ -1476,18 +1525,24 @@ export function claimQuest(templateId: string): { ok: boolean; message: string }
         x.templateId === templateId ? { ...x, claimed: true } : x,
       ),
     };
+    const questMult =
+      1 + (s.upgrades?.quest_master ?? 0) * UPGRADES.quest_master.effectPerLevel;
     if (t.reward.xp) {
-      addUserXp(s, t.reward.xp);
-      parts.push(`+${t.reward.xp} XP`);
+      const xp = Math.round(t.reward.xp * questMult);
+      addUserXp(s, xp);
+      parts.push(`+${xp} XP`);
     }
     if (t.reward.money) {
-      s.money += t.reward.money;
-      parts.push(`+${t.reward.money.toLocaleString("pt-BR")} moedas`);
+      const money = Math.round(t.reward.money * questMult);
+      s.money += money;
+      parts.push(`+${money.toLocaleString("pt-BR")} moedas`);
     }
     if (t.reward.shards) {
-      s.shards += t.reward.shards;
-      parts.push(`+${t.reward.shards} fragmentos`);
+      const shards = Math.round(t.reward.shards * questMult * shardMultiplier(s));
+      s.shards += shards;
+      parts.push(`+${shards} fragmentos`);
     }
+
     if (t.reward.item) {
       grantRandomItems(s, 1);
       parts.push("+1 item");

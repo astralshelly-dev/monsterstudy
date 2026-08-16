@@ -1,11 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
-import { RARITIES, TIMERS, UPGRADES, upgradePrice, type UpgradeId } from "@/lib/game/config";
-import { buyTimer, buyUpgrade, rarityChances } from "@/lib/game/state";
+import {
+  ITEM_SHOP_PRICES,
+  RARITIES,
+  TIMERS,
+  UPGRADES,
+  upgradePrice,
+  type UpgradeId,
+} from "@/lib/game/config";
+import { ITEMS, ITEM_RARITIES, ITEM_RARITY_BY_ID } from "@/lib/game/items";
+import { buyItem, buyTimer, buyUpgrade, rarityChances } from "@/lib/game/state";
 import { PageHeader } from "@/components/game/Primitives";
 import { Button } from "@/components/ui/button";
-import { money } from "@/lib/format";
+import { money, num } from "@/lib/format";
 import { rarityText } from "@/components/game/MonsterArt";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +43,7 @@ function Shop() {
       <PageHeader
         title="Loja"
         icon="🛍️"
-        subtitle={`Você tem ${money(state.money)} para investir na sua jornada.`}
+        subtitle={`Você tem ${money(state.money)} e ${num(state.shards)} fragmentos para investir na sua jornada.`}
       />
 
       <section className="space-y-3">
@@ -87,6 +95,9 @@ function Shop() {
 
       <section className="space-y-3">
         <h2 className="font-display text-xl font-semibold">✨ Upgrades</h2>
+        <p className="text-sm text-muted-foreground">
+          Melhorias permanentes que valem para sessões, batalhas, missões e itens.
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {(Object.keys(UPGRADES) as UpgradeId[]).map((id) => {
             const u = UPGRADES[id];
@@ -135,6 +146,57 @@ function Shop() {
             );
           })}
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-display text-xl font-semibold">🧺 Bazar de itens</h2>
+        <p className="text-sm text-muted-foreground">
+          Troque fragmentos por itens direto na loja — eles vão para o seu inventário.
+        </p>
+        {ITEM_RARITIES.map((r) => {
+          const list = ITEMS.filter((i) => i.rarity === r.id);
+          if (list.length === 0) return null;
+          return (
+            <div key={r.id} className="space-y-2">
+              <p className={cn("text-xs font-semibold uppercase tracking-wider", r.text)}>
+                {r.name} · {ITEM_SHOP_PRICES[r.id]} fragmentos
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {list.map((item) => {
+                  const price = ITEM_SHOP_PRICES[item.rarity] ?? 0;
+                  return (
+                    <div key={item.id} className="panel flex flex-col p-4">
+                      <div className="flex items-start gap-3">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary/70 text-2xl">
+                          {item.icon}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-display text-base font-semibold">{item.name}</p>
+                          <p className={cn("text-[11px] font-semibold", ITEM_RARITY_BY_ID[item.rarity].text)}>
+                            {ITEM_RARITY_BY_ID[item.rarity].name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
+                        </div>
+                      </div>
+                      <Button
+                        className="mt-4"
+                        variant="secondary"
+                        disabled={state.shards < price}
+                        onClick={() => {
+                          const res = buyItem(item.id);
+                          if (res.ok) toast.success(res.message);
+                          else toast.error(res.message);
+                        }}
+                      >
+                        Comprar — {num(price)} 💎
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </section>
     </div>
   );

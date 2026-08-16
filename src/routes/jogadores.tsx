@@ -13,6 +13,8 @@ import { leagueOf, leagueProgress } from "@/lib/game/battle/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { duration, money, num } from "@/lib/format";
+import { COSMETICS_BY_ID } from "@/lib/game/cosmetics";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/jogadores")({
   head: () => ({
@@ -127,7 +129,18 @@ function PlayersPage() {
                   className="flex w-full items-center gap-3 rounded-xl bg-secondary/50 px-3 py-2 text-left hover:bg-secondary"
                 >
                   <ProfileAvatar avatar={p.avatar} monsterId={p.avatarMonsterId} size="sm" />
-                  <span className="min-w-0 flex-1 truncate font-medium">{p.displayName}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">
+                      {p.stats.cosmetics?.badge
+                        ? `${COSMETICS_BY_ID[p.stats.cosmetics.badge]?.icon ?? ""} `
+                        : ""}
+                      {p.displayName}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {p.stats.title ? `${p.stats.title} · ` : ""}
+                      {leagueOf(p.stats.trophies ?? 0).icon} {num(p.stats.trophies ?? 0)} 🏆
+                    </span>
+                  </span>
                   <span className="text-xs text-muted-foreground">Nv {p.level}</span>
                 </button>
               </li>
@@ -145,14 +158,37 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
     .filter((x) => x.def)
     .sort((a, b) => RARITY_ORDER.indexOf(b.def!.rarity) - RARITY_ORDER.indexOf(a.def!.rarity));
 
+  const cos = p.stats.cosmetics ?? {};
+  const frame = cos.frame ? COSMETICS_BY_ID[cos.frame] : undefined;
+  const title = cos.title ? COSMETICS_BY_ID[cos.title] : undefined;
+  const bg = cos.background ? COSMETICS_BY_ID[cos.background] : undefined;
+  const badge = cos.badge ? COSMETICS_BY_ID[cos.badge] : undefined;
+  const fx = cos.effect ? COSMETICS_BY_ID[cos.effect] : undefined;
+  const league = leagueOf(p.stats.trophies ?? 0);
+  const team = (p.stats.team ?? []).map((id) => MONSTERS_BY_ID[id]).filter(Boolean);
+  const topMonster = p.stats.topMonsterId ? MONSTERS_BY_ID[p.stats.topMonsterId] : undefined;
+
   return (
     <div className="space-y-5">
-      <div className="panel aurora flex flex-wrap items-center gap-5 p-6">
-        <ProfileAvatar avatar={p.avatar} monsterId={p.avatarMonsterId} size="lg" />
+      <div className={cn("panel aurora flex flex-wrap items-center gap-5 p-6", bg?.className)}>
+        <div className={cn("rounded-2xl", frame?.className, fx?.className)}>
+          <ProfileAvatar avatar={p.avatar} monsterId={p.avatarMonsterId} size="lg" />
+        </div>
         <div className="min-w-0">
-          <p className="font-display text-2xl font-bold">{p.displayName}</p>
+          <p className="font-display text-2xl font-bold">
+            {badge && <span className="mr-1.5">{badge.icon}</span>}
+            {p.displayName}
+          </p>
+          {title && (
+            <p className="text-sm font-semibold text-primary">
+              {title.icon} {title.name}
+            </p>
+          )}
           <p className="text-sm text-muted-foreground">
             ID {p.publicId} · Nível {p.level} · 🔥 {p.streakCurrent} dias
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {league.icon} Liga {league.name} · Temporada {p.stats.season ?? 1}
           </p>
         </div>
         <div className="ml-auto text-right">
@@ -160,6 +196,36 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
           <p className="text-xs text-muted-foreground">{num(p.shards)} fragmentos</p>
         </div>
       </div>
+
+      <section className="panel space-y-3 p-5">
+        <h2 className="font-display text-lg font-semibold">🎨 Personalização</h2>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              ["Título", title],
+              ["Moldura", frame],
+              ["Fundo", bg],
+              ["Emblema", badge],
+              ["Efeito", fx],
+            ] as const
+          ).map(([label, item]) => (
+            <div key={label} className="flex items-center gap-2 rounded-xl bg-secondary/40 p-2.5">
+              <span className="text-lg">{item?.icon ?? "▫️"}</span>
+              <span className="min-w-0">
+                <span className="block text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {label}
+                </span>
+                <span className="block truncate text-sm font-medium">
+                  {item?.name ?? "Nada equipado"}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {num(p.stats.cosmeticsOwned ?? 0)} cosméticos desbloqueados
+        </p>
+      </section>
 
       <div className="panel flex flex-wrap items-center justify-between gap-3 p-4">
         <div>
@@ -175,16 +241,50 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         </Button>
       </div>
 
+      {team.length > 0 && (
+        <section className="panel p-5">
+          <h2 className="font-display text-lg font-semibold">🛡️ Equipe de batalha</h2>
+          <div className="mt-3 flex flex-wrap gap-4">
+            {team.map((def) => (
+              <div key={def!.id} className="flex flex-col items-center gap-1 text-center">
+                <MonsterArt art={def!.art} rarity={def!.rarity} size="sm" animate={false} />
+                <p className="truncate text-xs font-medium">{def!.name}</p>
+                <RarityBadge rarity={def!.rarity} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {topMonster && (
+        <section className="panel flex items-center gap-4 p-5">
+          <MonsterArt art={topMonster.art} rarity={topMonster.rarity} size="sm" animate={false} />
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Joia da coleção</p>
+            <p className="font-display text-lg font-bold">{topMonster.name}</p>
+            <RarityBadge rarity={topMonster.rarity} />
+          </div>
+        </section>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Tempo estudando" value={duration(p.stats.studySec ?? 0)} />
         <StatCard label="Tempo lendo" value={duration(p.stats.readSec ?? 0)} />
         <StatCard label="Páginas lidas" value={num(p.stats.pages ?? 0)} />
         <StatCard label="Sessões" value={num(p.stats.sessions ?? 0)} />
         <StatCard label="Livros concluídos" value={num(p.stats.booksDone ?? 0)} />
+        <StatCard label="Livros na estante" value={num(p.stats.books ?? 0)} />
         <StatCard label="Monstros" value={num(p.stats.discovered ?? owned.length)} />
+        <StatCard label="Conquistas" value={num(p.stats.achievements ?? 0)} />
+        <StatCard label="Itens no inventário" value={num(p.stats.items ?? 0)} />
+        <StatCard
+          label="Ritmo de leitura"
+          value={p.stats.avgMinPerPage ? `${p.stats.avgMinPerPage} min/pág` : "—"}
+        />
         <StatCard label="Melhor sequência" value={`🔥 ${p.streakBest} dias`} />
         <StatCard label="XP" value={num(p.xp)} />
       </div>
+
 
       <section className="panel space-y-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">

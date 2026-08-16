@@ -37,10 +37,31 @@ export type PublicProfile = {
     league?: string;
     /** níveis por matéria (top 8) */
     subjects?: Array<{ key: string; name: string; icon: string; level: number; totalXp: number; minutes: number }>;
-    /** cosméticos equipados */
+    /** cosméticos equipados (nome/ícone prontos para exibir) */
     title?: string | null;
     frame?: string | null;
     badge?: string | null;
+    /** ids dos cosméticos equipados, para renderizar o perfil completo */
+    cosmetics?: {
+      frame?: string | null;
+      title?: string | null;
+      background?: string | null;
+      badge?: string | null;
+      effect?: string | null;
+    };
+    /** total de cosméticos desbloqueados */
+    cosmeticsOwned?: number;
+    /** conquistas desbloqueadas */
+    achievements?: number;
+    /** itens no inventário */
+    items?: number;
+    /** equipe de batalha salva */
+    team?: string[];
+    /** livros na estante e minutos por página médio */
+    books?: number;
+    avgMinPerPage?: number;
+    /** monstro favorito (mais alto nível/raridade) */
+    topMonsterId?: string | null;
     /** temporada atual e melhor desempenho */
     season?: number;
     seasonMaxTrophies?: number;
@@ -49,6 +70,20 @@ export type PublicProfile = {
 
   updatedAt: string;
 };
+
+/** monstro de maior raridade (desempate por nível) do jogador */
+function topMonsterOf(s: GameState): string | null {
+  let best: { id: string; tier: number; level: number } | null = null;
+  for (const owned of Object.values(s.monsters ?? {})) {
+    const def = MONSTERS_BY_ID[owned.id];
+    if (!def) continue;
+    const tier = RARITY_ORDER.indexOf(def.rarity);
+    if (!best || tier > best.tier || (tier === best.tier && owned.level > best.level)) {
+      best = { id: owned.id, tier, level: owned.level };
+    }
+  }
+  return best?.id ?? null;
+}
 
 function summarize(s: GameState) {
   const t = totals(s);
@@ -91,6 +126,20 @@ function summarize(s: GameState) {
       title: s.cosmetics?.title ? COSMETICS_BY_ID[s.cosmetics.title]?.name ?? null : null,
       frame: s.cosmetics?.frame ?? null,
       badge: s.cosmetics?.badge ? COSMETICS_BY_ID[s.cosmetics.badge]?.icon ?? null : null,
+      cosmetics: {
+        frame: s.cosmetics?.frame ?? null,
+        title: s.cosmetics?.title ?? null,
+        background: s.cosmetics?.background ?? null,
+        badge: s.cosmetics?.badge ?? null,
+        effect: s.cosmetics?.effect ?? null,
+      },
+      cosmeticsOwned: s.cosmetics?.owned?.length ?? 0,
+      achievements: Object.keys(s.achievements ?? {}).length,
+      items: Object.values(s.inventory ?? {}).reduce((a, b) => a + (b ?? 0), 0),
+      team: (s.battle?.team ?? []).slice(0, 3),
+      books: s.books?.length ?? 0,
+      avgMinPerPage: t.pages > 0 ? Math.round((t.readSec / 60 / t.pages) * 100) / 100 : 0,
+      topMonsterId: topMonsterOf(s),
       season: currentSeason().number,
       seasonMaxTrophies: s.seasons?.maxTrophies ?? 0,
       seasonsPlayed: s.seasons?.history?.length ?? 0,
