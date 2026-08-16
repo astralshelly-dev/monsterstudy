@@ -14,6 +14,7 @@ import {
 } from "@/lib/game/state";
 import { EmptyState, PageHeader, StatCard } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
+import { ElementBadge } from "@/components/game/ElementBadge";
 import { Button } from "@/components/ui/button";
 import { money, num } from "@/lib/format";
 import { moneyPerSecond } from "@/lib/game/state";
@@ -119,6 +120,7 @@ function MonsterRow({ id }: { id: string }) {
             <div className="min-w-0">
               <p className="truncate font-display text-lg font-bold">{prog.def.name}</p>
               <RarityBadge rarity={prog.def.rarity} />
+              <ElementBadge monsterId={prog.def.id} compact />
             </div>
             <p className="whitespace-nowrap text-sm text-gold">
               {money(monsterIncome(id, state))}/s

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
+import { ElementBadge } from "@/components/game/ElementBadge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -287,6 +288,7 @@ function FighterView({
         </p>
         <div className={cn("mt-1 flex items-center gap-1", side === "foe" && "justify-end")}>
           <RarityBadge rarity={fighter.rarity} />
+          <ElementBadge element={fighter.element} compact />
           <span className="text-[10px] text-muted-foreground">
             {fighter.ability.icon} {Math.max(1, fighter.charge)}t
           </span>

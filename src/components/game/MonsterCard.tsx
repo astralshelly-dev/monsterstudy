@@ -3,6 +3,7 @@ import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { RARITIES } from "@/lib/game/config";
 import { money, num } from "@/lib/format";
 import { MonsterArt, RarityBadge } from "./MonsterArt";
+import { ElementBadge } from "./ElementBadge";
 import { cn } from "@/lib/utils";
 import type { OwnedMonster } from "@/lib/game/types";
 
@@ -35,7 +36,10 @@ export function MonsterCard({
           </p>
           {discovered ? (
             <div className="mt-1.5 flex flex-col items-center gap-1.5">
-              <RarityBadge rarity={def.rarity} />
+              <div className="flex flex-wrap items-center justify-center gap-1">
+                <RarityBadge rarity={def.rarity} />
+                <ElementBadge monsterId={def.id} compact />
+              </div>
               <p className="text-[11px] text-muted-foreground">
                 Nv. {owned!.level} · x{owned!.copies} ·{" "}
                 {money(RARITIES[def.rarity].moneyPerSec * owned!.copies)}/s
@@ -61,7 +65,10 @@ export function ActiveMonsterCard({ monsterId, owned }: { monsterId: string; own
         <p className="text-xs text-muted-foreground">
           Nível {owned.level} · {num(owned.xp)} XP
         </p>
-        <RarityBadge rarity={def.rarity} className="mt-1" />
+        <div className="mt-1 flex items-center gap-1">
+          <RarityBadge rarity={def.rarity} />
+          <ElementBadge monsterId={def.id} compact />
+        </div>
       </div>
     </Link>
   );

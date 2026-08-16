@@ -7,6 +7,8 @@ import { HABITATS, RARITIES, RARITY_ORDER, type HabitatId, type RarityId } from 
 import { PageHeader } from "@/components/game/Primitives";
 import { MonsterCard } from "@/components/game/MonsterCard";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
+import { ElementBadge } from "@/components/game/ElementBadge";
+import { elementMatchups, elementOf } from "@/lib/game/elements";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { money, num } from "@/lib/format";
@@ -155,6 +157,7 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
               <h2 className="font-display text-2xl font-bold">{prog ? def.name : "???"}</h2>
               <div className="mt-2 flex items-center justify-center gap-2">
                 <RarityBadge rarity={def.rarity} />
+                <ElementBadge monsterId={def.id} />
                 <span className="text-xs text-muted-foreground">
                   {HABITATS[def.habitat].icon} {HABITATS[def.habitat].name}
                 </span>
@@ -219,6 +222,8 @@ function BaseStats({ id, rarity }: { id: string; rarity: keyof typeof RARITIES }
         <Cell label="Renda/s" value={money(RARITIES[rarity].moneyPerSec)} />
       </div>
 
+      <TypeChart id={id} />
+
       <div className="rounded-xl bg-background/60 px-3 py-2">
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
           Habilidade especial
@@ -240,6 +245,44 @@ function Cell({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl bg-secondary/60 px-3 py-2">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className="font-semibold tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function TypeChart({ id }: { id: string }) {
+  const el = elementOf(id);
+  const m = elementMatchups(el.id);
+  return (
+    <div className="rounded-xl bg-background/60 px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        Tipo e fraquezas (±15% de dano)
+      </p>
+      <div className="mt-1 space-y-1 text-xs">
+        <p>
+          <span className="text-muted-foreground">Forte contra: </span>
+          {m.strongAgainst.length ? (
+            m.strongAgainst.map((e) => (
+              <span key={e.id} className="mr-1">
+                {e.icon} {e.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-muted-foreground">nenhum (dano neutro)</span>
+          )}
+        </p>
+        <p>
+          <span className="text-muted-foreground">Fraco contra: </span>
+          {m.weakAgainst.length ? (
+            m.weakAgainst.map((e) => (
+              <span key={e.id} className="mr-1">
+                {e.icon} {e.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-muted-foreground">nenhum</span>
+          )}
+        </p>
+      </div>
     </div>
   );
 }
