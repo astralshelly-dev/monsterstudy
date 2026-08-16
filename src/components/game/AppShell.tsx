@@ -90,7 +90,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/80 px-3 py-5 backdrop-blur lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar/50 px-3 py-5 backdrop-blur lg:flex">
         <Link to="/" className="mb-6 flex items-center gap-2.5 px-2">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/20 text-xl ring-1 ring-primary/40">
             🐲
@@ -129,7 +129,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/50 px-4 py-3 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
             <Link to="/" className="flex items-center gap-2 lg:hidden">
               <span className="text-xl">🐲</span>
@@ -157,7 +157,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 lg:pb-10">{children}</main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5">
             {nav.filter((n) => "primary" in n && n.primary)
               .slice(0, 4)
