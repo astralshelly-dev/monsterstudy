@@ -14,7 +14,7 @@ import {
   updateProfile,
   userProgress,
 } from "@/lib/game/state";
-import { COSMETICS, COSMETIC_KINDS, unlockLabel } from "@/lib/game/cosmetics";
+import { COSMETICS, COSMETIC_KINDS, titleNameClass, unlockLabel } from "@/lib/game/cosmetics";
 import { SceneBackground, useSceneThemeOverride } from "@/components/game/SceneTheme";
 import { themeById } from "@/lib/game/themes";
 import { NAME_MAX_LENGTH, validateName } from "@/lib/game/names";
@@ -82,7 +82,7 @@ function Profile() {
           <div className="min-w-56 flex-1">
             <p className="font-display text-2xl font-bold">
               {badge && <span className="mr-1.5">{badge.icon}</span>}
-              {state.profile.name}
+              <span className={titleNameClass(title?.id)}>{state.profile.name}</span>
             </p>
             {title && (
               <p className="text-sm font-semibold text-primary">
