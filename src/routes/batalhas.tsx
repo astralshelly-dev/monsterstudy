@@ -426,7 +426,7 @@ function BattlesPage() {
           icon="⚔️"
           subtitle={
             mode === "ranked"
-              ? `Liga ${prog.league.name} · ${num(bd.trophies)} 🏆`
+              ? `Liga ${prog.league.name} · ${num(bd.trophies)} 🏆 · sair agora conta como derrota`
               : mode === "friendly"
                 ? "Nenhum troféu em jogo"
                 : "Treino livre"
