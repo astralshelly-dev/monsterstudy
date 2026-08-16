@@ -224,6 +224,14 @@ function BattlesPage() {
       const found = await new Promise<Opponent>((resolve) => {
         window.setTimeout(() => void findOpponent(ctx).then(resolve), 1800);
       });
+      // batalha definitiva: a partir daqui não há como cancelar
+      startPendingBattle({
+        opponentName: found.name,
+        opponentId: found.publicId,
+        opponentSource: found.source,
+        team,
+        opponentTeam: found.team.map((t) => t.monsterId),
+      });
       setOpponent(found);
       setPhase("preview");
     } else {
@@ -250,6 +258,7 @@ function BattlesPage() {
   function finish(winner: SideId, turns: number) {
     if (!opponent) return;
     const result = winner === "player" ? "win" : "loss";
+    clearPendingBattle();
     const out = recordBattle({
       mode: engineMode,
       result,
@@ -263,12 +272,11 @@ function BattlesPage() {
     setOutcome({ ...out, result });
     setPhase("result");
     // batalha assíncrona: o oponente real recebe 70% do efeito invertido
-    if (mode === "ranked" && opponent.source === "player" && opponent.publicId && out.delta !== 0) {
-      void applyOpponentElo({
-        data: { publicId: opponent.publicId, playerDelta: out.delta },
-      }).catch(() => undefined);
+    if (mode === "ranked" && opponent.source === "player") {
+      mirrorToOpponent(opponent.publicId, out.delta);
     }
   }
+
 
   // ---------------- fases ----------------
   if (phase === "team") {
