@@ -28,6 +28,7 @@ import { Route as MissoesRouteImport } from './routes/missoes'
 import { Route as MonsterdexRouteImport } from './routes/monsterdex'
 import { Route as MonstrosRouteImport } from './routes/monstros'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as TemporadaRouteImport } from './routes/temporada'
 import { Route as BibliotecaIndexRouteImport } from './routes/biblioteca.index'
 import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookId'
 
@@ -126,6 +127,11 @@ const PerfilRoute = PerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TemporadaRoute = TemporadaRouteImport.update({
+  id: '/temporada',
+  path: '/temporada',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BibliotecaIndexRoute = BibliotecaIndexRouteImport.update({
   id: '/biblioteca/',
   path: '/biblioteca/',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
+  '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
+  '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
   '/biblioteca': typeof BibliotecaIndexRoute
 }
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
+  '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
+    | '/temporada'
     | '/biblioteca/$bookId'
     | '/biblioteca/'
   fileRoutesByTo: FileRoutesByTo
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
+    | '/temporada'
     | '/biblioteca/$bookId'
     | '/biblioteca'
   id:
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
+    | '/temporada'
     | '/biblioteca/$bookId'
     | '/biblioteca/'
   fileRoutesById: FileRoutesById
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   MonsterdexRoute: typeof MonsterdexRoute
   MonstrosRoute: typeof MonstrosRoute
   PerfilRoute: typeof PerfilRoute
+  TemporadaRoute: typeof TemporadaRoute
   BibliotecaBookIdRoute: typeof BibliotecaBookIdRoute
   BibliotecaIndexRoute: typeof BibliotecaIndexRoute
 }
@@ -438,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/temporada': {
+      id: '/temporada'
+      path: '/temporada'
+      fullPath: '/temporada'
+      preLoaderRoute: typeof TemporadaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/biblioteca/': {
       id: '/biblioteca/'
       path: '/biblioteca'
@@ -475,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   MonsterdexRoute: MonsterdexRoute,
   MonstrosRoute: MonstrosRoute,
   PerfilRoute: PerfilRoute,
+  TemporadaRoute: TemporadaRoute,
   BibliotecaBookIdRoute: BibliotecaBookIdRoute,
   BibliotecaIndexRoute: BibliotecaIndexRoute,
 }
