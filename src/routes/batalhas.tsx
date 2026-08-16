@@ -82,8 +82,60 @@ function BattlesPage() {
   const [outcome, setOutcome] = useState<(BattleOutcome & { result: "win" | "loss" }) | null>(null);
   const [behavior, setBehavior] = useState<AiBehavior>("equilibrado");
   const [friendly, setFriendly] = useState<Opponent | null>(null);
+  const [forfeited, setForfeited] = useState<(BattleOutcome & { opponentName: string }) | null>(
+    null,
+  );
   /** modo aceito pelo motor: só a ranqueada vale troféus */
   const engineMode: "ranked" | "training" = mode === "ranked" ? "ranked" : "training";
+
+  /** aplica o efeito espelhado (70%) no oponente real */
+  const mirrorToOpponent = useCallback(
+    (oppPublicId: string | null | undefined, delta: number) => {
+      if (!oppPublicId || delta === 0) return;
+      void applyOpponentElo({ data: { publicId: oppPublicId, playerDelta: delta } }).catch(
+        () => undefined,
+      );
+    },
+    [applyOpponentElo],
+  );
+
+  /** derrota automática por abandono da batalha ranqueada */
+  const forfeitNow = useCallback(() => {
+    const done = forfeitPendingBattle();
+    if (!done) return null;
+    if (done.pending.opponentSource === "player") {
+      mirrorToOpponent(done.pending.opponentId, done.delta);
+    }
+    return done;
+  }, [mirrorToOpponent]);
+
+  // batalha abandonada em outra visita (fechou/atualizou o app): resolve como derrota
+  useEffect(() => {
+    const done = forfeitNow();
+    if (!done) return;
+    setForfeited({ ...done, opponentName: done.pending.opponentName });
+    setPhase("home");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // saiu da página com a ranqueada em andamento → derrota
+  useEffect(() => {
+    return () => {
+      forfeitNow();
+    };
+  }, [forfeitNow]);
+
+  // fechar/atualizar durante a ranqueada: avisa que a partida será perdida
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (!pendingBattle()) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
 
   const ownedIds = useMemo(() => Object.keys(state.monsters), [state.monsters]);
   const teamLevel = useMemo(() => {
