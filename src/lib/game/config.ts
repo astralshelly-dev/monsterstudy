@@ -320,7 +320,12 @@ export type UpgradeId =
   | "knowledge_boost"
   | "streak_booster"
   | "monster_den"
-  | "dream_crystal";
+  | "dream_crystal"
+  | "shard_magnet"
+  | "item_hunter"
+  | "monster_trainer"
+  | "quest_master";
+
 
 
 export type UpgradeConfig = {
@@ -405,7 +410,61 @@ export const UPGRADES: Record<UpgradeId, UpgradeConfig> = {
     effectPerLevel: 0.1,
     effectLabel: (l) => `${Math.round((OFFLINE_INCOME_BASE + l * 0.1) * 100)}% de renda offline`,
   },
+  shard_magnet: {
+    id: "shard_magnet",
+    name: "Ímã de Fragmentos",
+    icon: "🧿",
+    description: "Duplicatas e missões rendem mais fragmentos.",
+    maxLevel: 20,
+    basePrice: 900,
+    priceGrowth: 1.65,
+    effectPerLevel: 0.1,
+    effectLabel: (l) => `+${Math.round(l * 10)}% fragmentos`,
+  },
+  item_hunter: {
+    id: "item_hunter",
+    name: "Caçador de Relíquias",
+    icon: "🗺️",
+    description: "Reduz o tempo de estudo necessário para achar um item.",
+    maxLevel: 8,
+    basePrice: 2400,
+    priceGrowth: 1.85,
+    effectPerLevel: 0.05,
+    effectLabel: (l) => `-${Math.round(l * 5)}% tempo entre itens`,
+  },
+  monster_trainer: {
+    id: "monster_trainer",
+    name: "Mestre Treinador",
+    icon: "🎯",
+    description: "Seus monstros ganham mais XP e evoluem mais rápido.",
+    maxLevel: 20,
+    basePrice: 1100,
+    priceGrowth: 1.7,
+    effectPerLevel: 0.08,
+    effectLabel: (l) => `+${Math.round(l * 8)}% XP de monstro`,
+  },
+  quest_master: {
+    id: "quest_master",
+    name: "Diário de Missões",
+    icon: "📜",
+    description: "Aumenta as recompensas das missões diárias.",
+    maxLevel: 10,
+    basePrice: 3000,
+    priceGrowth: 1.8,
+    effectPerLevel: 0.1,
+    effectLabel: (l) => `+${Math.round(l * 10)}% recompensa de missões`,
+  },
 };
+
+/** preços dos itens no bazar da loja (em fragmentos), por raridade do item */
+export const ITEM_SHOP_PRICES: Record<string, number> = {
+  comum: 40,
+  raro: 90,
+  super_raro: 180,
+  epico: 350,
+  lendario: 700,
+};
+
 
 
 export function upgradePrice(id: UpgradeId, currentLevel: number): number {

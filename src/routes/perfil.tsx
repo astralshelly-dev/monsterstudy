@@ -15,6 +15,8 @@ import {
   userProgress,
 } from "@/lib/game/state";
 import { COSMETICS, COSMETIC_KINDS, unlockLabel } from "@/lib/game/cosmetics";
+import { NAME_MAX_LENGTH, validateName } from "@/lib/game/names";
+
 import { leagueProgress } from "@/lib/game/battle/config";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
@@ -103,11 +105,22 @@ function Profile() {
           <div className="space-y-1.5">
             <Label>Nome</Label>
             <div className="flex gap-2">
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Input
+                value={name}
+                maxLength={NAME_MAX_LENGTH}
+                onChange={(e) => setName(e.target.value)}
+              />
               <Button
                 disabled={!name.trim()}
                 onClick={async () => {
-                  updateProfile({ name: name.trim() || "Caçador" });
+                  const check = validateName(name);
+                  if (!check.ok) {
+                    toast.error(check.error ?? "Nome inválido");
+                    setName(check.name);
+                    return;
+                  }
+                  updateProfile({ name: check.name });
+                  setName(check.name);
                   if (!ready) {
                     toast.success("Perfil salvo neste dispositivo");
                     return;
@@ -120,7 +133,11 @@ function Profile() {
                 Salvar
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Sem emojis · até {NAME_MAX_LENGTH} caracteres.
+            </p>
           </div>
+
           <div className="space-y-1.5">
             <Label>Foto de perfil</Label>
             <p className="text-xs text-muted-foreground">Escolha um retrato ilustrado.</p>
