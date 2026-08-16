@@ -647,7 +647,8 @@ function BattlesPage() {
                     )}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {shortDate(h.at.slice(0, 10))} · {leagueOf(h.trophiesAfter).name} · {h.turns} turnos
+                    {shortDate(h.at.slice(0, 10))} · {leagueOf(h.trophiesAfter).name} ·{" "}
+                    {h.forfeit ? "abandono" : `${h.turns} turnos`}
                   </p>
                 </div>
                 <span
