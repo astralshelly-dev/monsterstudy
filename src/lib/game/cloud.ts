@@ -71,8 +71,32 @@ function summarize(s: GameState) {
 }
 
 
+/**
+ * Revisão do save conhecida por este dispositivo.
+ * O servidor é a autoridade: toda alteração administrativa incrementa `saves.rev`.
+ * Se a revisão remota for maior do que a conhecida aqui, o app baixa a nuvem
+ * antes de enviar qualquer coisa — assim uma ação do ADM nunca é sobrescrita.
+ */
+let syncedRev = 0;
+
+export function knownRev(): number {
+  return syncedRev;
+}
+
 /** envia o save completo + o perfil público para a nuvem */
-export async function pushToCloud(userId: string): Promise<void> {
+export async function pushToCloud(userId: string): Promise<"pushed" | "refreshed"> {
+  // 1. a nuvem mudou por fora (painel ADM ou outro dispositivo)? ela manda.
+  const { data: head, error: headError } = await supabase
+    .from("saves")
+    .select("rev")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (headError) throw headError;
+  if (head && Number(head.rev ?? 0) > syncedRev) {
+    await pullFromCloud(userId, { force: true });
+    return "refreshed";
+  }
+
   const s = getSnapshot();
   const summary = summarize(s);
   const { error: saveError } = await supabase.from("saves").upsert(
@@ -98,6 +122,7 @@ export async function pushToCloud(userId: string): Promise<void> {
     })
     .eq("user_id", userId);
   if (profileError) throw profileError;
+  return "pushed";
 }
 
 /**
@@ -110,25 +135,36 @@ export async function pullFromCloud(
 ): Promise<"pulled" | "local-newer" | "missing"> {
   const { data, error } = await supabase
     .from("saves")
-    .select("state, updated_at")
+    .select("state, updated_at, rev")
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
   if (!data?.state) return "missing";
   const remote = data.state as unknown as GameState;
   const local = getSnapshot();
-  if (opts?.preferNewest && !opts.force) {
+  const remoteRev = Number(data.rev ?? 0);
+  // uma alteração administrativa (rev maior) sempre vence o save local
+  const adminAhead = remoteRev > syncedRev;
+  if (opts?.preferNewest && !opts.force && !adminAhead) {
     const localModified = local.lastModifiedAt ?? local.lastSeen ?? 0;
     const remoteUpdatedAt = Date.parse(data.updated_at);
     const remoteModified = remote.lastModifiedAt ?? (Number.isFinite(remoteUpdatedAt) ? remoteUpdatedAt : 0);
-    if (localModified > remoteModified) return "local-newer";
+    if (localModified > remoteModified) {
+      syncedRev = remoteRev;
+      return "local-newer";
+    }
   }
-  if (!opts?.force) {
+  if (!opts?.force && !adminAhead) {
     const remoteScore = (remote.sessions?.length ?? 0) + (remote.profile?.xp ?? 0);
     const localScore = local.sessions.length + local.profile.xp;
-    if (!opts?.preferNewest && remoteScore < localScore) return "local-newer";
+    if (!opts?.preferNewest && remoteScore < localScore) {
+      syncedRev = remoteRev;
+      return "local-newer";
+    }
   }
-  replaceState({ ...remote, timer: local.timer, pendingReward: null });
+  syncedRev = remoteRev;
+  // preserva o cronômetro em andamento para não perder a sessão do jogador
+  replaceState({ ...remote, timer: local.timer ?? remote.timer ?? null, pendingReward: local.pendingReward ?? null });
   return "pulled";
 }
 

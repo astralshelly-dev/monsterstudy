@@ -14,6 +14,215 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_logs: {
+        Row: {
+          action: string
+          admin_email: string
+          admin_user_id: string | null
+          after_value: Json | null
+          before_value: Json | null
+          category: string
+          created_at: string
+          details: Json
+          error_message: string | null
+          id: string
+          success: boolean
+          target_name: string | null
+          target_public_id: string | null
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_email?: string
+          admin_user_id?: string | null
+          after_value?: Json | null
+          before_value?: Json | null
+          category?: string
+          created_at?: string
+          details?: Json
+          error_message?: string | null
+          id?: string
+          success?: boolean
+          target_name?: string | null
+          target_public_id?: string | null
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string
+          admin_user_id?: string | null
+          after_value?: Json | null
+          before_value?: Json | null
+          category?: string
+          created_at?: string
+          details?: Json
+          error_message?: string | null
+          id?: string
+          success?: boolean
+          target_name?: string | null
+          target_public_id?: string | null
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      announcements: {
+        Row: {
+          active: boolean
+          audience: string
+          audience_value: string | null
+          body: string
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          kind: string
+          starts_at: string
+          target_user_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string
+          audience_value?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          starts_at?: string
+          target_user_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string
+          audience_value?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          kind?: string
+          starts_at?: string
+          target_user_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      game_settings: {
+        Row: {
+          created_at: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      gift_code_uses: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          public_id: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          public_id?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          public_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_code_uses_code_fkey"
+            columns: ["code"]
+            isOneToOne: false
+            referencedRelation: "gift_codes"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      gift_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          label: string
+          max_uses: number | null
+          money: number
+          monster_id: string | null
+          monster_rarity: string | null
+          once_per_player: boolean
+          shards: number
+          updated_at: string
+          uses: number
+          xp: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          label?: string
+          max_uses?: number | null
+          money?: number
+          monster_id?: string | null
+          monster_rarity?: string | null
+          once_per_player?: boolean
+          shards?: number
+          updated_at?: string
+          uses?: number
+          xp?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          label?: string
+          max_uses?: number | null
+          money?: number
+          monster_id?: string | null
+          monster_rarity?: string | null
+          once_per_player?: boolean
+          shards?: number
+          updated_at?: string
+          uses?: number
+          xp?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar: string
@@ -71,18 +280,21 @@ export type Database = {
       saves: {
         Row: {
           created_at: string
+          rev: number
           state: Json
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          rev?: number
           state: Json
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          rev?: number
           state?: Json
           updated_at?: string
           user_id?: string
@@ -94,6 +306,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_bump_save_rev: { Args: { _user_id: string }; Returns: number }
       generate_public_id: { Args: never; Returns: string }
     }
     Enums: {
