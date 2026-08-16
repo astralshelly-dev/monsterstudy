@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/game/Primitives";
 import { MonsterCard } from "@/components/game/MonsterCard";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
-import { elementMatchups, elementOf } from "@/lib/game/elements";
+import { ELEMENTS_BY_ID, elementMatchups, elementOf } from "@/lib/game/elements";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { money, num } from "@/lib/format";
@@ -260,8 +260,8 @@ function TypeChart({ id }: { id: string }) {
       <div className="mt-1 space-y-1 text-xs">
         <p>
           <span className="text-muted-foreground">Forte contra: </span>
-          {m.strongAgainst.length ? (
-            m.strongAgainst.map((e) => (
+          {m.strong.length ? (
+            m.strong.map((id2) => ELEMENTS_BY_ID[id2]).map((e) => (
               <span key={e.id} className="mr-1">
                 {e.icon} {e.name}
               </span>
@@ -272,8 +272,8 @@ function TypeChart({ id }: { id: string }) {
         </p>
         <p>
           <span className="text-muted-foreground">Fraco contra: </span>
-          {m.weakAgainst.length ? (
-            m.weakAgainst.map((e) => (
+          {m.weak.length ? (
+            m.weak.map((id2) => ELEMENTS_BY_ID[id2]).map((e) => (
               <span key={e.id} className="mr-1">
                 {e.icon} {e.name}
               </span>
