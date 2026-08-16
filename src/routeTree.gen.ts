@@ -23,6 +23,7 @@ import { Route as JogadoresRouteImport } from './routes/jogadores'
 import { Route as LerRouteImport } from './routes/ler'
 import { Route as LivreRouteImport } from './routes/livre'
 import { Route as LojaRouteImport } from './routes/loja'
+import { Route as MissoesRouteImport } from './routes/missoes'
 import { Route as MonsterdexRouteImport } from './routes/monsterdex'
 import { Route as MonstrosRouteImport } from './routes/monstros'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -99,6 +100,11 @@ const LojaRoute = LojaRouteImport.update({
   path: '/loja',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissoesRoute = MissoesRouteImport.update({
+  id: '/missoes',
+  path: '/missoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MonsterdexRoute = MonsterdexRouteImport.update({
   id: '/monsterdex',
   path: '/monsterdex',
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/missoes'
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/missoes'
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/missoes'
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
@@ -270,6 +282,7 @@ export interface RootRouteChildren {
   LerRoute: typeof LerRoute
   LivreRoute: typeof LivreRoute
   LojaRoute: typeof LojaRoute
+  MissoesRoute: typeof MissoesRoute
   MonsterdexRoute: typeof MonsterdexRoute
   MonstrosRoute: typeof MonstrosRoute
   PerfilRoute: typeof PerfilRoute
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/missoes': {
+      id: '/missoes'
+      path: '/missoes'
+      fullPath: '/missoes'
+      preLoaderRoute: typeof MissoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/monsterdex': {
       id: '/monsterdex'
       path: '/monsterdex'
@@ -430,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   LerRoute: LerRoute,
   LivreRoute: LivreRoute,
   LojaRoute: LojaRoute,
+  MissoesRoute: MissoesRoute,
   MonsterdexRoute: MonsterdexRoute,
   MonstrosRoute: MonstrosRoute,
   PerfilRoute: PerfilRoute,
