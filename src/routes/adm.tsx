@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { MONSTERS, MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { ACHIEVEMENTS } from "@/lib/game/achievements";
+import { ITEMS } from "@/lib/game/items";
+import { COSMETICS } from "@/lib/game/cosmetics";
 import { LEAGUES } from "@/lib/game/battle/config";
 import { money as fmtMoney, num as fmtNum, duration, dateTime } from "@/lib/format";
 import {
