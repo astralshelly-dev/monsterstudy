@@ -1,4 +1,6 @@
 import type { RarityId, ShelfId, UpgradeId } from "./config";
+import type { DailyQuests } from "./quests";
+import type { SeasonRecord } from "./seasons";
 
 export type OwnedMonster = {
   id: string;
@@ -211,6 +213,47 @@ export type GameState = {
   battle: BattleData;
   /** última sessão salva (base para "continuar sessão") */
   lastSessionId?: string | null | undefined;
+
+  // ---------- expansão ----------
+  /** XP e tempo por matéria (chave normalizada) */
+  subjects: Record<string, SubjectStat>;
+  /** itens possuídos: id do item -> quantidade */
+  inventory: Record<string, number>;
+  /** segundos de estudo/leitura acumulados para a próxima chance de item */
+  itemProgressSec: number;
+  /** itens encontrados (histórico curto) */
+  itemLog: Array<{ itemId: string; at: string }>;
+  /** missões diárias do dia atual */
+  quests: DailyQuests;
+  /** progresso competitivo por temporada */
+  seasons: SeasonState;
+  /** cosméticos desbloqueados e selecionados */
+  cosmetics: CosmeticState;
+};
+
+export type SubjectStat = {
+  name: string;
+  xp: number;
+  totalSec: number;
+};
+
+export type SeasonState = {
+  /** número da temporada em que este save está */
+  current: number;
+  /** melhor liga/troféus alcançados na temporada atual */
+  maxTrophies: number;
+  wins: number;
+  losses: number;
+  history: SeasonRecord[];
+};
+
+export type CosmeticState = {
+  owned: string[];
+  frame: string | null;
+  title: string | null;
+  background: string | null;
+  badge: string | null;
+  effect: string | null;
 };
 
 
