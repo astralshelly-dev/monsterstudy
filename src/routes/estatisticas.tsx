@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { useGame } from "@/lib/../hooks/use-game";
-import { totals, todayKey, moneyPerSecond, visibleRarities } from "@/lib/game/state";
+import { totals, todayKey, moneyPerSecond, subjectList, visibleRarities } from "@/lib/game/state";
 import { RARITIES } from "@/lib/game/config";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
@@ -163,6 +163,8 @@ function Stats() {
         </section>
       </div>
 
+      <SubjectLevels />
+
       {subjectData.length > 0 && (
         <section className="panel p-5">
           <h2 className="font-display text-lg font-semibold">Minutos por matéria</h2>
@@ -186,5 +188,42 @@ function Stats() {
         </section>
       )}
     </div>
+  );
+}
+
+/** níveis reais por matéria, calculados a partir do tempo estudado */
+function SubjectLevels() {
+  const state = useGame();
+  const list = subjectList(state);
+  if (list.length === 0) return null;
+  return (
+    <section className="panel p-5">
+      <h2 className="font-display text-lg font-semibold">Nível por matéria</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Cada minuto estudado rende XP na matéria correspondente.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {list.map((sub) => (
+          <div key={sub.key} className="rounded-xl bg-secondary/40 p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{sub.icon}</span>
+              <p className="truncate font-display text-sm font-semibold">{sub.name}</p>
+              <span className="ml-auto rounded-full bg-primary/20 px-2 py-0.5 text-[11px] font-bold text-primary">
+                Nv. {sub.level}
+              </span>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+                style={{ width: `${sub.pct}%` }}
+              />
+            </div>
+            <p className="mt-1 text-[11px] tabular-nums text-muted-foreground">
+              {num(sub.xp)} / {num(sub.need)} XP · {duration(sub.totalSec)} estudados
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

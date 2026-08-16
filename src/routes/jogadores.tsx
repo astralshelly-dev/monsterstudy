@@ -213,6 +213,23 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         </div>
       </section>
 
+      {p.stats.subjects && p.stats.subjects.length > 0 && (
+        <section className="panel p-5">
+          <h2 className="font-display text-lg font-semibold">Níveis por matéria</h2>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {p.stats.subjects.map((sub) => (
+              <div key={sub.key} className="flex items-center gap-2 rounded-xl bg-secondary/40 p-2.5">
+                <span>{sub.icon}</span>
+                <span className="truncate text-sm font-medium">{sub.name}</span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  Nv. {sub.level} · {num(sub.minutes)} min
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {p.stats.byRarity && (
         <div className="panel flex flex-wrap gap-2 p-4">
           {RARITY_ORDER.filter((r) => (p.stats.byRarity?.[r] ?? 0) > 0).map((r) => (
