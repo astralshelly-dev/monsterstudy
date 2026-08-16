@@ -94,7 +94,7 @@ function Profile() {
             </p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-accent via-primary to-arcane"
+                className="h-full rounded-full bg-primary"
                 style={{ width: `${up.pct}%` }}
               />
             </div>
@@ -246,7 +246,7 @@ function Profile() {
           </p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+              className="h-full rounded-full bg-primary"
               style={{ width: `${lp.pct}%` }}
             />
           </div>

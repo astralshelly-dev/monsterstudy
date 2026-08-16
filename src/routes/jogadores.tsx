@@ -301,7 +301,7 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         </p>
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+            className="h-full rounded-full bg-primary"
             style={{ width: `${leagueProgress(p.stats.trophies ?? 0).pct}%` }}
           />
         </div>

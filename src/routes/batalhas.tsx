@@ -347,7 +347,7 @@ function BattlesPage() {
             própria, esteja online ou não.
           </p>
           <div className="h-1.5 w-56 overflow-hidden rounded-full bg-muted">
-            <div className="animate-shimmer h-full w-1/2 rounded-full bg-gradient-to-r from-accent to-primary" />
+            <div className="animate-shimmer h-full w-1/2 rounded-full bg-primary" />
           </div>
         </div>
       </div>
@@ -480,7 +480,7 @@ function BattlesPage() {
                 </p>
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${after.pct}%` }}
                   />
                 </div>
@@ -555,7 +555,7 @@ function BattlesPage() {
             <p className="font-display text-xl font-bold">Liga {prog.league.name}</p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-accent via-primary to-arcane"
+                className="h-full rounded-full bg-primary"
                 style={{ width: `${prog.pct}%` }}
               />
             </div>

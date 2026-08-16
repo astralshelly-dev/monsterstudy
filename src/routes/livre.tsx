@@ -232,7 +232,7 @@ function FreeSetup() {
             <p className="text-sm text-muted-foreground">Nível {prog.level}</p>
             <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+                className="h-full rounded-full bg-primary"
                 style={{ width: `${prog.pct}%` }}
               />
             </div>

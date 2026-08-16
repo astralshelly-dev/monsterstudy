@@ -182,7 +182,7 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
                 <div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+                      className="h-full rounded-full bg-primary"
                       style={{ width: `${prog.pct}%` }}
                     />
                   </div>

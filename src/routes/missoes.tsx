@@ -67,7 +67,7 @@ function Missions() {
         </div>
         <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-accent via-primary to-arcane transition-all"
+            className="h-full rounded-full bg-primary transition-all"
             style={{ width: `${drop.pct}%` }}
           />
         </div>
@@ -116,7 +116,7 @@ function Missions() {
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    q.done ? "bg-gradient-to-r from-accent to-gold" : "bg-primary",
+                    q.done ? "bg-gold" : "bg-primary",
                   )}
                   style={{ width: `${pct}%` }}
                 />

@@ -138,7 +138,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
             <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
               <div className="h-2 w-40 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-accent to-primary transition-all"
+                  className="h-full rounded-full bg-primary transition-all"
                   style={{ width: `${prog.pct}%` }}
                 />
               </div>
