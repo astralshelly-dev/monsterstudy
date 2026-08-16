@@ -1236,3 +1236,365 @@ export function recordBattle(input: {
 }
 
 export const BATTLE_LEAGUES = LEAGUES;
+
+// ============================================================
+// EXPANSÃO — matérias, itens, missões, temporadas, cosméticos
+// ============================================================
+
+// ---------------- Matérias ----------------
+function addSubjectProgress(s: GameState, subjectName: string | undefined, seconds: number) {
+  const name = (subjectName ?? "").trim();
+  if (!name || seconds <= 0) return;
+  const key = subjectKey(name);
+  const cur = s.subjects?.[key] ?? { name, xp: 0, totalSec: 0 };
+  const gained = Math.round((seconds / 60) * SUBJECT_XP_PER_MINUTE);
+  s.subjects = {
+    ...(s.subjects ?? {}),
+    [key]: { name: cur.name || name, xp: cur.xp + gained, totalSec: cur.totalSec + seconds },
+  };
+}
+
+export function subjectList(s: GameState = state): SubjectProgress[] {
+  return Object.entries(s.subjects ?? {})
+    .map(([key, v]) => {
+      const lvl = subjectLevelFromXp(v.xp);
+      return {
+        key,
+        name: v.name,
+        icon: subjectIcon(v.name),
+        level: lvl.level,
+        xp: lvl.xp,
+        need: lvl.need,
+        pct: Math.min(100, (lvl.xp / lvl.need) * 100),
+        totalXp: v.xp,
+        totalSec: v.totalSec,
+      } as SubjectProgress & { totalSec: number };
+    })
+    .sort((a, b) => b.totalXp - a.totalXp);
+}
+
+// ---------------- Itens ----------------
+let itemQueue: ItemDef[] = [];
+export function takeItemQueue(): ItemDef[] {
+  const q = itemQueue;
+  itemQueue = [];
+  return q;
+}
+
+function grantItemTo(s: GameState, itemId: string, qty = 1) {
+  const def = ITEMS_BY_ID[itemId];
+  if (!def) return;
+  s.inventory = { ...(s.inventory ?? {}), [itemId]: (s.inventory?.[itemId] ?? 0) + qty };
+  s.itemLog = [{ itemId, at: new Date().toISOString() }, ...(s.itemLog ?? [])].slice(0, 100);
+  for (let i = 0; i < qty; i += 1) itemQueue.push(def);
+}
+
+/** concede N itens aleatórios (recompensas de missão/temporada) */
+function grantRandomItems(s: GameState, count: number) {
+  for (let i = 0; i < count; i += 1) grantItemTo(s, rollItem().id, 1);
+}
+
+/**
+ * Acumula tempo REAL de estudo/leitura. A cada 30 minutos acumulados o
+ * jogador encontra um item sorteado — atualizar a página não gera nada,
+ * pois só o tempo registrado em sessões entra aqui.
+ */
+function accumulateItemProgress(s: GameState, seconds: number) {
+  if (seconds <= 0) return;
+  let acc = (s.itemProgressSec ?? 0) + seconds;
+  while (acc >= ITEM_DROP_SECONDS) {
+    acc -= ITEM_DROP_SECONDS;
+    grantRandomItems(s, 1);
+  }
+  s.itemProgressSec = acc;
+}
+
+export function itemDropProgress(s: GameState = state) {
+  const cur = s.itemProgressSec ?? 0;
+  return { current: cur, target: ITEM_DROP_SECONDS, pct: Math.min(100, (cur / ITEM_DROP_SECONDS) * 100) };
+}
+
+export function inventoryEntries(s: GameState = state) {
+  return Object.entries(s.inventory ?? {})
+    .filter(([, qty]) => qty > 0)
+    .map(([id, qty]) => ({ def: ITEMS_BY_ID[id], qty }))
+    .filter((x): x is { def: ItemDef; qty: number } => Boolean(x.def));
+}
+
+/** usa um item do inventário aplicando o efeito real */
+export function useItem(itemId: string): { ok: boolean; message: string } {
+  const def = ITEMS_BY_ID[itemId];
+  if (!def) return { ok: false, message: "Item desconhecido." };
+  if ((state.inventory?.[itemId] ?? 0) <= 0) return { ok: false, message: "Você não possui este item." };
+  const e = def.effect;
+  if (e.type === "monster_xp" && !state.activeMonsterId) {
+    return { ok: false, message: "Escolha um monstro em treino antes de usar este item." };
+  }
+  let message = "";
+  let monsterXp = 0;
+  setState((s) => {
+    s.inventory = { ...(s.inventory ?? {}), [itemId]: (s.inventory?.[itemId] ?? 0) - 1 };
+    switch (e.type) {
+      case "user_xp":
+        addUserXp(s, e.amount);
+        message = `+${e.amount} XP de jogador`;
+        break;
+      case "money":
+        s.money += e.amount;
+        bumpQuest(s, "money_earned", e.amount);
+        message = `+${e.amount.toLocaleString("pt-BR")} moedas`;
+        break;
+      case "shards":
+        s.shards += e.amount;
+        message = `+${e.amount} fragmentos`;
+        break;
+      case "monster_xp":
+        monsterXp = e.amount;
+        message = `+${e.amount} XP para o monstro em treino`;
+        break;
+      case "monster": {
+        const pool = MONSTERS_BY_RARITY[e.rarity] ?? [];
+        const picked = pool[Math.floor(Math.random() * pool.length)];
+        if (picked) {
+          applyReward(s, {
+            monsterId: picked.id,
+            rarity: e.rarity,
+            duplicate: Boolean(s.monsters[picked.id]),
+            xp: 0,
+            money: 0,
+            shards: 0,
+          });
+          bumpQuest(s, "monsters_found", 1);
+          message = `${picked.name} apareceu!`;
+        }
+        break;
+      }
+    }
+  });
+  if (monsterXp > 0 && state.activeMonsterId) addMonsterXp(state.activeMonsterId, monsterXp);
+  return { ok: true, message: `${def.icon} ${def.name}: ${message}` };
+}
+
+// ---------------- Missões diárias ----------------
+/** troca as missões quando o dia virou (mantém o histórico do dia atual) */
+function rolloverDaily() {
+  const day = todayKey();
+  if (!state.quests || state.quests.day !== day) {
+    state.quests = generateDailyQuests(day, state.profile.publicId ?? "");
+  }
+}
+
+export function ensureDailyQuests() {
+  const day = todayKey();
+  if (!state.quests || state.quests.day !== day) {
+    setState((s) => {
+      s.quests = generateDailyQuests(day, s.profile.publicId ?? "");
+    });
+  }
+}
+
+function bumpQuest(s: GameState, metric: QuestMetric, amount: number) {
+  if (amount <= 0) return;
+  const day = todayKey();
+  const quests = s.quests && s.quests.day === day ? s.quests : generateDailyQuests(day, s.profile.publicId ?? "");
+  s.quests = {
+    day,
+    list: quests.list.map((q) => {
+      const t = QUESTS_BY_ID[q.templateId];
+      if (!t || t.metric !== metric || q.claimed) return q;
+      return { ...q, progress: Math.min(t.target, q.progress + amount) };
+    }),
+  };
+}
+
+export function dailyQuests(s: GameState = state): Array<DailyQuest & { done: boolean }> {
+  const day = todayKey();
+  const quests = s.quests && s.quests.day === day ? s.quests : generateDailyQuests(day, s.profile.publicId ?? "");
+  return quests.list.map((q) => ({ ...q, done: questDone(q) }));
+}
+
+/** coleta a recompensa real de uma missão concluída */
+export function claimQuest(templateId: string): { ok: boolean; message: string } {
+  const t = QUESTS_BY_ID[templateId];
+  if (!t) return { ok: false, message: "Missão desconhecida." };
+  const q = dailyQuests().find((x) => x.templateId === templateId);
+  if (!q) return { ok: false, message: "Missão não está ativa hoje." };
+  if (q.claimed) return { ok: false, message: "Recompensa já coletada." };
+  if (!q.done) return { ok: false, message: "Missão ainda não concluída." };
+  const parts: string[] = [];
+  setState((s) => {
+    s.quests = {
+      day: todayKey(),
+      list: (s.quests?.list ?? []).map((x) =>
+        x.templateId === templateId ? { ...x, claimed: true } : x,
+      ),
+    };
+    if (t.reward.xp) {
+      addUserXp(s, t.reward.xp);
+      parts.push(`+${t.reward.xp} XP`);
+    }
+    if (t.reward.money) {
+      s.money += t.reward.money;
+      parts.push(`+${t.reward.money.toLocaleString("pt-BR")} moedas`);
+    }
+    if (t.reward.shards) {
+      s.shards += t.reward.shards;
+      parts.push(`+${t.reward.shards} fragmentos`);
+    }
+    if (t.reward.item) {
+      grantRandomItems(s, 1);
+      parts.push("+1 item");
+    }
+  });
+  return { ok: true, message: `${t.icon} ${t.title}: ${parts.join(" · ")}` };
+}
+
+// ---------------- Cosméticos ----------------
+export function cosmeticUnlocked(id: string, s: GameState = state): boolean {
+  const def = COSMETICS_BY_ID[id];
+  if (!def) return false;
+  if ((s.cosmetics?.owned ?? []).includes(id)) return true;
+  const u = def.unlock;
+  const t = totals(s);
+  switch (u.type) {
+    case "free":
+      return true;
+    case "level":
+      return s.profile.level >= u.n;
+    case "achievements":
+      return Object.keys(s.achievements ?? {}).length >= u.n;
+    case "monsters":
+      return Object.keys(s.monsters).length >= u.n;
+    case "studyHours":
+      return t.studySec / 3600 >= u.n;
+    case "pages":
+      return t.pages >= u.n;
+    case "streak":
+      return s.streak.best >= u.n;
+    case "trophies":
+      return (s.battle?.bestTrophies ?? 0) >= u.n;
+    case "wins":
+      return (s.battle?.wins ?? 0) >= u.n;
+    case "season":
+      return false;
+  }
+}
+
+let cosmeticQueue: string[] = [];
+export function takeCosmeticQueue(): string[] {
+  const q = cosmeticQueue;
+  cosmeticQueue = [];
+  return q;
+}
+
+/** registra permanentemente os cosméticos cujas condições foram cumpridas */
+function refreshCosmetics() {
+  const owned = new Set(state.cosmetics?.owned ?? []);
+  let changed = false;
+  for (const c of COSMETICS) {
+    if (owned.has(c.id)) continue;
+    if (c.unlock.type === "season") continue;
+    if (cosmeticUnlocked(c.id, state)) {
+      owned.add(c.id);
+      cosmeticQueue.push(c.id);
+      changed = true;
+    }
+  }
+  if (changed) {
+    state.cosmetics = {
+      ...(state.cosmetics ?? { frame: null, title: null, background: null, badge: null, effect: null, owned: [] }),
+      owned: [...owned],
+    };
+  }
+}
+
+export function ownedCosmetics(s: GameState = state): string[] {
+  return s.cosmetics?.owned ?? [];
+}
+
+export function setCosmetic(kind: CosmeticKind, id: string | null): boolean {
+  if (id && !ownedCosmetics().includes(id)) return false;
+  setState((s) => {
+    s.cosmetics = { ...s.cosmetics, [kind]: id };
+  });
+  return true;
+}
+
+export function equippedCosmetic(kind: CosmeticKind, s: GameState = state) {
+  const id = s.cosmetics?.[kind];
+  return id ? COSMETICS_BY_ID[id] ?? null : null;
+}
+
+// ---------------- Temporadas ----------------
+export function seasonState(s: GameState = state) {
+  const season = currentSeason();
+  const st = s.seasons ?? { current: season.number, maxTrophies: 0, wins: 0, losses: 0, history: [] };
+  return { season, ...st };
+}
+
+function applySeasonReward(s: GameState, reward: SeasonReward) {
+  s.money += reward.money;
+  s.shards += reward.shards;
+  if (reward.items > 0) grantRandomItems(s, reward.items);
+  const extra = [reward.title, reward.cosmetic].filter(Boolean) as string[];
+  if (extra.length) {
+    const owned = new Set(s.cosmetics?.owned ?? []);
+    for (const id of extra) if (COSMETICS_BY_ID[id]) owned.add(id);
+    s.cosmetics = { ...s.cosmetics, owned: [...owned] };
+  }
+}
+
+/**
+ * Encerra a temporada anterior quando o ciclo de 60 dias virou:
+ * arquiva o desempenho, distribui recompensas reais, apaga o histórico
+ * de batalhas antigo e faz o reset suave dos troféus.
+ */
+export function finishSeasonIfNeeded(position: number | null = null): SeasonRecord | null {
+  const season = currentSeason();
+  const st = state.seasons;
+  if (!st || st.current === season.number) return null;
+  const b = battleData();
+  const maxTrophies = Math.max(st.maxTrophies, b.trophies);
+  const rank = rankReward(position);
+  const league = leagueReward(maxTrophies);
+  const rewards: SeasonReward = {
+    money: league.money + (rank?.reward.money ?? 0),
+    shards: league.shards + (rank?.reward.shards ?? 0),
+    items: league.items + (rank?.reward.items ?? 0),
+    ...(rank?.reward.title ? { title: rank.reward.title } : {}),
+    ...(rank?.reward.cosmetic ?? league.cosmetic
+      ? { cosmetic: rank?.reward.cosmetic ?? league.cosmetic }
+      : {}),
+  };
+  const record: SeasonRecord = {
+    number: st.current,
+    name: currentSeason().name,
+    endedAt: new Date().toISOString(),
+    bestLeague: leagueOf(maxTrophies).id,
+    maxTrophies,
+    finalTrophies: b.trophies,
+    position,
+    wins: st.wins,
+    losses: st.losses,
+    rewards,
+  };
+  setState((s) => {
+    const bd = battleData(s);
+    s.battle = {
+      ...bd,
+      trophies: Math.floor(bd.trophies * SEASON_TROPHY_KEEP),
+      // temporada nova começa com histórico limpo
+      history: [],
+      pending: null,
+    };
+    s.seasons = {
+      current: season.number,
+      maxTrophies: Math.floor(bd.trophies * SEASON_TROPHY_KEEP),
+      wins: 0,
+      losses: 0,
+      history: [record, ...(s.seasons?.history ?? [])].slice(0, 24),
+    };
+    applySeasonReward(s, rewards);
+  });
+  return record;
+}
