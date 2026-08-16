@@ -366,11 +366,24 @@ function BattlesPage() {
               : "Adversário controlado pela IA."
           }
           action={
-            <Button variant="outline" onClick={() => setPhase("home")}>
-              Cancelar
-            </Button>
+            mode === "ranked" ? undefined : (
+              <Button variant="outline" onClick={() => setPhase("home")}>
+                Cancelar
+              </Button>
+            )
           }
         />
+        {mode === "ranked" && (
+          <div className="panel border border-ember/40 bg-ember/10 p-4">
+            <p className="font-display text-sm font-semibold text-ember">
+              ⚠️ Batalha definitiva — não é possível cancelar
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              A partida já está registrada. Se você sair da batalha, fechar ou atualizar o app sem
+              jogar, ela será contada como derrota e você perderá troféus.
+            </p>
+          </div>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <FighterPreview
             title="Você"
@@ -394,6 +407,7 @@ function BattlesPage() {
         <Button size="lg" onClick={beginBattle}>
           ⚔️ Começar batalha
         </Button>
+
       </div>
     );
   }
