@@ -13,7 +13,7 @@ import { leagueOf, leagueProgress } from "@/lib/game/battle/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { duration, money, num } from "@/lib/format";
-import { COSMETICS_BY_ID } from "@/lib/game/cosmetics";
+import { COSMETICS_BY_ID, titleNameClass } from "@/lib/game/cosmetics";
 import { useSceneThemeOverride } from "@/components/game/SceneTheme";
 import { cn } from "@/lib/utils";
 
@@ -135,7 +135,9 @@ function PlayersPage() {
                       {p.stats.cosmetics?.badge
                         ? `${COSMETICS_BY_ID[p.stats.cosmetics.badge]?.icon ?? ""} `
                         : ""}
-                      {p.displayName}
+                      <span className={titleNameClass(p.stats.cosmetics?.title)}>
+                        {p.displayName}
+                      </span>
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">
                       {p.stats.title ? `${p.stats.title} · ` : ""}
@@ -180,7 +182,7 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         <div className="min-w-0">
           <p className="font-display text-2xl font-bold">
             {badge && <span className="mr-1.5">{badge.icon}</span>}
-            {p.displayName}
+            <span className={titleNameClass(title?.id)}>{p.displayName}</span>
           </p>
           {title && (
             <p className="text-sm font-semibold text-primary">
