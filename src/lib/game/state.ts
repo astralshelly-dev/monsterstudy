@@ -29,7 +29,7 @@ import {
 import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
 import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
-import type { BattleRecord } from "./types";
+import type { BattleRecord, PendingBattle } from "./types";
 import type {
   ActiveTimer,
   Book,
