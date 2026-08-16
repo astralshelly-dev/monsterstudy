@@ -207,14 +207,66 @@
   }
 }
 
+@keyframes scene-drift-up {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(18px, -120vh, 0);
+  }
+}
+
+@keyframes scene-rise {
+  0% {
+    transform: translate3d(0, 20vh, 0) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-12px, -110vh, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes scene-fall {
+  0% {
+    transform: translate3d(0, -20vh, 0);
+  }
+  100% {
+    transform: translate3d(-24px, 115vh, 0);
+  }
+}
+
+@keyframes scene-sway {
+  0% {
+    transform: translate3d(0, -15vh, 0) rotate(45deg);
+  }
+  50% {
+    transform: translate3d(30px, 45vh, 0) rotate(120deg);
+  }
+  100% {
+    transform: translate3d(-10px, 112vh, 0) rotate(220deg);
+  }
+}
+
+@keyframes scene-twinkle {
+  0%,
+  100% {
+    transform: scale(0.5);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
 @utility panel {
-  background:
-    linear-gradient(
-      160deg,
-      color-mix(in oklab, var(--surface) 92%, var(--primary) 8%),
-      var(--surface)
-    );
-  border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+  backdrop-filter: blur(6px);
   border-radius: var(--radius-2xl);
   box-shadow:
     0 1px 0 0 color-mix(in oklab, white 6%, transparent) inset,
@@ -242,126 +294,106 @@
 @utility aurora {
   position: relative;
   isolation: isolate;
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -40% -10% auto -10%;
-    height: 420px;
-    z-index: -1;
-    background:
-      radial-gradient(
-        45% 55% at 20% 30%,
-        color-mix(in oklab, var(--primary) 40%, transparent),
-        transparent 70%
-      ),
-      radial-gradient(
-        40% 50% at 75% 20%,
-        color-mix(in oklab, var(--accent) 34%, transparent),
-        transparent 70%
-      ),
-      radial-gradient(
-        30% 40% at 50% 60%,
-        color-mix(in oklab, var(--arcane) 24%, transparent),
-        transparent 70%
-      );
-    filter: blur(30px);
-    pointer-events: none;
-  }
 }
 
 /* Raridades: superficie e halo por raridade */
 @utility rarity-comum {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-comum) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-comum) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-comum) 85%, transparent);
+  background: color-mix(in oklab, var(--r-comum) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-comum) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-comum) 30%, transparent);
 }
 
 @utility halo-comum {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-comum) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-comum) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-comum) 45%, transparent);
 }
 
 @utility rarity-incomum {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-incomum) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-incomum) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-incomum) 85%, transparent);
+  background: color-mix(in oklab, var(--r-incomum) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-incomum) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-incomum) 30%, transparent);
 }
 
 @utility halo-incomum {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-incomum) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-incomum) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-incomum) 45%, transparent);
 }
 
 @utility rarity-raro {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-raro) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-raro) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-raro) 85%, transparent);
+  background: color-mix(in oklab, var(--r-raro) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-raro) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-raro) 30%, transparent);
 }
 
 @utility halo-raro {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-raro) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-raro) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-raro) 45%, transparent);
 }
 
 @utility rarity-super {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-super) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-super) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-super) 85%, transparent);
+  background: color-mix(in oklab, var(--r-super) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-super) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-super) 30%, transparent);
 }
 
 @utility halo-super {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-super) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-super) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-super) 45%, transparent);
 }
 
 @utility rarity-epico {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-epico) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-epico) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-epico) 85%, transparent);
+  background: color-mix(in oklab, var(--r-epico) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-epico) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-epico) 30%, transparent);
 }
 
 @utility halo-epico {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-epico) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-epico) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-epico) 45%, transparent);
 }
 
 @utility rarity-lendario {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-lendario) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-lendario) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-lendario) 85%, transparent);
+  background: color-mix(in oklab, var(--r-lendario) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-lendario) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-lendario) 30%, transparent);
 }
 
 @utility halo-lendario {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-lendario) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-lendario) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-lendario) 45%, transparent);
 }
 
 @utility rarity-mitico {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-mitico) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-mitico) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-mitico) 85%, transparent);
+  background: color-mix(in oklab, var(--r-mitico) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-mitico) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-mitico) 30%, transparent);
 }
 
 @utility halo-mitico {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-mitico) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-mitico) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-mitico) 45%, transparent);
 }
 
 @utility rarity-divino {
-  background: linear-gradient(150deg, color-mix(in oklab, var(--r-divino) 24%, var(--surface)), var(--surface) 72%);
-  border: 1px solid color-mix(in oklab, var(--r-divino) 50%, transparent);
-  box-shadow: 0 16px 44px -28px color-mix(in oklab, var(--r-divino) 85%, transparent);
+  background: color-mix(in oklab, var(--r-divino) 16%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-divino) 55%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--r-divino) 30%, transparent);
 }
 
 @utility halo-divino {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-divino) 60%, transparent), transparent 66%);
+  background: color-mix(in oklab, var(--r-divino) 22%, transparent);
+  border: 1px solid color-mix(in oklab, var(--r-divino) 45%, transparent);
 }
 
 @utility rarity-secreto {
-  background:
-    linear-gradient(150deg, color-mix(in oklab, var(--r-secreto) 34%, var(--surface)), var(--surface) 62%),
-    conic-gradient(from 210deg, color-mix(in oklab, var(--gold) 30%, transparent), transparent 55%);
-  border: 1px solid color-mix(in oklab, var(--r-secreto) 70%, transparent);
-  box-shadow:
-    0 18px 52px -24px color-mix(in oklab, var(--r-secreto) 95%, transparent),
-    inset 0 0 24px -8px color-mix(in oklab, var(--gold) 45%, transparent);
+  background: color-mix(in oklab, var(--r-secreto) 20%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--r-secreto) 75%, transparent);
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, var(--gold) 45%, transparent);
 }
 
 @utility halo-secreto {
-  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, var(--r-secreto) 75%, transparent), color-mix(in oklab, var(--gold) 30%, transparent) 45%, transparent 70%);
+  background: color-mix(in oklab, var(--r-secreto) 26%, transparent);
+  border: 1px solid color-mix(in oklab, var(--gold) 55%, transparent);
 }
 
 
@@ -378,18 +410,6 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image:
-      radial-gradient(
-        60% 40% at 12% 0%,
-        color-mix(in oklab, var(--primary) 16%, transparent),
-        transparent 60%
-      ),
-      radial-gradient(
-        50% 40% at 92% 8%,
-        color-mix(in oklab, var(--accent) 14%, transparent),
-        transparent 60%
-      );
-    background-attachment: fixed;
   }
 
   h1,
