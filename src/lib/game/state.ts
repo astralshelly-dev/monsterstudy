@@ -225,6 +225,8 @@ export function hydrate() {
   }
   state.lastSeen = Date.now();
   refreshStreak();
+  rolloverDaily();
+  refreshCosmetics();
   persist();
   emit();
 }
