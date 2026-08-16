@@ -577,8 +577,10 @@ function BattlesPage() {
           <h2 className="font-display text-lg font-semibold">🏅 Ranqueada</h2>
           <p className="text-sm text-muted-foreground">
             PvP assíncrono contra o deck de um jogador sorteado aleatoriamente. Vitória: +20 a 35
-            troféus. Derrota: −17 a 25 troféus.
+            troféus. Derrota: −17 a 25 troféus. Ao encontrar o oponente a batalha é definitiva:
+            abandonar conta como derrota.
           </p>
+
           <Button className="mt-auto" onClick={() => startFlow("ranked")}>
             <Swords className="h-4 w-4" /> Encontrar oponente
           </Button>
