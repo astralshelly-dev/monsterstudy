@@ -183,6 +183,47 @@ export const adminSetAchievement = createServerFn({ method: "POST" })
   });
 
 // ------------------------------------------------------------
+// Itens, cosméticos, missões e temporadas (expansão)
+// ------------------------------------------------------------
+export const adminGiveItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { publicId: string; itemId: string; qty: number }) => ({
+    publicId: idOf(input?.publicId),
+    itemId: String(input?.itemId ?? "").trim(),
+    qty: Math.trunc(Number(input?.qty) || 0),
+  }))
+  .handler(async ({ data, context }) => {
+    const A = await srv();
+    A.assertAdmin(context.claims as Claims);
+    return A.runItem({ ...data, claims: context.claims as Claims, adminUserId: context.userId });
+  });
+
+export const adminSetCosmetic = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { publicId: string; cosmeticId: string; granted: boolean }) => ({
+    publicId: idOf(input?.publicId),
+    cosmeticId: String(input?.cosmeticId ?? "").trim(),
+    granted: !!input?.granted,
+  }))
+  .handler(async ({ data, context }) => {
+    const A = await srv();
+    A.assertAdmin(context.claims as Claims);
+    return A.runCosmetic({ ...data, claims: context.claims as Claims, adminUserId: context.userId });
+  });
+
+export const adminProgressOp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { publicId: string; op: "completeQuests" | "resetSeason" }) => ({
+    publicId: idOf(input?.publicId),
+    op: input?.op === "resetSeason" ? ("resetSeason" as const) : ("completeQuests" as const),
+  }))
+  .handler(async ({ data, context }) => {
+    const A = await srv();
+    A.assertAdmin(context.claims as Claims);
+    return A.runProgressOp({ ...data, claims: context.claims as Claims, adminUserId: context.userId });
+  });
+
+// ------------------------------------------------------------
 // Moderação
 // ------------------------------------------------------------
 export const adminModerate = createServerFn({ method: "POST" })

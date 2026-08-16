@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { MONSTERS, MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { ACHIEVEMENTS } from "@/lib/game/achievements";
+import { ITEMS } from "@/lib/game/items";
+import { COSMETICS } from "@/lib/game/cosmetics";
 import { LEAGUES } from "@/lib/game/battle/config";
 import { money as fmtMoney, num as fmtNum, duration, dateTime } from "@/lib/format";
 import {
@@ -35,6 +37,9 @@ import {
   adminSaveSettings,
   adminSearchPlayers,
   adminSetAchievement,
+  adminGiveItem,
+  adminSetCosmetic,
+  adminProgressOp,
   adminSetLeague,
   adminSetResource,
 } from "@/lib/admin.functions";
@@ -470,12 +475,18 @@ function PlayerConsole({ player, busy, run, onClose }: { player: PlayerDetail; b
   const renameFn = useServerFn(adminRenamePlayer);
   const monsterFn = useServerFn(adminMonsterAction);
   const achievementFn = useServerFn(adminSetAchievement);
+  const itemFn = useServerFn(adminGiveItem);
+  const cosmeticFn = useServerFn(adminSetCosmetic);
+  const progressFn = useServerFn(adminProgressOp);
   const moderateFn = useServerFn(adminModerate);
 
   const [name, setName] = useState(player.name);
   const [monsterId, setMonsterId] = useState(MONSTERS[0]?.id ?? "");
   const [monsterLevel, setMonsterLevel] = useState(1);
   const [achievementId, setAchievementId] = useState(ACHIEVEMENTS[0]?.id ?? "");
+  const [itemId, setItemId] = useState(ITEMS[0]?.id ?? "");
+  const [itemQty, setItemQty] = useState(1);
+  const [cosmeticId, setCosmeticId] = useState(COSMETICS[0]?.id ?? "");
   const [banHours, setBanHours] = useState(0);
   const [reason, setReason] = useState("");
 
@@ -682,6 +693,117 @@ function PlayerConsole({ player, busy, run, onClose }: { player: PlayerDetail; b
         <p className="text-xs text-muted-foreground">
           Desbloqueadas: {player.achievements.map((a) => ACHIEVEMENTS.find((x) => x.id === a.id)?.name ?? a.id).join(", ") || "nenhuma"}
         </p>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        <p className="text-sm font-semibold">🎒 Itens do inventário</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={itemId}
+            onChange={(e) => setItemId(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+          >
+            {ITEMS.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.icon} {i.name}
+              </option>
+            ))}
+          </select>
+          <Input
+            type="number"
+            value={itemQty}
+            onChange={(e) => setItemQty(Number(e.target.value) || 0)}
+            className="w-24"
+          />
+          <Button
+            disabled={busy}
+            onClick={() =>
+              void run("Item entregue", () =>
+                itemFn({ data: { publicId: player.publicId, itemId, qty: Math.abs(itemQty) } }),
+              )
+            }
+          >
+            Entregar
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={() =>
+              void run("Item removido", () =>
+                itemFn({ data: { publicId: player.publicId, itemId, qty: -Math.abs(itemQty) } }),
+              )
+            }
+          >
+            Remover
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        <p className="text-sm font-semibold">🎨 Cosméticos</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={cosmeticId}
+            onChange={(e) => setCosmeticId(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+          >
+            {COSMETICS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.icon} {c.name}
+              </option>
+            ))}
+          </select>
+          <Button
+            disabled={busy}
+            onClick={() =>
+              void run("Cosmético liberado", () =>
+                cosmeticFn({ data: { publicId: player.publicId, cosmeticId, granted: true } }),
+              )
+            }
+          >
+            Liberar
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={() =>
+              void run("Cosmético removido", () =>
+                cosmeticFn({ data: { publicId: player.publicId, cosmeticId, granted: false } }),
+              )
+            }
+          >
+            Remover
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        <p className="text-sm font-semibold">🎯 Missões e temporada</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            disabled={busy}
+            onClick={() =>
+              void run("Missões do dia concluídas", () =>
+                progressFn({ data: { publicId: player.publicId, op: "completeQuests" } }),
+              )
+            }
+          >
+            Concluir missões de hoje
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={busy}
+            onClick={confirmAnd(
+              `Reiniciar a temporada de ${player.name}? Os troféus voltam a zero.`,
+              () =>
+                run("Temporada reiniciada", () =>
+                  progressFn({ data: { publicId: player.publicId, op: "resetSeason" } }),
+                ),
+            )}
+          >
+            Reiniciar temporada
+          </Button>
+        </div>
       </div>
 
       <div className="mt-5 space-y-2">

@@ -5,6 +5,7 @@
 import { MONSTERS_BY_ID } from "../monsters";
 import type { RarityId } from "../config";
 import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
+import { elementOf, typeEffect, type ElementId } from "../elements";
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
 
@@ -21,6 +22,8 @@ export type Fighter = {
   def: number;
   spd: number;
   ability: Ability;
+  /** tipo elemental (vantagens e fraquezas no cálculo de dano) */
+  element: ElementId;
   /** turnos restantes para a habilidade disparar */
   charge: number;
   atkBuff: number;
@@ -48,6 +51,8 @@ export type BattleEvent = {
   text: string;
   damage?: number;
   heal?: number;
+  /** vantagem de tipo aplicada neste evento */
+  effect?: "super" | "weak" | "normal";
 };
 
 export type Battle = {
@@ -85,6 +90,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     def: s.def,
     spd: s.spd,
     ability: abilityFor(monsterId),
+    element: elementOf(monsterId).id,
     charge: abilityFor(monsterId).cooldown,
     atkBuff: 0,
     defBuff: 0,
@@ -178,6 +184,25 @@ export const MAX_TURNS = 100;
 
 let escalation = 1;
 
+/** vantagem elemental entre dois lutadores */
+export function matchupOf(attacker: Fighter, defender: Fighter) {
+  return typeEffect(attacker.element, defender.element);
+}
+
+/** anuncia SUPER EFETIVO / POUCO EFETIVO */
+function pushMatchupEvent(b: Battle, side: SideId, attacker: Fighter, defender: Fighter) {
+  const eff = matchupOf(attacker, defender);
+  if (!eff.label) return eff;
+  b.events.push({
+    id: eid(),
+    kind: "buff",
+    side,
+    text: eff.kind === "super" ? `⚡ ${eff.label}` : `🪶 ${eff.label}`,
+    effect: eff.kind,
+  });
+  return eff;
+}
+
 function rawDamage(atk: number, def: number, mult: number, ignoreDef = false): number {
   const mitig = ignoreDef ? 1 : 1 - def / (def + 60);
   return Math.max(1, Math.round(atk * mult * mitig * escalation * rand(0.92, 1.08)));
@@ -236,7 +261,13 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
   const k = abilityScale(attacker.level);
 
   const hit = (mult: number, ignoreDef = false) => {
-    const dealt = applyDamage(b, defSideId, defender, rawDamage(atk, dfn, mult * k, ignoreDef));
+    const eff = pushMatchupEvent(b, side, attacker, defender);
+    const dealt = applyDamage(
+      b,
+      defSideId,
+      defender,
+      rawDamage(atk, dfn, mult * k * eff.mult, ignoreDef),
+    );
     b.events.push({
       id: eid(),
       kind: "damage",
@@ -244,6 +275,7 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       target: defSideId,
       text: `${defender.name} sofre ${dealt} de dano`,
       damage: dealt,
+      effect: eff.kind,
     });
     return dealt;
   };
@@ -337,13 +369,18 @@ function basicAttack(
 ) {
   const mySide = side === "player" ? b.player : b.foe;
   const defender = defenderSide.fighters[defenderSide.active]!;
+  b.events.push({ id: eid(), kind: "attack", side, text: `${attacker.name} atacou!` });
+  const eff = pushMatchupEvent(b, side, attacker, defender);
   const dealt = applyDamage(
     b,
     defSideId,
     defender,
-    rawDamage(effAtk(attacker, mySide.behavior), effDef(defender, defenderSide.behavior), mult),
+    rawDamage(
+      effAtk(attacker, mySide.behavior),
+      effDef(defender, defenderSide.behavior),
+      mult * eff.mult,
+    ),
   );
-  b.events.push({ id: eid(), kind: "attack", side, text: `${attacker.name} atacou!` });
   b.events.push({
     id: eid(),
     kind: "damage",
@@ -351,6 +388,7 @@ function basicAttack(
     target: defSideId,
     text: `${defender.name} sofre ${dealt} de dano`,
     damage: dealt,
+    effect: eff.kind,
   });
 }
 

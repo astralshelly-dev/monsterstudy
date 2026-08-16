@@ -9,6 +9,8 @@ import {
   totals,
   userProgress,
 } from "@/lib/game/state";
+import { dailyQuests } from "@/lib/game/state";
+import { QUESTS_BY_ID } from "@/lib/game/quests";
 import { duration, money, num } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { DayShareButton } from "@/components/game/ShareCard";
@@ -56,6 +58,8 @@ function Dashboard() {
       />
 
       <SignupCallout />
+
+      <DailyQuestsCard />
 
       <div className="panel aurora relative overflow-hidden p-6">
         <div className="flex flex-wrap items-center justify-between gap-6">
@@ -199,5 +203,44 @@ function SignupCallout() {
         <Link to="/entrar">Ir criar conta</Link>
       </Button>
     </div>
+  );
+}
+
+/** resumo das missões diárias com progresso real */
+function DailyQuestsCard() {
+  const state = useGame();
+  const quests = dailyQuests(state);
+  if (quests.length === 0) return null;
+  const done = quests.filter((q) => q.done).length;
+  const toClaim = quests.filter((q) => q.done && !q.claimed).length;
+  return (
+    <section className="panel p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-lg font-semibold">🎯 Missões de hoje</h2>
+        <Link to="/missoes" className="text-sm text-primary hover:underline">
+          {toClaim > 0 ? `${toClaim} recompensa(s) para coletar` : `${done}/${quests.length} concluídas`}
+        </Link>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {quests.slice(0, 3).map((q) => {
+          const t = QUESTS_BY_ID[q.templateId];
+          if (!t) return null;
+          const pct = Math.min(100, (q.progress / t.target) * 100);
+          return (
+            <div key={q.templateId} className="rounded-xl bg-secondary/40 p-3">
+              <p className="truncate text-sm font-medium">
+                {t.icon} {t.title}
+              </p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                <div
+                  className={q.done ? "h-full rounded-full bg-gold" : "h-full rounded-full bg-primary"}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }

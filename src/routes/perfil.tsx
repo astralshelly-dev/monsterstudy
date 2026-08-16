@@ -2,7 +2,19 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
-import { battleData, monsterProgress, totals, updateProfile, userProgress } from "@/lib/game/state";
+import {
+  battleData,
+  cosmeticUnlocked,
+  equippedCosmetic,
+  monsterProgress,
+  seasonState,
+  setCosmetic,
+  subjectList,
+  totals,
+  updateProfile,
+  userProgress,
+} from "@/lib/game/state";
+import { COSMETICS, COSMETIC_KINDS, unlockLabel } from "@/lib/game/cosmetics";
 import { leagueProgress } from "@/lib/game/battle/config";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
@@ -41,20 +53,37 @@ function Profile() {
   useEffect(() => setName(state.profile.name), [state.profile.name]);
   const bd = battleData(state);
   const lp = leagueProgress(bd.trophies);
+  const ss = seasonState(state);
+  const subjects = subjectList(state);
+  const frame = equippedCosmetic("frame", state);
+  const title = equippedCosmetic("title", state);
+  const bg = equippedCosmetic("background", state);
+  const badge = equippedCosmetic("badge", state);
+  const fx = equippedCosmetic("effect", state);
 
   return (
     <div className="space-y-6">
       <PageHeader title="Perfil" icon="🧙" subtitle="Sua identidade de caçador de conhecimento." />
 
-      <div className="panel p-6">
+      <div className={cn("panel p-6", bg?.className)}>
         <div className="flex flex-wrap items-center gap-5">
-          <ProfileAvatar
-            avatar={state.profile.avatar}
-            monsterId={state.profile.avatarMonsterId}
-            size="lg"
-          />
+          <div className={cn("rounded-2xl", frame?.className, fx?.className)}>
+            <ProfileAvatar
+              avatar={state.profile.avatar}
+              monsterId={state.profile.avatarMonsterId}
+              size="lg"
+            />
+          </div>
           <div className="min-w-56 flex-1">
-            <p className="font-display text-2xl font-bold">{state.profile.name}</p>
+            <p className="font-display text-2xl font-bold">
+              {badge && <span className="mr-1.5">{badge.icon}</span>}
+              {state.profile.name}
+            </p>
+            {title && (
+              <p className="text-sm font-semibold text-primary">
+                {title.icon} {title.name}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">
               Nível {state.profile.level} · desde {shortDate(state.profile.createdAt.slice(0, 10))}
             </p>
@@ -207,12 +236,86 @@ function Profile() {
               : "Liga máxima alcançada."}
           </p>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Temporada {ss.season.number} · {ss.season.name} · {ss.season.daysLeft} dia(s) restante(s)
+        </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Vitórias" value={num(bd.wins)} />
           <StatCard label="Derrotas" value={num(bd.losses)} />
           <StatCard label="Total de batalhas" value={num(bd.wins + bd.losses)} />
           <StatCard label="Maior troféus" value={num(bd.bestTrophies)} />
         </div>
+      </section>
+
+      {subjects.length > 0 && (
+        <section className="panel space-y-3 p-5">
+          <h2 className="font-display text-lg font-semibold">📚 Níveis por matéria</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {subjects.slice(0, 8).map((sub) => (
+              <div key={sub.key} className="flex items-center gap-2 rounded-xl bg-secondary/40 p-2.5">
+                <span>{sub.icon}</span>
+                <span className="truncate text-sm font-medium">{sub.name}</span>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  Nv. {sub.level} · {duration(sub.totalSec)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="panel space-y-4 p-5">
+        <div>
+          <h2 className="font-display text-lg font-semibold">🎨 Cosméticos</h2>
+          <p className="text-sm text-muted-foreground">
+            Desbloqueados jogando. São apenas visuais — nenhuma vantagem em batalha.
+          </p>
+        </div>
+        {COSMETIC_KINDS.map((kind) => {
+          const list = COSMETICS.filter((c) => c.kind === kind.id);
+          const current = state.cosmetics?.[kind.id] ?? null;
+          return (
+            <div key={kind.id} className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {kind.icon} {kind.name}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {list.map((c) => {
+                  const unlocked = cosmeticUnlocked(c.id, state);
+                  const active = current === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      disabled={!unlocked}
+                      onClick={() => {
+                        if (setCosmetic(kind.id, active ? null : c.id)) {
+                          toast.success(active ? `${c.name} removido` : `${c.name} equipado`);
+                        } else {
+                          toast.error("Cosmético ainda bloqueado");
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl bg-secondary/40 p-3 text-left transition-colors",
+                        unlocked ? "hover:bg-secondary/70" : "opacity-50",
+                        active && "ring-2 ring-primary",
+                      )}
+                    >
+                      <span className="text-lg">{c.icon}</span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold">{c.name}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {unlocked ? c.description : `🔒 ${unlockLabel(c.unlock)}`}
+                        </span>
+                      </span>
+                      {active && <span className="ml-auto text-xs text-primary">Equipado</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </section>
     </div>
   );

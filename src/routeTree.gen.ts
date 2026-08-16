@@ -19,13 +19,16 @@ import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as EstatisticasRouteImport } from './routes/estatisticas'
 import { Route as EstudarRouteImport } from './routes/estudar'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as InventarioRouteImport } from './routes/inventario'
 import { Route as JogadoresRouteImport } from './routes/jogadores'
 import { Route as LerRouteImport } from './routes/ler'
 import { Route as LivreRouteImport } from './routes/livre'
 import { Route as LojaRouteImport } from './routes/loja'
+import { Route as MissoesRouteImport } from './routes/missoes'
 import { Route as MonsterdexRouteImport } from './routes/monsterdex'
 import { Route as MonstrosRouteImport } from './routes/monstros'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as TemporadaRouteImport } from './routes/temporada'
 import { Route as BibliotecaIndexRouteImport } from './routes/biblioteca.index'
 import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookId'
 
@@ -79,6 +82,11 @@ const HistoricoRoute = HistoricoRouteImport.update({
   path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InventarioRoute = InventarioRouteImport.update({
+  id: '/inventario',
+  path: '/inventario',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JogadoresRoute = JogadoresRouteImport.update({
   id: '/jogadores',
   path: '/jogadores',
@@ -99,6 +107,11 @@ const LojaRoute = LojaRouteImport.update({
   path: '/loja',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissoesRoute = MissoesRouteImport.update({
+  id: '/missoes',
+  path: '/missoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MonsterdexRoute = MonsterdexRouteImport.update({
   id: '/monsterdex',
   path: '/monsterdex',
@@ -112,6 +125,11 @@ const MonstrosRoute = MonstrosRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TemporadaRoute = TemporadaRouteImport.update({
+  id: '/temporada',
+  path: '/temporada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BibliotecaIndexRoute = BibliotecaIndexRouteImport.update({
@@ -136,13 +154,16 @@ export interface FileRoutesByFullPath {
   '/estatisticas': typeof EstatisticasRoute
   '/estudar': typeof EstudarRoute
   '/historico': typeof HistoricoRoute
+  '/inventario': typeof InventarioRoute
   '/jogadores': typeof JogadoresRoute
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
+  '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
@@ -157,13 +178,16 @@ export interface FileRoutesByTo {
   '/estatisticas': typeof EstatisticasRoute
   '/estudar': typeof EstudarRoute
   '/historico': typeof HistoricoRoute
+  '/inventario': typeof InventarioRoute
   '/jogadores': typeof JogadoresRoute
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
+  '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
   '/biblioteca': typeof BibliotecaIndexRoute
 }
@@ -179,13 +203,16 @@ export interface FileRoutesById {
   '/estatisticas': typeof EstatisticasRoute
   '/estudar': typeof EstudarRoute
   '/historico': typeof HistoricoRoute
+  '/inventario': typeof InventarioRoute
   '/jogadores': typeof JogadoresRoute
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
   '/perfil': typeof PerfilRoute
+  '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
@@ -202,13 +229,16 @@ export interface FileRouteTypes {
     | '/estatisticas'
     | '/estudar'
     | '/historico'
+    | '/inventario'
     | '/jogadores'
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/missoes'
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
+    | '/temporada'
     | '/biblioteca/$bookId'
     | '/biblioteca/'
   fileRoutesByTo: FileRoutesByTo
@@ -223,13 +253,16 @@ export interface FileRouteTypes {
     | '/estatisticas'
     | '/estudar'
     | '/historico'
+    | '/inventario'
     | '/jogadores'
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/missoes'
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
+    | '/temporada'
     | '/biblioteca/$bookId'
     | '/biblioteca'
   id:
@@ -244,13 +277,16 @@ export interface FileRouteTypes {
     | '/estatisticas'
     | '/estudar'
     | '/historico'
+    | '/inventario'
     | '/jogadores'
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/missoes'
     | '/monsterdex'
     | '/monstros'
     | '/perfil'
+    | '/temporada'
     | '/biblioteca/$bookId'
     | '/biblioteca/'
   fileRoutesById: FileRoutesById
@@ -266,13 +302,16 @@ export interface RootRouteChildren {
   EstatisticasRoute: typeof EstatisticasRoute
   EstudarRoute: typeof EstudarRoute
   HistoricoRoute: typeof HistoricoRoute
+  InventarioRoute: typeof InventarioRoute
   JogadoresRoute: typeof JogadoresRoute
   LerRoute: typeof LerRoute
   LivreRoute: typeof LivreRoute
   LojaRoute: typeof LojaRoute
+  MissoesRoute: typeof MissoesRoute
   MonsterdexRoute: typeof MonsterdexRoute
   MonstrosRoute: typeof MonstrosRoute
   PerfilRoute: typeof PerfilRoute
+  TemporadaRoute: typeof TemporadaRoute
   BibliotecaBookIdRoute: typeof BibliotecaBookIdRoute
   BibliotecaIndexRoute: typeof BibliotecaIndexRoute
 }
@@ -349,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inventario': {
+      id: '/inventario'
+      path: '/inventario'
+      fullPath: '/inventario'
+      preLoaderRoute: typeof InventarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jogadores': {
       id: '/jogadores'
       path: '/jogadores'
@@ -377,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/missoes': {
+      id: '/missoes'
+      path: '/missoes'
+      fullPath: '/missoes'
+      preLoaderRoute: typeof MissoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/monsterdex': {
       id: '/monsterdex'
       path: '/monsterdex'
@@ -396,6 +449,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/temporada': {
+      id: '/temporada'
+      path: '/temporada'
+      fullPath: '/temporada'
+      preLoaderRoute: typeof TemporadaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/biblioteca/': {
@@ -426,13 +486,16 @@ const rootRouteChildren: RootRouteChildren = {
   EstatisticasRoute: EstatisticasRoute,
   EstudarRoute: EstudarRoute,
   HistoricoRoute: HistoricoRoute,
+  InventarioRoute: InventarioRoute,
   JogadoresRoute: JogadoresRoute,
   LerRoute: LerRoute,
   LivreRoute: LivreRoute,
   LojaRoute: LojaRoute,
+  MissoesRoute: MissoesRoute,
   MonsterdexRoute: MonsterdexRoute,
   MonstrosRoute: MonstrosRoute,
   PerfilRoute: PerfilRoute,
+  TemporadaRoute: TemporadaRoute,
   BibliotecaBookIdRoute: BibliotecaBookIdRoute,
   BibliotecaIndexRoute: BibliotecaIndexRoute,
 }
