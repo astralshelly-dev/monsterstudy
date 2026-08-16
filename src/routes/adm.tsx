@@ -80,17 +80,6 @@ function AdminConsole() {
   const overviewFn = useServerFn(adminOverview);
   const searchFn = useServerFn(adminSearchPlayers);
   const getFn = useServerFn(adminGetPlayer);
-  const grantFn = useServerFn(adminGrantResources);
-  const levelFn = useServerFn(adminSetLevel);
-  const renameFn = useServerFn(adminRenamePlayer);
-  const giveFn = useServerFn(adminGiveMonster);
-  const removeFn = useServerFn(adminRemoveMonster);
-  const banFn = useServerFn(adminBanPlayer);
-  const unbanFn = useServerFn(adminUnbanPlayer);
-  const resetFn = useServerFn(adminResetPlayer);
-  const codesFn = useServerFn(adminClearCodes);
-  const deleteFn = useServerFn(adminDeleteAccount);
-  const bulkFn = useServerFn(adminBulkGrant);
 
   const [overview, setOverview] = useState<Overview | null>(null);
   const [rows, setRows] = useState<SearchRow[]>([]);
@@ -145,7 +134,7 @@ function AdminConsole() {
       <PageHeader
         title="Painel ADM"
         icon="🛡️"
-        description="Controle total: recursos, coleções, moderação e ações em massa. Todas as ações passam por verificação no servidor."
+        subtitle="Controle total: recursos, coleções, moderação e ações em massa. Todas as ações passam por verificação no servidor."
       />
 
       <div className="panel flex items-start gap-3 border-ember/40 p-4 text-sm text-muted-foreground">
@@ -252,18 +241,6 @@ function AdminConsole() {
           player={player}
           busy={busy}
           onRun={run}
-          fns={{
-            grantFn,
-            levelFn,
-            renameFn,
-            giveFn,
-            removeFn,
-            banFn,
-            unbanFn,
-            resetFn,
-            codesFn,
-            deleteFn,
-          }}
           onCleared={() => {
             setPlayer(null);
             setTarget("");
@@ -272,7 +249,7 @@ function AdminConsole() {
       )}
 
       {/* ---------------- massa ---------------- */}
-      <BulkPanel busy={busy} onRun={run} bulkFn={bulkFn} />
+      <BulkPanel busy={busy} onRun={run} />
     </div>
   );
 }
@@ -317,26 +294,23 @@ function PlayerConsole({
   player,
   busy,
   onRun,
-  fns,
   onCleared,
 }: {
   player: PlayerDetail;
   busy: boolean;
   onRun: RunFn;
-  fns: {
-    grantFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    levelFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    renameFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    giveFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    removeFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    banFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    unbanFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    resetFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    codesFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-    deleteFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-  };
   onCleared: () => void;
 }) {
+  const grantFn = useServerFn(adminGrantResources);
+  const levelFn = useServerFn(adminSetLevel);
+  const renameFn = useServerFn(adminRenamePlayer);
+  const giveFn = useServerFn(adminGiveMonster);
+  const removeFn = useServerFn(adminRemoveMonster);
+  const banFn = useServerFn(adminBanPlayer);
+  const unbanFn = useServerFn(adminUnbanPlayer);
+  const resetFn = useServerFn(adminResetPlayer);
+  const codesFn = useServerFn(adminClearCodes);
+  const deleteFn = useServerFn(adminDeleteAccount);
   const id = player.publicId;
   const [money_, setMoney] = useState("0");
   const [shards, setShards] = useState("0");
@@ -413,7 +387,7 @@ function PlayerConsole({
             disabled={busy}
             onClick={() =>
               void onRun("Recursos atualizados.", () =>
-                fns.grantFn({
+                grantFn({
                   data: {
                     publicId: id,
                     money: Number(money_),
@@ -438,7 +412,7 @@ function PlayerConsole({
               disabled={busy}
               onClick={() =>
                 void onRun(`+${money(v)} moedas`, () =>
-                  fns.grantFn({ data: { publicId: id, money: v, mode: "add" } }),
+                  grantFn({ data: { publicId: id, money: v, mode: "add" } }),
                 )
               }
             >
@@ -453,7 +427,7 @@ function PlayerConsole({
               disabled={busy}
               onClick={() =>
                 void onRun(`+${v} fragmentos`, () =>
-                  fns.grantFn({ data: { publicId: id, shards: v, mode: "add" } }),
+                  grantFn({ data: { publicId: id, shards: v, mode: "add" } }),
                 )
               }
             >
@@ -473,7 +447,7 @@ function PlayerConsole({
             disabled={busy}
             onClick={() =>
               void onRun("Nível definido.", () =>
-                fns.levelFn({ data: { publicId: id, level: Number(level) } }),
+                levelFn({ data: { publicId: id, level: Number(level) } }),
               )
             }
           >
@@ -486,14 +460,14 @@ function PlayerConsole({
           <Button
             variant="secondary"
             disabled={busy}
-            onClick={() => void onRun("Nome alterado.", () => fns.renameFn({ data: { publicId: id, name } }))}
+            onClick={() => void onRun("Nome alterado.", () => renameFn({ data: { publicId: id, name } }))}
           >
             Renomear
           </Button>
           <Button
             variant="secondary"
             disabled={busy}
-            onClick={() => void onRun("Códigos liberados.", () => fns.codesFn({ data: { publicId: id } }))}
+            onClick={() => void onRun("Códigos liberados.", () => codesFn({ data: { publicId: id } }))}
           >
             Liberar códigos promocionais
           </Button>
@@ -524,7 +498,7 @@ function PlayerConsole({
             disabled={busy || !monsterId}
             onClick={() =>
               void onRun("Monstro entregue.", () =>
-                fns.giveFn({ data: { publicId: id, monsterId, level: Number(monsterLevel) } }),
+                giveFn({ data: { publicId: id, monsterId, level: Number(monsterLevel) } }),
               )
             }
           >
@@ -553,7 +527,7 @@ function PlayerConsole({
                     disabled={busy}
                     onClick={() =>
                       void onRun("Monstro removido.", () =>
-                        fns.removeFn({ data: { publicId: id, monsterId: m.id } }),
+                        removeFn({ data: { publicId: id, monsterId: m.id } }),
                       )
                     }
                   >
@@ -576,7 +550,7 @@ function PlayerConsole({
             disabled={busy}
             onClick={() =>
               void onRun("Conta banida.", () =>
-                fns.banFn({ data: { publicId: id, hours: Number(banHours) } }),
+                banFn({ data: { publicId: id, hours: Number(banHours) } }),
               )
             }
           >
@@ -585,7 +559,7 @@ function PlayerConsole({
           <Button
             variant="secondary"
             disabled={busy}
-            onClick={() => void onRun("Banimento removido.", () => fns.unbanFn({ data: { publicId: id } }))}
+            onClick={() => void onRun("Banimento removido.", () => unbanFn({ data: { publicId: id } }))}
           >
             Desbanir
           </Button>
@@ -594,7 +568,7 @@ function PlayerConsole({
             disabled={busy}
             onClick={() => {
               if (!window.confirm(`Zerar todo o progresso de ${id}?`)) return;
-              void onRun("Progresso zerado.", () => fns.resetFn({ data: { publicId: id } }));
+              void onRun("Progresso zerado.", () => resetFn({ data: { publicId: id } }));
             }}
           >
             Zerar progresso
@@ -605,7 +579,7 @@ function PlayerConsole({
             onClick={() => {
               if (!window.confirm(`APAGAR definitivamente a conta ${id}?`)) return;
               void onRun("Conta apagada.", async () => {
-                await fns.deleteFn({ data: { publicId: id } });
+                await deleteFn({ data: { publicId: id } });
                 onCleared();
               }, false);
             }}
@@ -618,15 +592,8 @@ function PlayerConsole({
   );
 }
 
-function BulkPanel({
-  busy,
-  onRun,
-  bulkFn,
-}: {
-  busy: boolean;
-  onRun: RunFn;
-  bulkFn: (o: { data: Record<string, unknown> }) => Promise<unknown>;
-}) {
+function BulkPanel({ busy, onRun }: { busy: boolean; onRun: RunFn }) {
+  const bulkFn = useServerFn(adminBulkGrant);
   const [money_, setMoney] = useState("0");
   const [shards, setShards] = useState("0");
   return (

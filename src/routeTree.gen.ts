@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdmRouteImport } from './routes/adm'
 import { Route as BatalhasRouteImport } from './routes/batalhas'
 import { Route as CodigosRouteImport } from './routes/codigos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
@@ -31,6 +32,11 @@ import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookI
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdmRoute = AdmRouteImport.update({
+  id: '/adm',
+  path: '/adm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BatalhasRoute = BatalhasRouteImport.update({
@@ -121,6 +127,7 @@ const BibliotecaBookIdRoute = BibliotecaBookIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/adm': typeof AdmRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/adm': typeof AdmRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -162,6 +170,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/adm': typeof AdmRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/adm'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/adm'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/adm'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -245,6 +257,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdmRoute: typeof AdmRoute
   BatalhasRoute: typeof BatalhasRoute
   CodigosRoute: typeof CodigosRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adm': {
+      id: '/adm'
+      path: '/adm'
+      fullPath: '/adm'
+      preLoaderRoute: typeof AdmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/batalhas': {
@@ -397,6 +417,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdmRoute: AdmRoute,
   BatalhasRoute: BatalhasRoute,
   CodigosRoute: CodigosRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
