@@ -30,6 +30,18 @@ import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
 import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
 import type { BattleRecord, PendingBattle } from "./types";
+import { generateDailyQuests, QUESTS_BY_ID, questDone, type DailyQuest, type QuestMetric } from "./quests";
+import { ITEMS_BY_ID, ITEM_DROP_SECONDS, rollItem, type ItemDef } from "./items";
+import { subjectKey, subjectLevelFromXp, subjectIcon, SUBJECT_XP_PER_MINUTE, type SubjectProgress } from "./subjects";
+import { COSMETICS, COSMETICS_BY_ID, type CosmeticKind } from "./cosmetics";
+import {
+  currentSeason,
+  leagueReward,
+  rankReward,
+  SEASON_TROPHY_KEEP,
+  type SeasonRecord,
+  type SeasonReward,
+} from "./seasons";
 import type {
   ActiveTimer,
   Book,
@@ -90,6 +102,20 @@ export function defaultState(): GameState {
     pendingReward: null,
     redeemedCodes: [],
     battle: { trophies: 0, bestTrophies: 0, wins: 0, losses: 0, team: [], history: [] },
+    subjects: {},
+    inventory: {},
+    itemProgressSec: 0,
+    itemLog: [],
+    quests: generateDailyQuests(todayKey()),
+    seasons: { current: currentSeason().number, maxTrophies: 0, wins: 0, losses: 0, history: [] },
+    cosmetics: {
+      owned: COSMETICS.filter((c) => c.unlock.type === "free").map((c) => c.id),
+      frame: null,
+      title: null,
+      background: null,
+      badge: null,
+      effect: null,
+    },
   };
 }
 
@@ -118,6 +144,8 @@ export function setState(updater: (s: GameState) => GameState | void) {
   const draft: GameState = { ...state };
   const next = updater(draft);
   state = { ...((next ?? draft) as GameState), lastModifiedAt: Date.now() };
+  rolloverDaily();
+  refreshCosmetics();
   checkAchievements();
   persist();
   emit();
