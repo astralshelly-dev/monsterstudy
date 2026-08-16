@@ -94,7 +94,7 @@ function SeasonPage() {
         </div>
         <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-accent via-primary to-arcane"
+            className="h-full rounded-full bg-primary"
             style={{ width: `${Math.round(ss.season.pct)}%` }}
           />
         </div>

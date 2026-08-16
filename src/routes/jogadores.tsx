@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { duration, money, num } from "@/lib/format";
 import { COSMETICS_BY_ID } from "@/lib/game/cosmetics";
+import { useSceneThemeOverride } from "@/components/game/SceneTheme";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/jogadores")({
@@ -167,6 +168,8 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
   const league = leagueOf(p.stats.trophies ?? 0);
   const team = (p.stats.team ?? []).map((id) => MONSTERS_BY_ID[id]).filter(Boolean);
   const topMonster = p.stats.topMonsterId ? MONSTERS_BY_ID[p.stats.topMonsterId] : undefined;
+  // o tema do jogador vale enquanto o perfil estiver aberto
+  useSceneThemeOverride(bg?.id ?? null);
 
   return (
     <div className="space-y-5">
@@ -298,7 +301,7 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
         </p>
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-accent to-primary"
+            className="h-full rounded-full bg-primary"
             style={{ width: `${leagueProgress(p.stats.trophies ?? 0).pct}%` }}
           />
         </div>

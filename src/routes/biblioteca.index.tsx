@@ -108,7 +108,7 @@ function LibraryPage() {
                   <p className="truncate text-xs text-muted-foreground">{b.author}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{b.genre}</p>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-gradient-to-r from-accent to-primary" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
                   </div>
                   <p className="mt-1 text-xs">
                     {b.currentPage} / {b.totalPages} · {pct}%

@@ -15,7 +15,7 @@ export function BookCover({ book, className }: { book: Book; className?: string 
   return (
     <div
       className={cn(
-        "grid shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/40 via-accent/30 to-arcane/40 p-2 text-center ring-1 ring-border/60",
+        "grid shrink-0 place-items-center rounded-lg bg-secondary p-2 text-center ring-1 ring-border/60",
         className,
       )}
     >
