@@ -1170,6 +1170,8 @@ export function recordBattle(input: {
   turns: number;
   team: string[];
   opponentTeam: string[];
+  /** derrota por abandono */
+  forfeit?: boolean;
 }): BattleOutcome {
   const before = battleData().trophies;
   const delta = input.mode === "ranked" ? rollTrophyDelta(input.result, before) : 0;
@@ -1189,6 +1191,7 @@ export function recordBattle(input: {
     turns: input.turns,
     team: input.team,
     opponentTeam: input.opponentTeam,
+    forfeit: input.forfeit ?? false,
   };
   setState((s) => {
     const b = battleData(s);
