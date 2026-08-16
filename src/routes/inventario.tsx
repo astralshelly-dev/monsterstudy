@@ -26,7 +26,7 @@ export const Route = createFileRoute("/inventario")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Inventory;
+  component: Inventory,
 });
 
 function Inventory() {
