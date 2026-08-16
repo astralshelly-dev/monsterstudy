@@ -61,7 +61,7 @@ function useCloudSyncController(): CloudSyncValue {
     }
     do {
       saveAgain.current = false;
-      const request = pushToCloud(user.id);
+      const request = pushToCloud(user.id).then(() => undefined);
       saving.current = request;
       try {
         await request;
