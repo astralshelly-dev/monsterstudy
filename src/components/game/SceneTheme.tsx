@@ -44,7 +44,7 @@ export function SceneThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <SceneThemeContext.Provider value={value}>
-      <SceneBackground theme={theme} />
+      <SceneBackground theme={theme} className="-z-10" />
       {children}
     </SceneThemeContext.Provider>
   );
@@ -85,7 +85,7 @@ export function SceneBackground({
       aria-hidden
       className={[
         absolute ? "absolute" : "fixed",
-        "inset-0 -z-10 overflow-hidden transition-colors duration-700",
+        "inset-0 overflow-hidden transition-colors duration-700",
         className ?? "",
       ].join(" ")}
       style={{ backgroundColor: theme.bg }}

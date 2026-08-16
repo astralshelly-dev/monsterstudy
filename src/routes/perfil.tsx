@@ -15,6 +15,8 @@ import {
   userProgress,
 } from "@/lib/game/state";
 import { COSMETICS, COSMETIC_KINDS, unlockLabel } from "@/lib/game/cosmetics";
+import { SceneBackground, useSceneThemeOverride } from "@/components/game/SceneTheme";
+import { themeById } from "@/lib/game/themes";
 import { NAME_MAX_LENGTH, validateName } from "@/lib/game/names";
 
 import { leagueProgress } from "@/lib/game/battle/config";
@@ -62,6 +64,7 @@ function Profile() {
   const bg = equippedCosmetic("background", state);
   const badge = equippedCosmetic("badge", state);
   const fx = equippedCosmetic("effect", state);
+  useSceneThemeOverride(bg?.id ?? null);
 
   return (
     <div className="space-y-6">
@@ -318,7 +321,13 @@ function Profile() {
                         active && "ring-2 ring-primary",
                       )}
                     >
-                      <span className="text-lg">{c.icon}</span>
+                      {c.kind === "background" ? (
+                        <span className="relative h-11 w-16 shrink-0 overflow-hidden rounded-lg ring-1 ring-border/60">
+                          <SceneBackground theme={themeById(c.id)} absolute />
+                        </span>
+                      ) : (
+                        <span className="text-lg">{c.icon}</span>
+                      )}
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-semibold">{c.name}</span>
                         <span className="block truncate text-xs text-muted-foreground">

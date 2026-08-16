@@ -34,6 +34,7 @@ import { moneyPerSecond, userProgress } from "@/lib/game/state";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { WelcomeBack } from "@/components/game/WelcomeBack";
+import { SceneThemeProvider } from "@/components/game/SceneTheme";
 import { cn } from "@/lib/utils";
 
 
@@ -65,7 +66,9 @@ const ADMIN_NAV = { to: "/adm", label: "Painel ADM", icon: ShieldAlert } as cons
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <CloudSyncProvider>
-      <AppShellContent>{children}</AppShellContent>
+      <SceneThemeProvider>
+        <AppShellContent>{children}</AppShellContent>
+      </SceneThemeProvider>
     </CloudSyncProvider>
   );
 }
