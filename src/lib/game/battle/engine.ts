@@ -26,6 +26,8 @@ export type Fighter = {
   atkBuff: number;
   defBuff: number;
   shield: number;
+  /** turnos de proteção por troca: recebe 30% menos dano na rodada em que entrou */
+  guard: number;
   burn: { turns: number; dmg: number } | null;
 };
 
@@ -69,7 +71,7 @@ const eid = () => `e${(seq += 1)}`;
 export function makeFighter(monsterId: string, level: number, keySuffix = ""): Fighter | null {
   const def = MONSTERS_BY_ID[monsterId];
   if (!def) return null;
-  const s = battleStats(def.rarity, level);
+  const s = battleStats(def.rarity, level, monsterId);
   return {
     key: `${monsterId}${keySuffix}`,
     monsterId,
@@ -87,6 +89,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     atkBuff: 0,
     defBuff: 0,
     shield: 0,
+    guard: 0,
     burn: null,
   };
 }
@@ -187,6 +190,18 @@ function hpShare(side: Side): number {
 
 function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number): number {
   let dmg = amount;
+  if (fighter.guard > 0) {
+    const reduced = dmg - Math.max(1, Math.round(dmg * 0.7));
+    dmg -= reduced;
+    if (reduced > 0) {
+      b.events.push({
+        id: eid(),
+        kind: "buff",
+        side: target,
+        text: `🌀 ${fighter.name} entrou protegido e evitou ${reduced} de dano`,
+      });
+    }
+  }
   if (fighter.shield > 0) {
     const absorbed = Math.min(fighter.shield, dmg);
     fighter.shield -= absorbed;
@@ -390,6 +405,7 @@ function finishTurn(b: Battle, actor: SideId) {
       b.awaitingSwitch = true;
     } else {
       defSide.active = pickAiSwitch(defSide);
+      defSide.fighters[defSide.active]!.guard = 1;
       b.events.push({
         id: eid(),
         kind: "switch",
@@ -454,6 +470,8 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
 
   const wantsSpecial = actor === "player" && !!opts?.useSpecial && isSpecialReady(attacker);
   attacker.charge = Math.max(0, attacker.charge - 1);
+  // a proteção da troca vale apenas até o monstro agir
+  attacker.guard = 0;
 
   if (wantsSpecial) {
     basicAttack(b, actor, attacker, defSide, defSideId, 0.5);
@@ -492,6 +510,7 @@ export function switchPlayerFighter(prev: Battle, index: number): Battle {
   const f = b.player.fighters[index];
   if (!f || f.hp <= 0) return prev;
   b.player.active = index;
+  f.guard = 1;
   b.awaitingSwitch = false;
   b.events = [{ id: eid(), kind: "switch", side: "player", text: `Você envia ${f.name}` }];
   b.log = [...b.log, `Você envia ${f.name}`].slice(-60);
@@ -508,6 +527,7 @@ export function voluntarySwitch(prev: Battle, index: number): Battle {
   const f = b.player.fighters[index];
   if (!f || f.hp <= 0) return prev;
   b.player.active = index;
+  f.guard = 1;
   b.events = [{ id: eid(), kind: "switch", side: "player", text: `Você troca para ${f.name} (gastou o turno)` }];
   tickBurn(b, "player");
   if (f.hp <= 0) {
