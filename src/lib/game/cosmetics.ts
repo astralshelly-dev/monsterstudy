@@ -120,6 +120,50 @@ export const COSMETICS_BY_ID: Record<string, CosmeticDef> = Object.fromEntries(
   COSMETICS.map((c) => [c.id, c]),
 );
 
+// ------------------------------------------------------------
+// Cor do nome do jogador conforme o título equipado.
+// Fáceis: cor normal · médios: metálico · melhores: gradiente com brilho leve.
+// ------------------------------------------------------------
+export type TitleTier = "comum" | "metalico" | "elite";
+
+const TITLE_NAME_STYLE: Record<string, { tier: TitleTier; className: string }> = {
+  // fáceis
+  title_cacador: { tier: "comum", className: "name-plain" },
+  title_estudioso: { tier: "comum", className: "name-plain" },
+  title_bibliotecario: { tier: "comum", className: "name-plain" },
+  title_rank_bronze: { tier: "comum", className: "name-plain" },
+  title_rank_prata: { tier: "comum", className: "name-soft" },
+  title_imparavel: { tier: "comum", className: "name-soft" },
+  // médios (metálicos)
+  title_mestre_materia: { tier: "metalico", className: "name-metal name-metal-bronze" },
+  title_veterano: { tier: "metalico", className: "name-metal name-metal-silver" },
+  title_rank_ouro: { tier: "metalico", className: "name-metal name-metal-silver" },
+  title_rank_diamante: { tier: "metalico", className: "name-metal name-metal-gold" },
+  title_top100: { tier: "metalico", className: "name-metal name-metal-gold" },
+  // melhores (gradiente + efeito leve)
+  title_rank_mitico: { tier: "elite", className: "name-elite name-elite-arcane" },
+  title_lenda: { tier: "elite", className: "name-elite name-elite-arcane" },
+  title_rank_lendario: { tier: "elite", className: "name-elite name-elite-legend" },
+  title_rank_mestre: { tier: "elite", className: "name-elite name-elite-legend" },
+  title_rank_pro: { tier: "elite", className: "name-elite name-elite-pro" },
+  title_campeao: { tier: "elite", className: "name-elite name-elite-pro" },
+};
+
+/** classe CSS a aplicar no nome do jogador (vazio quando não há título equipado) */
+export function titleNameClass(titleId?: string | null): string {
+  return (titleId && TITLE_NAME_STYLE[titleId]?.className) || "";
+}
+
+export function titleTier(titleId?: string | null): TitleTier | null {
+  return (titleId && TITLE_NAME_STYLE[titleId]?.tier) || null;
+}
+
+export function titleTierLabel(tier: TitleTier): string {
+  return tier === "comum" ? "Comum" : tier === "metalico" ? "Metálico" : "Elite";
+}
+
+
+
 export const COSMETIC_KINDS: Array<{ id: CosmeticKind; name: string; icon: string }> = [
   { id: "frame", name: "Molduras", icon: "🖼️" },
   { id: "title", name: "Títulos", icon: "🏷️" },
