@@ -25,6 +25,11 @@ export type CosmeticDef = {
   unlock: CosmeticUnlock;
   /** classes aplicadas no avatar (frame) ou no painel (background) */
   className?: string;
+  /**
+   * Fundos de perfil não usam classes: eles apontam para um tema de cena
+   * (cor sólida + desenho de contorno + partículas) em src/lib/game/themes.ts.
+   * O id do tema é sempre igual ao id do cosmético.
+   */
 };
 
 const BASE_COSMETICS: CosmeticDef[] = [
@@ -48,11 +53,11 @@ const BASE_COSMETICS: CosmeticDef[] = [
   { id: "title_lenda", kind: "title", name: "Lenda Viva", icon: "🌌", description: "Chegue ao nível 40.", unlock: { type: "level", n: 40 } },
 
   // ---------- Fundos de perfil ----------
-  { id: "bg_default", kind: "background", name: "Noite Padrão", icon: "🌃", description: "O fundo clássico.", unlock: { type: "free" }, className: "bg-gradient-to-br from-secondary/60 to-background" },
-  { id: "bg_forest", kind: "background", name: "Floresta Viva", icon: "🌿", description: "Capture 20 monstros.", unlock: { type: "monsters", n: 20 }, className: "bg-gradient-to-br from-rarity-incomum/25 via-background to-background" },
-  { id: "bg_volcano", kind: "background", name: "Coração Vulcânico", icon: "🌋", description: "50 horas de estudo.", unlock: { type: "studyHours", n: 50 }, className: "bg-gradient-to-br from-rarity-lendario/25 via-background to-background" },
-  { id: "bg_cosmos", kind: "background", name: "Cosmos Arcano", icon: "🌌", description: "Nível 25.", unlock: { type: "level", n: 25 }, className: "bg-gradient-to-br from-arcane/30 via-background to-primary/20" },
-  { id: "bg_champion", kind: "background", name: "Arena dos Campeões", icon: "🏟️", description: "2.200 troféus.", unlock: { type: "trophies", n: 2200 }, className: "bg-gradient-to-br from-gold/25 via-background to-rarity-epico/20" },
+  { id: "bg_default", kind: "background", name: "Noite Padrão", icon: "🌃", description: "O fundo clássico.", unlock: { type: "free" }, className: "" },
+  { id: "bg_forest", kind: "background", name: "Floresta Viva", icon: "🌿", description: "Capture 20 monstros.", unlock: { type: "monsters", n: 20 }, className: "" },
+  { id: "bg_volcano", kind: "background", name: "Coração Vulcânico", icon: "🌋", description: "50 horas de estudo.", unlock: { type: "studyHours", n: 50 }, className: "" },
+  { id: "bg_cosmos", kind: "background", name: "Cosmos Arcano", icon: "🌌", description: "Nível 25.", unlock: { type: "level", n: 25 }, className: "" },
+  { id: "bg_champion", kind: "background", name: "Arena dos Campeões", icon: "🏟️", description: "2.200 troféus.", unlock: { type: "trophies", n: 2200 }, className: "" },
 
   // ---------- Emblemas ----------
   { id: "badge_none", kind: "badge", name: "Sem emblema", icon: "▫️", description: "Nenhum emblema.", unlock: { type: "free" } },
@@ -77,14 +82,14 @@ const RANK_LADDER: Array<{
   title: string;
   bg: string;
 }> = [
-  { id: "bronze", name: "Bronze", icon: "🥉", min: 0, title: "Aspirante de Bronze", bg: "bg-gradient-to-br from-rarity-comum/25 via-background to-background" },
-  { id: "prata", name: "Prata", icon: "🥈", min: 400, title: "Guardião de Prata", bg: "bg-gradient-to-br from-rarity-incomum/25 via-background to-background" },
-  { id: "ouro", name: "Ouro", icon: "🥇", min: 900, title: "Sentinela de Ouro", bg: "bg-gradient-to-br from-gold/30 via-background to-background" },
-  { id: "diamante", name: "Diamante", icon: "💎", min: 1500, title: "Lâmina de Diamante", bg: "bg-gradient-to-br from-rarity-super/30 via-background to-primary/10" },
-  { id: "mitico", name: "Mítico", icon: "🔮", min: 2200, title: "Arcanista Mítico", bg: "bg-gradient-to-br from-rarity-epico/30 via-background to-arcane/20" },
-  { id: "lendario", name: "Lendário", icon: "🐉", min: 3000, title: "Domador Lendário", bg: "bg-gradient-to-br from-rarity-lendario/30 via-background to-gold/15" },
-  { id: "mestre", name: "Mestre", icon: "👑", min: 4000, title: "Grão-Mestre", bg: "bg-gradient-to-br from-rarity-mitico/30 via-background to-arcane/20" },
-  { id: "pro", name: "PRO", icon: "⚡", min: 5200, title: "PRO", bg: "bg-gradient-to-br from-rarity-divino/35 via-arcane/20 to-background shadow-[inset_0_0_60px_hsl(var(--rarity-divino)/0.25)]" },
+  { id: "bronze", name: "Bronze", icon: "🥉", min: 0, title: "Aspirante de Bronze", bg: "" },
+  { id: "prata", name: "Prata", icon: "🥈", min: 400, title: "Guardião de Prata", bg: "" },
+  { id: "ouro", name: "Ouro", icon: "🥇", min: 900, title: "Sentinela de Ouro", bg: "" },
+  { id: "diamante", name: "Diamante", icon: "💎", min: 1500, title: "Lâmina de Diamante", bg: "" },
+  { id: "mitico", name: "Mítico", icon: "🔮", min: 2200, title: "Arcanista Mítico", bg: "" },
+  { id: "lendario", name: "Lendário", icon: "🐉", min: 3000, title: "Domador Lendário", bg: "" },
+  { id: "mestre", name: "Mestre", icon: "👑", min: 4000, title: "Grão-Mestre", bg: "" },
+  { id: "pro", name: "PRO", icon: "⚡", min: 5200, title: "PRO", bg: "" },
 ];
 
 const RANK_COSMETICS: CosmeticDef[] = RANK_LADDER.flatMap((r) => [

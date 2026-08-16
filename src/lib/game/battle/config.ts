@@ -4,7 +4,7 @@
 import { MONSTERS, MONSTERS_BY_ID } from "../monsters";
 import { RARITY_ORDER, type RarityId } from "../config";
 
-export const TEAM_SIZE = 3;
+export const TEAM_SIZE = 6;
 
 /** troféus ganhos/perdidos por partida ranqueada */
 export const TROPHY_WIN = { min: 20, max: 35 } as const;
