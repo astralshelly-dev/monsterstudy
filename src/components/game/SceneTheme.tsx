@@ -99,16 +99,13 @@ export function SceneBackground({
 }
 
 function ArtLayer({ theme }: { theme: SceneTheme }) {
-  const svg = useMemo(() => {
-    const tile = ART_TILES[theme.art];
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><g fill="none" stroke="${encodeURIComponent(
-      theme.ink,
-    )
-      .replace(/%20/g, " ")
-      .replace(/%2C/g, ",")}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${tile}</g></svg>`;
+  const url = useMemo(() => {
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">` +
+      `<g fill="none" stroke="${theme.ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">` +
+      `${ART_TILES[theme.art]}</g></svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
   }, [theme.art, theme.ink]);
-
-  const url = `url("data:image/svg+xml,${encodeURIComponent(svg).replace(/'/g, "%27")}")`;
 
   return (
     <div
@@ -117,7 +114,7 @@ function ArtLayer({ theme }: { theme: SceneTheme }) {
         backgroundImage: url,
         backgroundRepeat: "repeat",
         backgroundSize: "220px 220px",
-        opacity: 0.1,
+        opacity: 0.11,
       }}
     />
   );
