@@ -19,6 +19,7 @@ import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as EstatisticasRouteImport } from './routes/estatisticas'
 import { Route as EstudarRouteImport } from './routes/estudar'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as InventarioRouteImport } from './routes/inventario'
 import { Route as JogadoresRouteImport } from './routes/jogadores'
 import { Route as LerRouteImport } from './routes/ler'
 import { Route as LivreRouteImport } from './routes/livre'
@@ -78,6 +79,11 @@ const EstudarRoute = EstudarRouteImport.update({
 const HistoricoRoute = HistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InventarioRoute = InventarioRouteImport.update({
+  id: '/inventario',
+  path: '/inventario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JogadoresRoute = JogadoresRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/estatisticas': typeof EstatisticasRoute
   '/estudar': typeof EstudarRoute
   '/historico': typeof HistoricoRoute
+  '/inventario': typeof InventarioRoute
   '/jogadores': typeof JogadoresRoute
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/estatisticas': typeof EstatisticasRoute
   '/estudar': typeof EstudarRoute
   '/historico': typeof HistoricoRoute
+  '/inventario': typeof InventarioRoute
   '/jogadores': typeof JogadoresRoute
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/estatisticas': typeof EstatisticasRoute
   '/estudar': typeof EstudarRoute
   '/historico': typeof HistoricoRoute
+  '/inventario': typeof InventarioRoute
   '/jogadores': typeof JogadoresRoute
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/estatisticas'
     | '/estudar'
     | '/historico'
+    | '/inventario'
     | '/jogadores'
     | '/ler'
     | '/livre'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/estatisticas'
     | '/estudar'
     | '/historico'
+    | '/inventario'
     | '/jogadores'
     | '/ler'
     | '/livre'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/estatisticas'
     | '/estudar'
     | '/historico'
+    | '/inventario'
     | '/jogadores'
     | '/ler'
     | '/livre'
@@ -278,6 +290,7 @@ export interface RootRouteChildren {
   EstatisticasRoute: typeof EstatisticasRoute
   EstudarRoute: typeof EstudarRoute
   HistoricoRoute: typeof HistoricoRoute
+  InventarioRoute: typeof InventarioRoute
   JogadoresRoute: typeof JogadoresRoute
   LerRoute: typeof LerRoute
   LivreRoute: typeof LivreRoute
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inventario': {
+      id: '/inventario'
+      path: '/inventario'
+      fullPath: '/inventario'
+      preLoaderRoute: typeof InventarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jogadores': {
@@ -446,6 +466,7 @@ const rootRouteChildren: RootRouteChildren = {
   EstatisticasRoute: EstatisticasRoute,
   EstudarRoute: EstudarRoute,
   HistoricoRoute: HistoricoRoute,
+  InventarioRoute: InventarioRoute,
   JogadoresRoute: JogadoresRoute,
   LerRoute: LerRoute,
   LivreRoute: LivreRoute,
