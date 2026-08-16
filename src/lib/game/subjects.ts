@@ -20,6 +20,8 @@ export type SubjectProgress = {
   need: number;
   pct: number;
   totalXp: number;
+  /** tempo real acumulado nesta matéria */
+  totalSec: number;
 };
 
 const ICONS: Array<[RegExp, string]> = [

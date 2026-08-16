@@ -1315,7 +1315,7 @@ export function subjectList(s: GameState = state): SubjectProgress[] {
         pct: Math.min(100, (lvl.xp / lvl.need) * 100),
         totalXp: v.xp,
         totalSec: v.totalSec,
-      } as SubjectProgress & { totalSec: number };
+      } satisfies SubjectProgress;
     })
     .sort((a, b) => b.totalXp - a.totalXp);
 }
