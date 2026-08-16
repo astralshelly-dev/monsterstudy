@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { applyOpponentTrophies } from "@/lib/battle.functions";
 import { createFileRoute } from "@tanstack/react-router";
