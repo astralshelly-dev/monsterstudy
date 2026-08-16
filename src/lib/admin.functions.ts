@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/** Único e-mail com acesso ao painel administrativo. */
-export const ADMIN_EMAIL = "yoshrokmohamedd@gmail.com";
+import { ADMIN_EMAIL } from "./admin";
 
 type Claims = Record<string, unknown>;
 
