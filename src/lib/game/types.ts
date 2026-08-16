@@ -135,6 +135,22 @@ export type BattleRecord = {
   turns: number;
   team: string[];
   opponentTeam: string[];
+  /** derrota automática por abandono (saiu da batalha ou do app) */
+  forfeit?: boolean | undefined;
+};
+
+/**
+ * Batalha ranqueada em andamento. Assim que o oponente é encontrado ela fica
+ * registrada aqui: se o jogador sair da batalha, fechar ou atualizar o app,
+ * a partida é resolvida como derrota na próxima vez que abrir as Batalhas.
+ */
+export type PendingBattle = {
+  startedAt: number;
+  opponentName: string;
+  opponentId?: string | null | undefined;
+  opponentSource: "player" | "bot";
+  team: string[];
+  opponentTeam: string[];
 };
 
 export type BattleData = {
@@ -145,7 +161,10 @@ export type BattleData = {
   /** equipe salva do jogador (ids de monstros) */
   team: string[];
   history: BattleRecord[];
+  /** batalha ranqueada em andamento (abandono = derrota) */
+  pending?: PendingBattle | null | undefined;
 };
+
 
 export type GameState = {
   version: number;

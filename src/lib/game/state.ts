@@ -29,7 +29,7 @@ import {
 import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
 import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
-import type { BattleRecord } from "./types";
+import type { BattleRecord, PendingBattle } from "./types";
 import type {
   ActiveTimer,
   Book,
@@ -1103,6 +1103,47 @@ export function setBattleTeam(ids: string[]) {
   });
 }
 
+// ---------- batalha definitiva (abandono = derrota) ----------
+
+/** batalha ranqueada em andamento, se houver */
+export function pendingBattle(s: GameState = state): PendingBattle | null {
+  return battleData(s).pending ?? null;
+}
+
+/** registra a batalha assim que o oponente é encontrado — não há como cancelar */
+export function startPendingBattle(p: Omit<PendingBattle, "startedAt">) {
+  setState((s) => {
+    s.battle = { ...battleData(s), pending: { ...p, startedAt: Date.now() } };
+  });
+}
+
+export function clearPendingBattle() {
+  setState((s) => {
+    s.battle = { ...battleData(s), pending: null };
+  });
+}
+
+/** resolve a batalha pendente como derrota (abandono) */
+export function forfeitPendingBattle(): (BattleOutcome & { pending: PendingBattle }) | null {
+  const p = pendingBattle();
+  if (!p) return null;
+  clearPendingBattle();
+  const out = recordBattle({
+    mode: "ranked",
+    result: "loss",
+    opponentName: p.opponentName,
+    opponentId: p.opponentId ?? null,
+    opponentSource: p.opponentSource,
+    turns: 0,
+    team: p.team,
+    opponentTeam: p.opponentTeam,
+    forfeit: true,
+  });
+  return { ...out, pending: p };
+}
+
+
+
 
 
 /** troféus sorteados para uma partida ranqueada (nunca deixa ficar abaixo de 0) */
@@ -1129,6 +1170,8 @@ export function recordBattle(input: {
   turns: number;
   team: string[];
   opponentTeam: string[];
+  /** derrota por abandono */
+  forfeit?: boolean;
 }): BattleOutcome {
   const before = battleData().trophies;
   const delta = input.mode === "ranked" ? rollTrophyDelta(input.result, before) : 0;
@@ -1148,6 +1191,7 @@ export function recordBattle(input: {
     turns: input.turns,
     team: input.team,
     opponentTeam: input.opponentTeam,
+    forfeit: input.forfeit ?? false,
   };
   setState((s) => {
     const b = battleData(s);

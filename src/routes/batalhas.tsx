@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { applyOpponentTrophies } from "@/lib/battle.functions";
 import { createFileRoute } from "@tanstack/react-router";
@@ -9,8 +9,12 @@ import { useCloudSync } from "@/hooks/use-auth";
 import {
   battleData,
   battleTeamIds,
+  clearPendingBattle,
+  forfeitPendingBattle,
+  pendingBattle,
   recordBattle,
   setBattleTeam,
+  startPendingBattle,
   type BattleOutcome,
 } from "@/lib/game/state";
 import { LEAGUES, TEAM_SIZE, leagueOf, leagueProgress } from "@/lib/game/battle/config";
@@ -78,8 +82,60 @@ function BattlesPage() {
   const [outcome, setOutcome] = useState<(BattleOutcome & { result: "win" | "loss" }) | null>(null);
   const [behavior, setBehavior] = useState<AiBehavior>("equilibrado");
   const [friendly, setFriendly] = useState<Opponent | null>(null);
+  const [forfeited, setForfeited] = useState<(BattleOutcome & { opponentName: string }) | null>(
+    null,
+  );
   /** modo aceito pelo motor: só a ranqueada vale troféus */
   const engineMode: "ranked" | "training" = mode === "ranked" ? "ranked" : "training";
+
+  /** aplica o efeito espelhado (70%) no oponente real */
+  const mirrorToOpponent = useCallback(
+    (oppPublicId: string | null | undefined, delta: number) => {
+      if (!oppPublicId || delta === 0) return;
+      void applyOpponentElo({ data: { publicId: oppPublicId, playerDelta: delta } }).catch(
+        () => undefined,
+      );
+    },
+    [applyOpponentElo],
+  );
+
+  /** derrota automática por abandono da batalha ranqueada */
+  const forfeitNow = useCallback(() => {
+    const done = forfeitPendingBattle();
+    if (!done) return null;
+    if (done.pending.opponentSource === "player") {
+      mirrorToOpponent(done.pending.opponentId, done.delta);
+    }
+    return done;
+  }, [mirrorToOpponent]);
+
+  // batalha abandonada em outra visita (fechou/atualizou o app): resolve como derrota
+  useEffect(() => {
+    const done = forfeitNow();
+    if (!done) return;
+    setForfeited({ ...done, opponentName: done.pending.opponentName });
+    setPhase("home");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // saiu da página com a ranqueada em andamento → derrota
+  useEffect(() => {
+    return () => {
+      forfeitNow();
+    };
+  }, [forfeitNow]);
+
+  // fechar/atualizar durante a ranqueada: avisa que a partida será perdida
+  useEffect(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (!pendingBattle()) return;
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
 
   const ownedIds = useMemo(() => Object.keys(state.monsters), [state.monsters]);
   const teamLevel = useMemo(() => {
@@ -168,6 +224,14 @@ function BattlesPage() {
       const found = await new Promise<Opponent>((resolve) => {
         window.setTimeout(() => void findOpponent(ctx).then(resolve), 1800);
       });
+      // batalha definitiva: a partir daqui não há como cancelar
+      startPendingBattle({
+        opponentName: found.name,
+        opponentId: found.publicId,
+        opponentSource: found.source,
+        team,
+        opponentTeam: found.team.map((t) => t.monsterId),
+      });
       setOpponent(found);
       setPhase("preview");
     } else {
@@ -194,6 +258,7 @@ function BattlesPage() {
   function finish(winner: SideId, turns: number) {
     if (!opponent) return;
     const result = winner === "player" ? "win" : "loss";
+    clearPendingBattle();
     const out = recordBattle({
       mode: engineMode,
       result,
@@ -207,12 +272,11 @@ function BattlesPage() {
     setOutcome({ ...out, result });
     setPhase("result");
     // batalha assíncrona: o oponente real recebe 70% do efeito invertido
-    if (mode === "ranked" && opponent.source === "player" && opponent.publicId && out.delta !== 0) {
-      void applyOpponentElo({
-        data: { publicId: opponent.publicId, playerDelta: out.delta },
-      }).catch(() => undefined);
+    if (mode === "ranked" && opponent.source === "player") {
+      mirrorToOpponent(opponent.publicId, out.delta);
     }
   }
+
 
   // ---------------- fases ----------------
   if (phase === "team") {
@@ -302,11 +366,24 @@ function BattlesPage() {
               : "Adversário controlado pela IA."
           }
           action={
-            <Button variant="outline" onClick={() => setPhase("home")}>
-              Cancelar
-            </Button>
+            mode === "ranked" ? undefined : (
+              <Button variant="outline" onClick={() => setPhase("home")}>
+                Cancelar
+              </Button>
+            )
           }
         />
+        {mode === "ranked" && (
+          <div className="panel border border-ember/40 bg-ember/10 p-4">
+            <p className="font-display text-sm font-semibold text-ember">
+              ⚠️ Batalha definitiva — não é possível cancelar
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              A partida já está registrada. Se você sair da batalha, fechar ou atualizar o app sem
+              jogar, ela será contada como derrota e você perderá troféus.
+            </p>
+          </div>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <FighterPreview
             title="Você"
@@ -330,6 +407,7 @@ function BattlesPage() {
         <Button size="lg" onClick={beginBattle}>
           ⚔️ Começar batalha
         </Button>
+
       </div>
     );
   }
@@ -348,7 +426,7 @@ function BattlesPage() {
           icon="⚔️"
           subtitle={
             mode === "ranked"
-              ? `Liga ${prog.league.name} · ${num(bd.trophies)} 🏆`
+              ? `Liga ${prog.league.name} · ${num(bd.trophies)} 🏆 · sair agora conta como derrota`
               : mode === "friendly"
                 ? "Nenhum troféu em jogo"
                 : "Treino livre"
@@ -451,6 +529,23 @@ function BattlesPage() {
         subtitle="Coloque sua coleção à prova: ranqueada assíncrona contra outros caçadores ou treino contra a IA."
       />
 
+      {forfeited && (
+        <div className="panel border border-ember/40 bg-ember/10 p-4">
+          <p className="font-display text-sm font-semibold text-ember">
+            💀 Batalha perdida por abandono
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Você saiu da ranqueada contra {forfeited.opponentName} antes de terminar. A partida foi
+            registrada como derrota: {forfeited.delta} troféus (agora {num(forfeited.trophiesAfter)}{" "}
+            🏆).
+          </p>
+          <Button size="sm" variant="outline" className="mt-3" onClick={() => setForfeited(null)}>
+            Entendi
+          </Button>
+        </div>
+      )}
+
+
       <div className="panel aurora p-5">
         <div className="flex flex-wrap items-center gap-4">
           <span className="grid h-16 w-16 place-items-center rounded-2xl bg-primary/15 text-3xl ring-1 ring-primary/40">
@@ -482,8 +577,10 @@ function BattlesPage() {
           <h2 className="font-display text-lg font-semibold">🏅 Ranqueada</h2>
           <p className="text-sm text-muted-foreground">
             PvP assíncrono contra o deck de um jogador sorteado aleatoriamente. Vitória: +20 a 35
-            troféus. Derrota: −17 a 25 troféus.
+            troféus. Derrota: −17 a 25 troféus. Ao encontrar o oponente a batalha é definitiva:
+            abandonar conta como derrota.
           </p>
+
           <Button className="mt-auto" onClick={() => startFlow("ranked")}>
             <Swords className="h-4 w-4" /> Encontrar oponente
           </Button>
@@ -550,7 +647,8 @@ function BattlesPage() {
                     )}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {shortDate(h.at.slice(0, 10))} · {leagueOf(h.trophiesAfter).name} · {h.turns} turnos
+                    {shortDate(h.at.slice(0, 10))} · {leagueOf(h.trophiesAfter).name} ·{" "}
+                    {h.forfeit ? "abandono" : `${h.turns} turnos`}
                   </p>
                 </div>
                 <span
