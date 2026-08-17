@@ -1302,6 +1302,13 @@ export function recordBattle(input: {
       history: [record, ...b.history].slice(0, 200),
     };
     if (input.mode === "ranked") {
+      bumpActivity(s, {
+        wins: input.result === "win" ? 1 : 0,
+        losses: input.result === "loss" ? 1 : 0,
+      });
+      s.trophyLog = { ...(s.trophyLog ?? {}), [todayKey()]: after };
+    }
+    if (input.mode === "ranked") {
       if (input.result === "win") bumpQuest(s, "battles_won", 1);
       if (delta > 0) bumpQuest(s, "trophies_gained", delta);
       const st = s.seasons ?? { current: currentSeason().number, maxTrophies: 0, wins: 0, losses: 0, history: [] };
