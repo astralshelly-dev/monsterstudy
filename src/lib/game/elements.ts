@@ -78,8 +78,8 @@ export const WEAK_AGAINST: Record<ElementId, ElementId[]> = {
   metal: ["fogo", "eletrico", "terra"],
   veneno: ["terra", "metal"],
   vento: ["eletrico", "fogo"],
-  sombrio: ["luz"],
-  luz: ["sombrio"],
+  sombrio: [],
+  luz: [],
   deus: [],
 };
 
@@ -235,46 +235,30 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
  * dos dois elementos.
  */
 export const MONSTER_ELEMENTS_2: Record<string, ElementId> = {
+  // gelo + água faz sentido para criaturas de gelo aquático
   frostnib: "agua",
-  mistmote: "agua",
-  glowfin: "luz",
+  // vaga-lume brilhante da floresta
   lumibug: "natureza",
+  // peixe bioluminescente
+  glowfin: "luz",
+  // toupeira de cinzas vulcânicas
   ashmole: "fogo",
-  moonfang: "gelo",
-  abyssquill: "agua",
+  // golem feito de casca e pedra
   barkgolem: "terra",
-  mirasand: "terra",
-  quartzox: "gelo",
-  stormhorn: "gelo",
-  voidbloom: "natureza",
+  // criatura de lava e rocha
   magmaw: "terra",
-  thornmaw: "natureza",
-  cryotaur: "terra",
-  sylvaqueen: "vento",
-  obsidrake: "terra",
-  tempestrix: "agua",
-  dunephar: "terra",
-  aurelith: "vento",
+  // serpente floral venenosa
   bloomserp: "veneno",
-  solmyrr: "luz",
-  nebulith: "agua",
-  thundrix: "gelo",
-  seraphae: "natureza",
+  // dragão de obsidiana vulcânica
+  obsidrake: "terra",
+  // tempestade sobre o mar
+  tempestrix: "agua",
+  // eclipse: luz e sombra
   eclipsaur: "luz",
-  arcanyx: "luz",
-  abyssaria: "sombrio",
-  umbraleth: "gelo",
-  astraeon: "vento",
-  chronavyr: "metal",
+  // equinócio: sombrio + luz
   equinoxis: "luz",
-  terrabor: "metal",
-  gaiaruk: "natureza",
-  titanox: "terra",
-  chromaw: "luz",
-  aeromyr: "luz",
+  // sapo tóxico aquático
   toxlet: "agua",
-  venomyra: "natureza",
-  malachor: "sombrio",
 };
 
 export function elementOf(monsterId: string): ElementDef {
