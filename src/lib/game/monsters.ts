@@ -320,7 +320,6 @@ const SEEDS: MonsterSeed[] = [
     description: "Cervo alado de luz serena. Abençoa quem estuda sem pressa.",
   },
 
-  // ---------- Mítico ----------
   {
     id: "chronavyr",
     name: "Chronavyr",
