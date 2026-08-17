@@ -43,8 +43,8 @@ export function ElementTable({ className }: { className?: string }) {
           </div>
 
           <p className="text-[11px] text-muted-foreground">
-            ✨ Luz e 🌑 Sombrio só se counteram entre si. 🌌 Deus é neutro: não ganha nem perde
-            vantagem contra nenhum tipo.
+            ✨ Luz e 🌑 Sombrio são super efetivos um contra o outro, mas nunca pouco efetivos.
+            🌌 Deus é neutro: não ganha nem perde vantagem contra nenhum tipo.
           </p>
         </div>
       )}
