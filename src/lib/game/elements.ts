@@ -105,7 +105,7 @@ export type TypeEffect = {
   label: string | null;
 };
 
-/** vantagem de tipo aplicada ao dano */
+/** vantagem de tipo aplicada ao dano (um tipo contra um tipo) */
 export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect {
   if (attacker === "deus" || defender === "deus") {
     return { mult: 1, kind: "normal", label: null };
@@ -119,6 +119,21 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
   return { mult: 1, kind: "normal", label: null };
 }
 
+/**
+ * Monstros de tipo duplo: somam TODAS as vantagens e TODAS as fraquezas
+ * dos dois elementos (sem acumular — o bônus continua sendo ±15%).
+ */
+export function typeEffectMulti(attackers: ElementId[], defenders: ElementId[]): TypeEffect {
+  if (attackers.includes("deus") || defenders.includes("deus")) {
+    return { mult: 1, kind: "normal", label: null };
+  }
+  const strong = attackers.some((a) => defenders.some((d) => STRONG_AGAINST[a].includes(d)));
+  if (strong) return { mult: 1 + TYPE_BONUS, kind: "super", label: "SUPER EFETIVO!" };
+  const weak = defenders.some((d) => attackers.some((a) => WEAK_AGAINST[d].includes(a)));
+  if (weak) return { mult: 1 - TYPE_BONUS, kind: "weak", label: "POUCO EFETIVO" };
+  return { mult: 1, kind: "normal", label: null };
+}
+
 /** tipos que este elemento vence / perde */
 export function elementMatchups(id: ElementId) {
   return {
@@ -126,6 +141,16 @@ export function elementMatchups(id: ElementId) {
     weak: WEAK_AGAINST[id],
   };
 }
+
+/** união das vantagens/fraquezas de um monstro (funciona para tipo duplo) */
+export function combinedMatchups(ids: ElementId[]) {
+  const uniq = (xs: ElementId[]) => Array.from(new Set(xs));
+  return {
+    strong: uniq(ids.flatMap((i) => STRONG_AGAINST[i])),
+    weak: uniq(ids.flatMap((i) => WEAK_AGAINST[i])),
+  };
+}
+
 
 /** elemento de cada monstro (o secreto é o único "Deus") */
 export const MONSTER_ELEMENTS: Record<string, ElementId> = {
