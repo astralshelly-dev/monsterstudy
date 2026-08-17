@@ -107,6 +107,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     element: elementOf(monsterId).id,
     elements: elementIdsOf(monsterId),
     charge: abilityFor(monsterId).cooldown,
+    abilityUses: 0,
     atkBuff: 0,
     defBuff: 0,
     shield: 0,
@@ -118,6 +119,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     mark: null,
   };
 }
+
 
 export function createBattle(input: {
   mode: "ranked" | "training";
@@ -713,6 +715,7 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
   } else {
     basicAttack(b, actor, attacker, defSide, defSideId);
   }
+
 
   if (defSide.fighters[defSide.active]!.hp > 0) tickBurn(b, defSideId);
   finishTurn(b, actor);
