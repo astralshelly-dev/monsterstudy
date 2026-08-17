@@ -31,7 +31,7 @@ import {
 import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
 import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
-import type { BattleRecord, PendingBattle } from "./types";
+import type { BattleRecord, DayActivity, PendingBattle } from "./types";
 import { generateDailyQuests, QUESTS_BY_ID, questDone, type DailyQuest, type QuestMetric } from "./quests";
 import { ITEMS_BY_ID, ITEM_DROP_SECONDS, rollItem, type ItemDef } from "./items";
 import { subjectKey, subjectLevelFromXp, subjectIcon, SUBJECT_XP_PER_MINUTE, type SubjectProgress } from "./subjects";
