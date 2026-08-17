@@ -4,6 +4,7 @@ import {
   BookMarked,
   BookOpen,
   Brain,
+  ChevronDown,
   Flame,
   Gift,
 
@@ -39,31 +40,99 @@ import { SceneThemeProvider } from "@/components/game/SceneTheme";
 import { cn } from "@/lib/utils";
 
 
-const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, primary: true },
-  { to: "/estudar", label: "Estudar", icon: GraduationCap, primary: true },
-  { to: "/ler", label: "Ler", icon: BookOpen, primary: true },
-  { to: "/livre", label: "Treino Livre", icon: Brain },
-  { to: "/batalhas", label: "Batalhas", icon: Swords, primary: true },
-  { to: "/missoes", label: "Missões", icon: Target, primary: true },
-  { to: "/temporada", label: "Temporada", icon: CalendarDays },
-  { to: "/inventario", label: "Inventário", icon: Backpack },
-  { to: "/monsterdex", label: "MonsterDex", icon: PawPrint, primary: true },
-  { to: "/monstros", label: "Meus Monstros", icon: Sparkles },
-  { to: "/biblioteca", label: "Biblioteca", icon: Library, primary: true },
-  { to: "/loja", label: "Loja", icon: ShoppingBag },
-  { to: "/codigos", label: "Códigos", icon: Gift },
-  { to: "/conquistas", label: "Conquistas", icon: Trophy },
-  { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
-  { to: "/historico", label: "Histórico", icon: ScrollText },
-  { to: "/amigos", label: "Amigos", icon: Users, primary: true },
-  { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
-  { to: "/entrar", label: "Conta", icon: UserRound },
-  { to: "/perfil", label: "Perfil", icon: User },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
-] as const;
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; primary?: boolean };
+type NavGroup = { id: string; label: string; emoji: string; items: NavItem[] };
 
-const ADMIN_NAV = { to: "/adm", label: "Painel ADM", icon: ShieldAlert } as const;
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: "principal",
+    label: "Principal",
+    emoji: "🏠",
+    items: [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard, primary: true },
+      { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
+      { to: "/historico", label: "Histórico", icon: ScrollText },
+    ],
+  },
+  {
+    id: "estudo",
+    label: "Estudo",
+    emoji: "📚",
+    items: [
+      { to: "/estudar", label: "Estudar", icon: GraduationCap, primary: true },
+      { to: "/livre", label: "Treino Livre", icon: Brain },
+      { to: "/ler", label: "Ler", icon: BookOpen, primary: true },
+      { to: "/biblioteca", label: "Biblioteca", icon: Library },
+    ],
+  },
+  {
+    id: "monstros",
+    label: "Monstros",
+    emoji: "🐉",
+    items: [
+      { to: "/monstros", label: "Meus Monstros", icon: Sparkles },
+      { to: "/monsterdex", label: "MonsterDex", icon: PawPrint, primary: true },
+    ],
+  },
+  {
+    id: "batalhas",
+    label: "Batalhas",
+    emoji: "⚔️",
+    items: [
+      { to: "/batalhas", label: "Batalhas", icon: Swords, primary: true },
+      { to: "/temporada", label: "Temporada", icon: CalendarDays },
+    ],
+  },
+  {
+    id: "progresso",
+    label: "Progresso",
+    emoji: "🏆",
+    items: [
+      { to: "/conquistas", label: "Conquistas", icon: Trophy },
+      { to: "/missoes", label: "Missões", icon: Target },
+    ],
+  },
+  {
+    id: "social",
+    label: "Social",
+    emoji: "👥",
+    items: [
+      { to: "/amigos", label: "Amigos", icon: Users },
+      { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
+    ],
+  },
+  {
+    id: "recursos",
+    label: "Recursos",
+    emoji: "🛒",
+    items: [
+      { to: "/loja", label: "Loja", icon: ShoppingBag },
+      { to: "/codigos", label: "Códigos", icon: Gift },
+      { to: "/inventario", label: "Inventário", icon: Backpack },
+    ],
+  },
+  {
+    id: "perfil",
+    label: "Perfil",
+    emoji: "👤",
+    items: [
+      { to: "/perfil", label: "Perfil", icon: User },
+      { to: "/entrar", label: "Conta", icon: UserRound },
+      { to: "/configuracoes", label: "Configurações", icon: Settings },
+    ],
+  },
+];
+
+const ADMIN_GROUP: NavGroup = {
+  id: "adm",
+  label: "Painel ADM",
+  emoji: "💻",
+  items: [{ to: "/adm", label: "Painel ADM", icon: ShieldAlert }],
+};
+
+function isActivePath(pathname: string, to: string) {
+  return pathname === to || (to !== "/" && pathname.startsWith(to));
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -78,7 +147,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 function AppShellContent({ children }: { children: ReactNode }) {
   const { offline, dismissOffline } = useHydrated();
   const { user } = useCloudSync();
-  const nav = isAdminEmail(user?.email) ? [...NAV, ADMIN_NAV] : [...NAV];
+  const groups = isAdminEmail(user?.email) ? [...NAV_GROUPS, ADMIN_GROUP] : NAV_GROUPS;
+  const flatNav = groups.flatMap((g) => g.items);
 
   const state = useGame();
 
@@ -86,9 +156,14 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const prog = userProgress(state);
   const rate = moneyPerSecond(state);
   const [moreOpen, setMoreOpen] = useState(false);
+  const activeGroup =
+    groups.find((g) => g.items.some((i) => isActivePath(pathname, i.to)))?.id ?? "principal";
+  const [openGroup, setOpenGroup] = useState<string | null>(activeGroup);
   useEffect(() => {
     setMoreOpen(false);
-  }, [pathname]);
+    setOpenGroup(activeGroup);
+  }, [pathname, activeGroup]);
+
 
   return (
     <div className="flex min-h-screen w-full">
@@ -103,23 +178,53 @@ function AppShellContent({ children }: { children: ReactNode }) {
           </span>
         </Link>
 
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-          {nav.map((item) => {
-            const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
+          {groups.map((group) => {
+            const expanded = openGroup === group.id;
+            const groupActive = group.items.some((i) => isActivePath(pathname, i.to));
             return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                  active
-                    ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
-                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              <div key={group.id}>
+                <button
+                  type="button"
+                  onClick={() => setOpenGroup(expanded ? null : group.id)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-colors",
+                    groupActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm">{group.emoji}</span>
+                    {group.label}
+                  </span>
+                  <ChevronDown
+                    className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")}
+                  />
+                </button>
+                {expanded && (
+                  <div className="mb-1 ml-4 flex flex-col gap-0.5 border-l border-sidebar-border pl-2">
+                    {group.items.map((item) => {
+                      const active = isActivePath(pathname, item.to);
+                      return (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
+                            active
+                              ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
+                              : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                          )}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
+              </div>
             );
           })}
         </nav>
@@ -161,7 +266,8 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5">
-            {nav.filter((n) => "primary" in n && n.primary)
+            {flatNav
+              .filter((n) => n.primary)
               .slice(0, 4)
               .map((item) => {
                 const active =
@@ -194,27 +300,35 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 <SheetHeader className="text-left">
                   <SheetTitle className="font-display">Todas as seções</SheetTitle>
                 </SheetHeader>
-                <div className="mt-4 grid grid-cols-2 gap-2 pb-6">
-                  {nav.map((item) => {
-                    const active =
-                      pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => setMoreOpen(false)}
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
-                          active
-                            ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
-                            : "bg-secondary/60 text-muted-foreground",
-                        )}
-                      >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{item.label}</span>
-                      </Link>
-                    );
-                  })}
+                <div className="mt-4 space-y-4 pb-6">
+                  {groups.map((group) => (
+                    <div key={group.id}>
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {group.emoji} {group.label}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {group.items.map((item) => {
+                          const active = isActivePath(pathname, item.to);
+                          return (
+                            <Link
+                              key={item.to}
+                              to={item.to}
+                              onClick={() => setMoreOpen(false)}
+                              className={cn(
+                                "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
+                                active
+                                  ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
+                                  : "bg-secondary/60 text-muted-foreground",
+                              )}
+                            >
+                              <item.icon className="h-4 w-4 shrink-0" />
+                              <span className="truncate">{item.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </SheetContent>
             </Sheet>

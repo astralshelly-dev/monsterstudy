@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  ELEMENT_CYCLE,
   ELEMENTS,
   ELEMENTS_BY_ID,
   TYPE_BONUS,
@@ -35,27 +34,7 @@ export function ElementTable({ className }: { className?: string }) {
 
       {open && (
         <div className="mt-4 space-y-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Roda de counters (cada tipo vence os 2 seguintes)
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-1 text-xs">
-              {ELEMENT_CYCLE.map((id, i) => {
-                const e = ELEMENTS_BY_ID[id];
-                return (
-                  <span key={id} className="flex items-center gap-1">
-                    <span className={cn("rounded-full bg-secondary/70 px-2 py-0.5 font-semibold", e.text)}>
-                      {e.icon} {e.name}
-                    </span>
-                    {i < ELEMENT_CYCLE.length - 1 && (
-                      <span className="text-muted-foreground">›</span>
-                    )}
-                  </span>
-                );
-              })}
-              <span className="text-muted-foreground">› volta ao início</span>
-            </div>
-          </div>
+
 
           <div className="grid gap-2 sm:grid-cols-2">
             {ELEMENTS.map((e) => (
