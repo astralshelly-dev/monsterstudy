@@ -440,19 +440,21 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       break;
     }
     case "judgment": {
-      hit(e.mult);
-      defender.mark = { turns: e.turns, pct: e.markPct * k };
-      const heal = Math.round(attacker.maxHp * e.healPct * k);
-      attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
+      // não causa dano próprio: apenas marca o alvo até a morte dele
+      defender.mark = {
+        pct: e.markPct,
+        lifestealPct: e.lifestealPct,
+        abilityLifestealPct: e.abilityLifestealPct,
+      };
       b.events.push({
         id: eid(),
         kind: "buff",
         side,
-        text: `⚖️ ${defender.name} foi marcado pelo veredito (+${Math.round(e.markPct * k * 100)}% de dano recebido)`,
+        text: `⚖️ ${defender.name} foi marcado pelo veredito: +${Math.round(e.markPct * 100)}% de dano recebido e quem o ferir drena vida`,
       });
-      b.events.push({ id: eid(), kind: "heal", side, text: `${attacker.name} reequilibra-se e recupera ${heal}`, heal });
       break;
     }
+
     case "fortify": {
       attacker.defBuff += e.defPct * k;
       const heal = Math.round(attacker.maxHp * e.healPct * k);
