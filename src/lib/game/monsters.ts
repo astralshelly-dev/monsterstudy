@@ -322,6 +322,16 @@ const SEEDS: MonsterSeed[] = [
 
   // ---------- Mítico ----------
   {
+    id: "chronavyr",
+    name: "Chronavyr",
+    rarity: "lendario",
+    habitat: "mistico",
+    description:
+      "Serpente do tempo feita de engrenagens e vento. Cada volta sua repete um instante que já passou.",
+  },
+
+  // ---------- Mítico ----------
+  {
     id: "eclipsaur",
     name: "Eclipsaur",
     rarity: "mitico",
@@ -358,6 +368,14 @@ const SEEDS: MonsterSeed[] = [
     habitat: "mistico",
     description:
       "O Dragão dos Ciclos Infinitos. Diz-se que ele apenas se mostra a quem transformou estudo em ritual.",
+  },
+  {
+    id: "equinoxis",
+    name: "Equinoxis",
+    rarity: "divino",
+    habitat: "espaco",
+    description:
+      "Guardião do equilíbrio entre luz e escuridão. Pesa cada esforço na balança e cobra o veredito.",
   },
   {
     id: "luminara",
