@@ -265,7 +265,8 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5">
-            {nav.filter((n) => "primary" in n && n.primary)
+            {flatNav
+              .filter((n) => n.primary)
               .slice(0, 4)
               .map((item) => {
                 const active =
