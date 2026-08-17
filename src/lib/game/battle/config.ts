@@ -75,8 +75,9 @@ export type AbilityEffect =
   | { type: "purge"; healPct: number; defPct: number }
   /** eco temporal: o dano de agora se repete sozinho no próximo turno */
   | { type: "echo"; mult: number; echoPct: number; turns: number }
-  /** veredito: marca o alvo, que passa a receber mais dano de qualquer fonte */
-  | { type: "judgment"; mult: number; markPct: number; turns: number; healPct: number };
+  /** veredito: marca permanente — o alvo sofre mais dano e alimenta quem o ferir */
+  | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number };
+
 
 export type Ability = {
   id: string;
