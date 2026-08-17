@@ -177,23 +177,53 @@ function AppShellContent({ children }: { children: ReactNode }) {
           </span>
         </Link>
 
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-          {nav.map((item) => {
-            const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
+          {groups.map((group) => {
+            const expanded = openGroup === group.id;
+            const groupActive = group.items.some((i) => isActivePath(pathname, i.to));
             return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                  active
-                    ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
-                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              <div key={group.id}>
+                <button
+                  type="button"
+                  onClick={() => setOpenGroup(expanded ? null : group.id)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-colors",
+                    groupActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm">{group.emoji}</span>
+                    {group.label}
+                  </span>
+                  <ChevronDown
+                    className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")}
+                  />
+                </button>
+                {expanded && (
+                  <div className="mb-1 ml-4 flex flex-col gap-0.5 border-l border-sidebar-border pl-2">
+                    {group.items.map((item) => {
+                      const active = isActivePath(pathname, item.to);
+                      return (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
+                            active
+                              ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
+                              : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+                          )}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
+              </div>
             );
           })}
         </nav>
