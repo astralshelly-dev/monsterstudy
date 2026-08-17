@@ -82,6 +82,8 @@ export function defaultState(): GameState {
     },
     money: 0,
     shards: 0,
+    diamonds: 0,
+    diamondProgressSec: 0,
     lastSeen: Date.now(),
     monsters: {},
     activeMonsterId: null,

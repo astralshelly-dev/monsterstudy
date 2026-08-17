@@ -185,6 +185,10 @@ export type GameState = {
   };
   money: number;
   shards: number;
+  /** diamantes: moeda do bazar de itens, ganha estudando/lendo */
+  diamonds: number;
+  /** segundos acumulados rumo ao próximo diamante */
+  diamondProgressSec?: number;
   lastSeen: number;
   monsters: Record<string, OwnedMonster>;
 
