@@ -1549,6 +1549,7 @@ export function claimQuest(templateId: string): { ok: boolean; message: string }
         x.templateId === templateId ? { ...x, claimed: true } : x,
       ),
     };
+    bumpActivity(s, { quests: 1 });
     const questMult =
       1 + (s.upgrades?.quest_master ?? 0) * UPGRADES.quest_master.effectPerLevel;
     if (t.reward.xp) {
