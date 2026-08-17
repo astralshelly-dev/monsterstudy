@@ -9,7 +9,7 @@ import { MonsterCard } from "@/components/game/MonsterCard";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
 import { ElementTable } from "@/components/game/ElementTable";
-import { ELEMENTS_BY_ID, elementMatchups, elementOf } from "@/lib/game/elements";
+import { ELEMENTS_BY_ID, combinedMatchups, elementIdsOf } from "@/lib/game/elements";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { money, num } from "@/lib/format";
@@ -253,8 +253,7 @@ function Cell({ label, value }: { label: string; value: string }) {
 }
 
 function TypeChart({ id }: { id: string }) {
-  const el = elementOf(id);
-  const m = elementMatchups(el.id);
+  const m = combinedMatchups(elementIdsOf(id));
   return (
     <div className="rounded-xl bg-background/60 px-3 py-2">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
