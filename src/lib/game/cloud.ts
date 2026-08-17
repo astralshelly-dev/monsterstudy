@@ -187,6 +187,29 @@ function topMonsterOf(s: GameState): string | null {
   return best?.id ?? null;
 }
 
+/** recorte dos últimos 60 dias do diário de atividade (o resto fica só no save) */
+function recentActivity(s: GameState): Record<string, DayActivity> {
+  const limit = new Date();
+  limit.setDate(limit.getDate() - 60);
+  const min = `${limit.getFullYear()}-${String(limit.getMonth() + 1).padStart(2, "0")}-${String(limit.getDate()).padStart(2, "0")}`;
+  const out: Record<string, DayActivity> = {};
+  for (const [day, v] of Object.entries(s.activity ?? {})) {
+    if (day >= min && v) out[day] = v;
+  }
+  return out;
+}
+
+function recentTrophyLog(s: GameState): Record<string, number> {
+  const limit = new Date();
+  limit.setDate(limit.getDate() - 60);
+  const min = `${limit.getFullYear()}-${String(limit.getMonth() + 1).padStart(2, "0")}-${String(limit.getDate()).padStart(2, "0")}`;
+  const out: Record<string, number> = {};
+  for (const [day, v] of Object.entries(s.trophyLog ?? {})) {
+    if (day >= min && typeof v === "number") out[day] = v;
+  }
+  return out;
+}
+
 function summarize(s: GameState) {
   const t = totals(s);
   const byRarity: Record<string, number> = {};
