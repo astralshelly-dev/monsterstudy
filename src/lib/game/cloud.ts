@@ -383,7 +383,7 @@ export async function myPublicId(userId: string): Promise<string | null> {
   return data?.public_id ?? null;
 }
 
-function mapProfile(row: Record<string, unknown>): PublicProfile {
+export function mapProfile(row: Record<string, unknown>): PublicProfile {
   return {
     publicId: String(row['public_id']),
     displayName: String(row['display_name']),
