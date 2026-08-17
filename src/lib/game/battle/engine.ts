@@ -554,16 +554,6 @@ function tickPoison(b: Battle, side: SideId) {
   });
 }
 
-function tickMark(b: Battle, side: SideId) {
-  const f = activeOf(b, side);
-  if (!f.mark) return;
-  f.mark.turns -= 1;
-  if (f.mark.turns <= 0) {
-    f.mark = null;
-    b.events.push({ id: eid(), kind: "buff", side, text: `⚖️ A marca em ${f.name} se desfez` });
-  }
-}
-
 /** o eco temporal repete parte do dano no início do turno de quem o criou */
 function tickEcho(b: Battle, side: SideId) {
   const attacker = activeOf(b, side);
@@ -572,7 +562,11 @@ function tickEcho(b: Battle, side: SideId) {
   const defSide = side === "player" ? b.foe : b.player;
   const defender = defSide.fighters[defSide.active]!;
   if (defender.hp <= 0) return;
-  const dealt = applyDamage(b, defSideId, defender, attacker.echo.dmg);
+  const dealt = applyDamage(b, defSideId, defender, attacker.echo.dmg, {
+    attacker,
+    viaAbility: true,
+  });
+
   attacker.echo.turns -= 1;
   if (attacker.echo.turns <= 0) attacker.echo = null;
   b.events.push({
