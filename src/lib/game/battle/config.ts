@@ -264,10 +264,11 @@ export const ABILITIES: Ability[] = [
     name: "Veredito do Equinócio",
     icon: "⚖️",
     description:
-      "Pesa o adversário na balança: ele fica marcado e sofre 25% mais dano de qualquer fonte por 3 turnos, enquanto o usuário se equilibra recuperando vida.",
-    cooldown: 5,
-    effect: { type: "judgment", mult: 1.25, markPct: 0.25, turns: 3, healPct: 0.12 },
+      "Não causa dano próprio: marca o adversário até a morte dele. O marcado sofre +20% de dano de qualquer fonte e, sempre que é ferido, quem atacou drena 70% do dano em vida (50% se o golpe vier de uma habilidade especial). A marca não acumula.",
+    cooldown: 3,
+    effect: { type: "judgment"; markPct: 0.2; lifestealPct: 0.7; abilityLifestealPct: 0.5 } as never,
   },
+
 ];
 
 export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
