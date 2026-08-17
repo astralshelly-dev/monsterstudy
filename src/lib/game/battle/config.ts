@@ -72,7 +72,11 @@ export type AbilityEffect =
   | { type: "slow"; mult: number; spdPct: number }
   | { type: "double_edge"; mult: number; selfPct: number }
   | { type: "team_shield"; pct: number }
-  | { type: "purge"; healPct: number; defPct: number };
+  | { type: "purge"; healPct: number; defPct: number }
+  /** eco temporal: o dano de agora se repete sozinho no próximo turno */
+  | { type: "echo"; mult: number; echoPct: number; turns: number }
+  /** veredito: marca o alvo, que passa a receber mais dano de qualquer fonte */
+  | { type: "judgment"; mult: number; markPct: number; turns: number; healPct: number };
 
 export type Ability = {
   id: string;
@@ -246,6 +250,24 @@ export const ABILITIES: Ability[] = [
     cooldown: 4,
     effect: { type: "purge", healPct: 0.2, defPct: 0.25 },
   },
+  {
+    id: "eco_temporal",
+    name: "Eco Temporal",
+    icon: "⏳",
+    description:
+      "Fere o oponente e deixa um eco do golpe: nos próximos turnos o mesmo dano se repete sozinho, mesmo que Chronavyr troque de alvo.",
+    cooldown: 4,
+    effect: { type: "echo", mult: 1.35, echoPct: 0.7, turns: 2 },
+  },
+  {
+    id: "veredito_do_equinocio",
+    name: "Veredito do Equinócio",
+    icon: "⚖️",
+    description:
+      "Pesa o adversário na balança: ele fica marcado e sofre 25% mais dano de qualquer fonte por 3 turnos, enquanto o usuário se equilibra recuperando vida.",
+    cooldown: 5,
+    effect: { type: "judgment", mult: 1.25, markPct: 0.25, turns: 3, healPct: 0.12 },
+  },
 ];
 
 export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
@@ -293,6 +315,8 @@ const ABILITY_MAP: Record<string, string> = (() => {
   map['mistmote'] = "ventania_cortante";
   map['pebbly'] = "postura_ancestral";
   map['dunecoil'] = "ferrugem";
+  map['chronavyr'] = "eco_temporal";
+  map['equinoxis'] = "veredito_do_equinocio";
   return map;
 })();
 
@@ -380,6 +404,8 @@ export const SPEED_FACTOR: Record<string, number> = {
   // divinos
   astraeon: 1.02,
   luminara: 1.22,
+  chronavyr: 1.34,
+  equinoxis: 1.1,
   // expansão
   cragling: 0.68,
   terrabor: 0.74,
@@ -435,6 +461,8 @@ export const OFFENSIVE_EFFECTS = [
   "break_def",
   "double_edge",
   "haste",
+  "echo",
+  "judgment",
 ] as const;
 export const DEFENSIVE_EFFECTS = [
   "shield",

@@ -5,6 +5,7 @@ import {
   FREE_XP_REPEAT,
   GIFT_CODES,
   ITEM_SHOP_PRICES,
+  DIAMOND_PER_SECONDS,
 
   OFFLINE_INCOME_BASE,
   OFFLINE_INCOME_MAX_HOURS,
@@ -82,6 +83,8 @@ export function defaultState(): GameState {
     },
     money: 0,
     shards: 0,
+    diamonds: 0,
+    diamondProgressSec: 0,
     lastSeen: Date.now(),
     monsters: {},
     activeMonsterId: null,
@@ -640,6 +643,7 @@ function markActivity(
     bumpQuest(s, "read_pages", pages);
   }
   accumulateItemProgress(s, seconds);
+  accumulateDiamonds(s, seconds);
 
   // streak
   const today = key;
@@ -1401,6 +1405,24 @@ function accumulateItemProgress(s: GameState, seconds: number) {
   s.itemProgressSec = acc;
 }
 
+/** diamantes ganhos com tempo real de estudo/leitura (≈6 por hora) */
+function accumulateDiamonds(s: GameState, seconds: number) {
+  if (seconds <= 0) return;
+  let acc = (s.diamondProgressSec ?? 0) + seconds;
+  const gained = Math.floor(acc / DIAMOND_PER_SECONDS);
+  if (gained > 0) {
+    s.diamonds = (s.diamonds ?? 0) + gained;
+    acc -= gained * DIAMOND_PER_SECONDS;
+  }
+  s.diamondProgressSec = acc;
+}
+
+/** progresso rumo ao próximo diamante (para a interface) */
+export function diamondProgress(s: GameState = state) {
+  const cur = s.diamondProgressSec ?? 0;
+  return { current: cur, target: DIAMOND_PER_SECONDS, pct: Math.min(100, (cur / DIAMOND_PER_SECONDS) * 100) };
+}
+
 /** tempo necessário para o próximo item, reduzido pelo Caçador de Relíquias */
 export function itemDropTarget(s: GameState = state): number {
   const lvl = s.upgrades?.item_hunter ?? 0;
@@ -1421,17 +1443,17 @@ export function itemDropProgress(s: GameState = state) {
   return { current: cur, target, pct: Math.min(100, (cur / target) * 100) };
 }
 
-/** compra um item no bazar da loja pagando com fragmentos */
+/** compra um item no bazar da loja pagando com diamantes */
 export function buyItem(itemId: string): { ok: boolean; message: string } {
   const def = ITEMS_BY_ID[itemId];
   if (!def) return { ok: false, message: "Item desconhecido." };
   const price = ITEM_SHOP_PRICES[def.rarity] ?? 0;
-  if (state.shards < price) return { ok: false, message: "Fragmentos insuficientes." };
+  if ((state.diamonds ?? 0) < price) return { ok: false, message: "Diamantes insuficientes." };
   setState((s) => {
-    s.shards -= price;
+    s.diamonds = (s.diamonds ?? 0) - price;
     grantItemTo(s, itemId, 1);
   });
-  return { ok: true, message: `${def.icon} ${def.name} comprado por ${price} fragmentos.` };
+  return { ok: true, message: `${def.icon} ${def.name} comprado por ${price} diamantes.` };
 }
 
 
@@ -1473,6 +1495,49 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
         monsterXp = e.amount;
         message = `+${e.amount} XP para o monstro em treino`;
         break;
+      case "user_xp_range": {
+        const amount = Math.round(e.min + Math.random() * (e.max - e.min));
+        addUserXp(s, amount);
+        message = `+${amount.toLocaleString("pt-BR")} XP de jogador`;
+        break;
+      }
+      case "income_minutes": {
+        const gain = Math.round(moneyPerSecond(s) * e.minutes * 60);
+        s.money += gain;
+        bumpQuest(s, "money_earned", gain);
+        message =
+          gain > 0
+            ? `+${gain.toLocaleString("pt-BR")} moedas (${e.minutes} min de renda)`
+            : "sua renda passiva está zerada — nenhuma moeda foi gerada";
+        break;
+      }
+      case "monster_roll": {
+        const total = e.odds.reduce((a, o) => a + o.weight, 0);
+        let roll = Math.random() * total;
+        let rarity = e.odds[0]!.rarity;
+        for (const o of e.odds) {
+          roll -= o.weight;
+          if (roll <= 0) {
+            rarity = o.rarity;
+            break;
+          }
+        }
+        const pool = MONSTERS_BY_RARITY[rarity] ?? [];
+        const picked = pool[Math.floor(Math.random() * pool.length)];
+        if (picked) {
+          applyReward(s, {
+            monsterId: picked.id,
+            rarity,
+            duplicate: Boolean(s.monsters[picked.id]),
+            xp: 0,
+            money: 0,
+            shards: 0,
+          });
+          bumpQuest(s, "monsters_found", 1);
+          message = `${picked.name} (${RARITIES[rarity].name}) apareceu!`;
+        }
+        break;
+      }
       case "monster": {
         const pool = MONSTERS_BY_RARITY[e.rarity] ?? [];
         const picked = pool[Math.floor(Math.random() * pool.length)];

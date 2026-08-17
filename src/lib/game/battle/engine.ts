@@ -36,6 +36,10 @@ export type Fighter = {
   poison: { turns: number; dmg: number } | null;
   /** modificador de velocidade (haste / ferrugem) */
   spdBuff: number;
+  /** eco temporal: repete parte do dano nos próximos turnos do usuário */
+  echo: { turns: number; dmg: number } | null;
+  /** marcado pelo veredito: recebe dano ampliado de qualquer fonte */
+  mark: { turns: number; pct: number } | null;
 };
 
 export type SideId = "player" | "foe";
@@ -103,6 +107,8 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     burn: null,
     poison: null,
     spdBuff: 0,
+    echo: null,
+    mark: null,
   };
 }
 
@@ -221,6 +227,16 @@ function hpShare(side: Side): number {
 
 function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number): number {
   let dmg = amount;
+  if (fighter.mark && fighter.mark.turns > 0) {
+    const extra = Math.max(1, Math.round(dmg * fighter.mark.pct));
+    dmg += extra;
+    b.events.push({
+      id: eid(),
+      kind: "buff",
+      side: target === "player" ? "foe" : "player",
+      text: `⚖️ ${fighter.name} está marcado e sofre +${extra} de dano`,
+    });
+  }
   if (fighter.guard > 0) {
     const reduced = dmg - Math.max(1, Math.round(dmg * 0.7));
     dmg -= reduced;
@@ -412,6 +428,31 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       b.events.push({ id: eid(), kind: "heal", side, text: `🌬️ ${attacker.name} se purificou`, heal });
       break;
     }
+    case "echo": {
+      const dealt = hit(e.mult);
+      attacker.echo = { turns: e.turns, dmg: Math.max(1, Math.round(dealt * e.echoPct)) };
+      b.events.push({
+        id: eid(),
+        kind: "buff",
+        side,
+        text: `⏳ Um eco do golpe de ${attacker.name} ficou preso no tempo`,
+      });
+      break;
+    }
+    case "judgment": {
+      hit(e.mult);
+      defender.mark = { turns: e.turns, pct: e.markPct * k };
+      const heal = Math.round(attacker.maxHp * e.healPct * k);
+      attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
+      b.events.push({
+        id: eid(),
+        kind: "buff",
+        side,
+        text: `⚖️ ${defender.name} foi marcado pelo veredito (+${Math.round(e.markPct * k * 100)}% de dano recebido)`,
+      });
+      b.events.push({ id: eid(), kind: "heal", side, text: `${attacker.name} reequilibra-se e recupera ${heal}`, heal });
+      break;
+    }
     case "fortify": {
       attacker.defBuff += e.defPct * k;
       const heal = Math.round(attacker.maxHp * e.healPct * k);
@@ -487,9 +528,41 @@ function tickPoison(b: Battle, side: SideId) {
   });
 }
 
+function tickMark(b: Battle, side: SideId) {
+  const f = activeOf(b, side);
+  if (!f.mark) return;
+  f.mark.turns -= 1;
+  if (f.mark.turns <= 0) {
+    f.mark = null;
+    b.events.push({ id: eid(), kind: "buff", side, text: `⚖️ A marca em ${f.name} se desfez` });
+  }
+}
+
+/** o eco temporal repete parte do dano no início do turno de quem o criou */
+function tickEcho(b: Battle, side: SideId) {
+  const attacker = activeOf(b, side);
+  if (!attacker.echo || attacker.hp <= 0) return;
+  const defSideId: SideId = side === "player" ? "foe" : "player";
+  const defSide = side === "player" ? b.foe : b.player;
+  const defender = defSide.fighters[defSide.active]!;
+  if (defender.hp <= 0) return;
+  const dealt = applyDamage(b, defSideId, defender, attacker.echo.dmg);
+  attacker.echo.turns -= 1;
+  if (attacker.echo.turns <= 0) attacker.echo = null;
+  b.events.push({
+    id: eid(),
+    kind: "damage",
+    side,
+    target: defSideId,
+    text: `⏳ O eco do golpe atinge ${defender.name} por ${dealt}`,
+    damage: dealt,
+  });
+}
+
 function tickBurn(b: Battle, side: SideId) {
   const f = activeOf(b, side);
   tickPoison(b, side);
+  tickMark(b, side);
   if (!f.burn || f.hp <= 0) return;
   const dealt = Math.min(f.hp, f.burn.dmg);
   f.hp -= dealt;
@@ -587,6 +660,12 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
   const attacker = activeOf(b, actor);
   const defSide = actor === "player" ? b.foe : b.player;
   const defSideId: SideId = actor === "player" ? "foe" : "player";
+
+  tickEcho(b, actor);
+  if (defSide.fighters[defSide.active]!.hp <= 0) {
+    finishTurn(b, actor);
+    return b;
+  }
 
   const wantsSpecial = actor === "player" && !!opts?.useSpecial && isSpecialReady(attacker);
   attacker.charge = Math.max(0, attacker.charge - 1);

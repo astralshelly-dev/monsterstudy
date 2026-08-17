@@ -456,14 +456,17 @@ export const UPGRADES: Record<UpgradeId, UpgradeConfig> = {
   },
 };
 
-/** preços dos itens no bazar da loja (em fragmentos), por raridade do item */
+/** preços dos itens no bazar da loja (em diamantes), por raridade do item */
 export const ITEM_SHOP_PRICES: Record<string, number> = {
-  comum: 40,
-  raro: 90,
-  super_raro: 180,
-  epico: 350,
-  lendario: 700,
+  comum: 15,
+  raro: 35,
+  super_raro: 70,
+  epico: 140,
+  lendario: 260,
 };
+
+/** segundos de estudo/leitura necessários para ganhar 1 diamante (≈6 por hora) */
+export const DIAMOND_PER_SECONDS = 600;
 
 
 

@@ -28,6 +28,12 @@ export const ITEM_RARITY_BY_ID = Object.fromEntries(ITEM_RARITIES.map((r) => [r.
 
 export type ItemEffect =
   | { type: "user_xp"; amount: number }
+  /** XP de jogador sorteado numa faixa */
+  | { type: "user_xp_range"; min: number; max: number }
+  /** concede o equivalente a X minutos da renda passiva atual */
+  | { type: "income_minutes"; minutes: number }
+  /** invoca um monstro sorteando a raridade pelos pesos informados */
+  | { type: "monster_roll"; odds: Array<{ rarity: RarityId; weight: number }> }
   | { type: "monster_xp"; amount: number }
   | { type: "money"; amount: number }
   | { type: "shards"; amount: number }
@@ -53,9 +59,9 @@ export const ITEMS: ItemDef[] = [
     name: "Poção de XP",
     icon: "🧪",
     rarity: "comum",
-    description: "Concede 250 XP de jogador.",
+    description: "Concede de 100 a 300 XP de jogador.",
     weight: 1,
-    effect: { type: "user_xp", amount: 250 },
+    effect: { type: "user_xp_range", min: 100, max: 300 },
   },
   {
     id: "monster_ration",
@@ -71,14 +77,14 @@ export const ITEMS: ItemDef[] = [
     name: "Bolsa de Moedas",
     icon: "👛",
     rarity: "comum",
-    description: "Concede 1.500 moedas.",
+    description: "Concede 30 minutos da sua renda passiva em moedas.",
     weight: 1,
-    effect: { type: "money", amount: 1500 },
+    effect: { type: "income_minutes", minutes: 30 },
   },
   {
     id: "rare_shard",
     name: "Fragmento Raro",
-    icon: "💎",
+    icon: "🔹",
     rarity: "raro",
     description: "Concede 25 fragmentos.",
     weight: 1,
@@ -89,18 +95,18 @@ export const ITEMS: ItemDef[] = [
     name: "Poção de XP Maior",
     icon: "⚗️",
     rarity: "raro",
-    description: "Concede 1.200 XP de jogador.",
+    description: "Concede de 800 a 1.400 XP de jogador.",
     weight: 1,
-    effect: { type: "user_xp", amount: 1200 },
+    effect: { type: "user_xp_range", min: 800, max: 1400 },
   },
   {
     id: "focus_tonic",
     name: "Tônico do Foco",
     icon: "🫗",
     rarity: "raro",
-    description: "Concede 8.000 moedas.",
+    description: "Concede 1h30 da sua renda passiva em moedas.",
     weight: 1,
-    effect: { type: "money", amount: 8000 },
+    effect: { type: "income_minutes", minutes: 90 },
   },
   {
     id: "monster_feast",
@@ -116,9 +122,16 @@ export const ITEMS: ItemDef[] = [
     name: "Trevo da Sorte",
     icon: "🍀",
     rarity: "super_raro",
-    description: "Invoca um monstro Raro aleatório.",
+    description: "Invoca um monstro: 60% Super Raro, 30% Épico, 10% Lendário.",
     weight: 1,
-    effect: { type: "monster", rarity: "raro" },
+    effect: {
+      type: "monster_roll",
+      odds: [
+        { rarity: "super_raro", weight: 60 },
+        { rarity: "epico", weight: 30 },
+        { rarity: "lendario", weight: 10 },
+      ],
+    },
   },
   {
     id: "shard_cluster",
@@ -134,27 +147,41 @@ export const ITEMS: ItemDef[] = [
     name: "Pedra de Alma",
     icon: "🔮",
     rarity: "epico",
-    description: "Invoca um monstro Épico aleatório.",
+    description: "Invoca um monstro: 60% Épico, 30% Lendário, 10% Mítico.",
     weight: 1,
-    effect: { type: "monster", rarity: "epico" },
+    effect: {
+      type: "monster_roll",
+      odds: [
+        { rarity: "epico", weight: 60 },
+        { rarity: "lendario", weight: 30 },
+        { rarity: "mitico", weight: 10 },
+      ],
+    },
   },
   {
     id: "treasure_chest",
     name: "Baú do Caçador",
     icon: "🧰",
     rarity: "epico",
-    description: "Concede 25.000 moedas.",
+    description: "Concede 6 horas da sua renda passiva em moedas.",
     weight: 1,
-    effect: { type: "money", amount: 25000 },
+    effect: { type: "income_minutes", minutes: 360 },
   },
   {
     id: "dragon_egg",
     name: "Ovo de Dragão",
     icon: "🥚",
     rarity: "lendario",
-    description: "Invoca um monstro Lendário aleatório.",
+    description: "Invoca um monstro: 50% Lendário, 30% Mítico, 20% Divino.",
     weight: 1,
-    effect: { type: "monster", rarity: "lendario" },
+    effect: {
+      type: "monster_roll",
+      odds: [
+        { rarity: "lendario", weight: 50 },
+        { rarity: "mitico", weight: 30 },
+        { rarity: "divino", weight: 20 },
+      ],
+    },
   },
   {
     id: "grimoire",
