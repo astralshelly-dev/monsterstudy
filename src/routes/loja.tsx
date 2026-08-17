@@ -43,7 +43,7 @@ function Shop() {
       <PageHeader
         title="Loja"
         icon="🛍️"
-        subtitle={`Você tem ${money(state.money)} e ${num(state.shards)} fragmentos para investir na sua jornada.`}
+        subtitle={`Você tem ${money(state.money)}, ${num(state.shards)} fragmentos e ${num(state.diamonds ?? 0)} 💎 diamantes para investir na sua jornada.`}
       />
 
       <section className="space-y-3">
@@ -151,7 +151,8 @@ function Shop() {
       <section className="space-y-3">
         <h2 className="font-display text-xl font-semibold">🧺 Bazar de itens</h2>
         <p className="text-sm text-muted-foreground">
-          Troque fragmentos por itens direto na loja — eles vão para o seu inventário.
+          Troque diamantes por itens direto na loja — diamantes são ganhos estudando e lendo (≈6 por
+          hora) e os itens vão direto para o seu inventário.
         </p>
         {ITEM_RARITIES.map((r) => {
           const list = ITEMS.filter((i) => i.rarity === r.id);
@@ -159,7 +160,7 @@ function Shop() {
           return (
             <div key={r.id} className="space-y-2">
               <p className={cn("text-xs font-semibold uppercase tracking-wider", r.text)}>
-                {r.name} · {ITEM_SHOP_PRICES[r.id]} fragmentos
+                {r.name} · {ITEM_SHOP_PRICES[r.id]} 💎
               </p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {list.map((item) => {
@@ -181,7 +182,7 @@ function Shop() {
                       <Button
                         className="mt-4"
                         variant="secondary"
-                        disabled={state.shards < price}
+                        disabled={(state.diamonds ?? 0) < price}
                         onClick={() => {
                           const res = buyItem(item.id);
                           if (res.ok) toast.success(res.message);

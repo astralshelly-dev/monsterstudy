@@ -258,6 +258,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
               <Pill icon={<Flame className="h-3.5 w-3.5 text-ember" />} value={`${state.streak.current}d`} />
               <Pill icon={<span>⭐</span>} value={`Nv ${state.profile.level}`} />
               <Pill icon={<BookMarked className="h-3.5 w-3.5 text-mana" />} value={`${state.shards}`} />
+              <Pill icon={<span>💎</span>} value={`${state.diamonds ?? 0}`} />
             </div>
           </div>
         </header>
