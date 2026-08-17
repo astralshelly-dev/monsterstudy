@@ -28,6 +28,8 @@ export type Fighter = {
   elements: ElementId[];
   /** turnos restantes para a habilidade disparar */
   charge: number;
+  /** quantas vezes a habilidade já foi usada (Equinoxis: 1ª recarga = 3) */
+  abilityUses: number;
   atkBuff: number;
   defBuff: number;
   shield: number;
@@ -42,6 +44,7 @@ export type Fighter = {
   echo: { turns: number; dmg: number } | null;
   /** marcado pelo veredito (permanente): dano ampliado + dreno para quem o ferir */
   mark: { pct: number; lifestealPct: number; abilityLifestealPct: number } | null;
+
 
 };
 

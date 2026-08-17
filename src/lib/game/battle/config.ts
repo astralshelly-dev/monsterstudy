@@ -265,10 +265,11 @@ export const ABILITIES: Ability[] = [
     name: "Veredito do Equinócio",
     icon: "⚖️",
     description:
-      "Não causa dano próprio: marca o adversário até a morte dele. O marcado sofre +20% de dano de qualquer fonte e, sempre que é ferido, quem atacou drena 70% do dano em vida (50% se o golpe vier de uma habilidade especial). A marca não acumula.",
-    cooldown: 3,
-    effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.7, abilityLifestealPct: 0.5 },
+      "Não causa dano próprio: marca o adversário até a morte dele. O marcado sofre +20% de dano de qualquer fonte e, sempre que é ferido, quem atacou drena 25% do dano em vida (12% se o golpe vier de uma habilidade especial). A marca não acumula. Recarga: 4 rodadas, mas a primeira recarga é mais rápida (3).",
+    cooldown: 4,
+    effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.25, abilityLifestealPct: 0.12 },
   },
+
 
 ];
 
