@@ -5,7 +5,7 @@
 import { MONSTERS_BY_ID } from "../monsters";
 import type { RarityId } from "../config";
 import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
-import { elementOf, typeEffect, type ElementId } from "../elements";
+import { elementIdsOf, elementOf, typeEffectMulti, type ElementId } from "../elements";
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
 
@@ -22,8 +22,10 @@ export type Fighter = {
   def: number;
   spd: number;
   ability: Ability;
-  /** tipo elemental (vantagens e fraquezas no cálculo de dano) */
+  /** tipo elemental principal */
   element: ElementId;
+  /** todos os tipos do monstro (1 ou 2) — tipo duplo soma vantagens e fraquezas */
+  elements: ElementId[];
   /** turnos restantes para a habilidade disparar */
   charge: number;
   atkBuff: number;
@@ -100,6 +102,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     spd: s.spd,
     ability: abilityFor(monsterId),
     element: elementOf(monsterId).id,
+    elements: elementIdsOf(monsterId),
     charge: abilityFor(monsterId).cooldown,
     atkBuff: 0,
     defBuff: 0,
@@ -199,7 +202,10 @@ let escalation = 1;
 
 /** vantagem elemental entre dois lutadores */
 export function matchupOf(attacker: Fighter, defender: Fighter) {
-  return typeEffect(attacker.element, defender.element);
+  return typeEffectMulti(
+    attacker.elements ?? [attacker.element],
+    defender.elements ?? [defender.element],
+  );
 }
 
 /** anuncia SUPER EFETIVO / POUCO EFETIVO */
