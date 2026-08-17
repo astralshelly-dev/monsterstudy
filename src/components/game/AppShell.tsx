@@ -299,27 +299,35 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 <SheetHeader className="text-left">
                   <SheetTitle className="font-display">Todas as seções</SheetTitle>
                 </SheetHeader>
-                <div className="mt-4 grid grid-cols-2 gap-2 pb-6">
-                  {nav.map((item) => {
-                    const active =
-                      pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => setMoreOpen(false)}
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
-                          active
-                            ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
-                            : "bg-secondary/60 text-muted-foreground",
-                        )}
-                      >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{item.label}</span>
-                      </Link>
-                    );
-                  })}
+                <div className="mt-4 space-y-4 pb-6">
+                  {groups.map((group) => (
+                    <div key={group.id}>
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {group.emoji} {group.label}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {group.items.map((item) => {
+                          const active = isActivePath(pathname, item.to);
+                          return (
+                            <Link
+                              key={item.to}
+                              to={item.to}
+                              onClick={() => setMoreOpen(false)}
+                              className={cn(
+                                "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
+                                active
+                                  ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
+                                  : "bg-secondary/60 text-muted-foreground",
+                              )}
+                            >
+                              <item.icon className="h-4 w-4 shrink-0" />
+                              <span className="truncate">{item.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </SheetContent>
             </Sheet>
