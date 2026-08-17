@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdmRouteImport } from './routes/adm'
+import { Route as AmigosRouteImport } from './routes/amigos'
 import { Route as BatalhasRouteImport } from './routes/batalhas'
 import { Route as CodigosRouteImport } from './routes/codigos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
@@ -31,6 +32,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as TemporadaRouteImport } from './routes/temporada'
 import { Route as BibliotecaIndexRouteImport } from './routes/biblioteca.index'
 import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookId'
+import { Route as CompararPublicIdRouteImport } from './routes/comparar.$publicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdmRoute = AdmRouteImport.update({
   id: '/adm',
   path: '/adm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmigosRoute = AmigosRouteImport.update({
+  id: '/amigos',
+  path: '/amigos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BatalhasRoute = BatalhasRouteImport.update({
@@ -142,10 +149,16 @@ const BibliotecaBookIdRoute = BibliotecaBookIdRouteImport.update({
   path: '/biblioteca/$bookId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompararPublicIdRoute = CompararPublicIdRouteImport.update({
+  id: '/comparar/$publicId',
+  path: '/comparar/$publicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/adm': typeof AdmRoute
+  '/amigos': typeof AmigosRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -165,11 +178,13 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/comparar/$publicId': typeof CompararPublicIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/adm': typeof AdmRoute
+  '/amigos': typeof AmigosRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -189,12 +204,14 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/comparar/$publicId': typeof CompararPublicIdRoute
   '/biblioteca': typeof BibliotecaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/adm': typeof AdmRoute
+  '/amigos': typeof AmigosRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -214,6 +231,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/comparar/$publicId': typeof CompararPublicIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
 export interface FileRouteTypes {
@@ -221,6 +239,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/adm'
+    | '/amigos'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -240,11 +259,13 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/temporada'
     | '/biblioteca/$bookId'
+    | '/comparar/$publicId'
     | '/biblioteca/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/adm'
+    | '/amigos'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -264,11 +285,13 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/temporada'
     | '/biblioteca/$bookId'
+    | '/comparar/$publicId'
     | '/biblioteca'
   id:
     | '__root__'
     | '/'
     | '/adm'
+    | '/amigos'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -288,12 +311,14 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/temporada'
     | '/biblioteca/$bookId'
+    | '/comparar/$publicId'
     | '/biblioteca/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdmRoute: typeof AdmRoute
+  AmigosRoute: typeof AmigosRoute
   BatalhasRoute: typeof BatalhasRoute
   CodigosRoute: typeof CodigosRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -313,6 +338,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   TemporadaRoute: typeof TemporadaRoute
   BibliotecaBookIdRoute: typeof BibliotecaBookIdRoute
+  CompararPublicIdRoute: typeof CompararPublicIdRoute
   BibliotecaIndexRoute: typeof BibliotecaIndexRoute
 }
 
@@ -330,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/adm'
       fullPath: '/adm'
       preLoaderRoute: typeof AdmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/amigos': {
+      id: '/amigos'
+      path: '/amigos'
+      fullPath: '/amigos'
+      preLoaderRoute: typeof AmigosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/batalhas': {
@@ -472,12 +505,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BibliotecaBookIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comparar/$publicId': {
+      id: '/comparar/$publicId'
+      path: '/comparar/$publicId'
+      fullPath: '/comparar/$publicId'
+      preLoaderRoute: typeof CompararPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdmRoute: AdmRoute,
+  AmigosRoute: AmigosRoute,
   BatalhasRoute: BatalhasRoute,
   CodigosRoute: CodigosRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
@@ -497,6 +538,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   TemporadaRoute: TemporadaRoute,
   BibliotecaBookIdRoute: BibliotecaBookIdRoute,
+  CompararPublicIdRoute: CompararPublicIdRoute,
   BibliotecaIndexRoute: BibliotecaIndexRoute,
 }
 export const routeTree = rootRouteImport

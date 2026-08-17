@@ -197,7 +197,9 @@ export type GameState = {
   unlockedTimers: number[];
   achievements: Record<string, string>;
   streak: { current: number; best: number; lastDay: string | null; claimed: number[] };
-  activity: Record<string, { studySec: number; readSec: number; pages: number; sessions: number }>;
+  activity: Record<string, DayActivity>;
+  /** troféus registrados no fim de cada dia (para comparar períodos) */
+  trophyLog?: Record<string, number> | undefined;
   settings: {
     sounds: boolean;
     animations: boolean;
@@ -229,6 +231,22 @@ export type GameState = {
   seasons: SeasonState;
   /** cosméticos desbloqueados e selecionados */
   cosmetics: CosmeticState;
+};
+
+/** resumo de um dia — base das comparações por período */
+export type DayActivity = {
+  studySec: number;
+  readSec: number;
+  pages: number;
+  sessions: number;
+  /** XP de jogador ganho no dia */
+  xp?: number | undefined;
+  /** monstros capturados no dia */
+  monsters?: number | undefined;
+  /** missões diárias concluídas (coletadas) no dia */
+  quests?: number | undefined;
+  wins?: number | undefined;
+  losses?: number | undefined;
 };
 
 export type SubjectStat = {

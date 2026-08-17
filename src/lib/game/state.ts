@@ -31,7 +31,7 @@ import {
 import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
 import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
-import type { BattleRecord, PendingBattle } from "./types";
+import type { BattleRecord, DayActivity, PendingBattle } from "./types";
 import { generateDailyQuests, QUESTS_BY_ID, questDone, type DailyQuest, type QuestMetric } from "./quests";
 import { ITEMS_BY_ID, ITEM_DROP_SECONDS, rollItem, type ItemDef } from "./items";
 import { subjectKey, subjectLevelFromXp, subjectIcon, SUBJECT_XP_PER_MINUTE, type SubjectProgress } from "./subjects";
@@ -529,6 +529,7 @@ function applyReward(s: GameState, reward: Reward) {
   s.money += reward.money;
   s.shards += reward.shards;
   addUserXp(s, reward.xp);
+  if (id) bumpActivity(s, { monsters: 1 });
 }
 
 function addUserXp(s: GameState, amount: number) {
@@ -539,6 +540,7 @@ function addUserXp(s: GameState, amount: number) {
     level += 1;
   }
   s.profile = { ...s.profile, xp, level };
+  if (amount > 0) bumpActivity(s, { xp: amount });
 }
 
 export function addMonsterXp(monsterId: string, amount: number): { levelsGained: number } {
@@ -595,6 +597,26 @@ function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0, completion
 // ------------------------------------------------------------
 // Streak / atividade
 // ------------------------------------------------------------
+/** acumula métricas no dia atual (base das comparações entre amigos) */
+export function bumpActivity(s: GameState, patch: Partial<DayActivity>) {
+  const key = todayKey();
+  const cur: DayActivity = s.activity[key] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
+  s.activity = {
+    ...s.activity,
+    [key]: {
+      studySec: cur.studySec + (patch.studySec ?? 0),
+      readSec: cur.readSec + (patch.readSec ?? 0),
+      pages: cur.pages + (patch.pages ?? 0),
+      sessions: cur.sessions + (patch.sessions ?? 0),
+      xp: (cur.xp ?? 0) + (patch.xp ?? 0),
+      monsters: (cur.monsters ?? 0) + (patch.monsters ?? 0),
+      quests: (cur.quests ?? 0) + (patch.quests ?? 0),
+      wins: (cur.wins ?? 0) + (patch.wins ?? 0),
+      losses: (cur.losses ?? 0) + (patch.losses ?? 0),
+    },
+  };
+}
+
 function markActivity(
   s: GameState,
   kind: "study" | "read",
@@ -603,16 +625,12 @@ function markActivity(
   subject?: string | undefined,
 ) {
   const key = todayKey();
-  const cur = s.activity[key] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
-  s.activity = {
-    ...s.activity,
-    [key]: {
-      studySec: cur.studySec + (kind === "study" ? seconds : 0),
-      readSec: cur.readSec + (kind === "read" ? seconds : 0),
-      pages: cur.pages + pages,
-      sessions: cur.sessions + 1,
-    },
-  };
+  bumpActivity(s, {
+    studySec: kind === "study" ? seconds : 0,
+    readSec: kind === "read" ? seconds : 0,
+    pages,
+    sessions: 1,
+  });
   // ---- expansão: matérias, itens e missões acompanham o tempo real ----
   if (kind === "study") {
     addSubjectProgress(s, subject, seconds);
@@ -1285,6 +1303,13 @@ export function recordBattle(input: {
       history: [record, ...b.history].slice(0, 200),
     };
     if (input.mode === "ranked") {
+      bumpActivity(s, {
+        wins: input.result === "win" ? 1 : 0,
+        losses: input.result === "loss" ? 1 : 0,
+      });
+      s.trophyLog = { ...(s.trophyLog ?? {}), [todayKey()]: after };
+    }
+    if (input.mode === "ranked") {
       if (input.result === "win") bumpQuest(s, "battles_won", 1);
       if (delta > 0) bumpQuest(s, "trophies_gained", delta);
       const st = s.seasons ?? { current: currentSeason().number, maxTrophies: 0, wins: 0, losses: 0, history: [] };
@@ -1525,6 +1550,7 @@ export function claimQuest(templateId: string): { ok: boolean; message: string }
         x.templateId === templateId ? { ...x, claimed: true } : x,
       ),
     };
+    bumpActivity(s, { quests: 1 });
     const questMult =
       1 + (s.upgrades?.quest_master ?? 0) * UPGRADES.quest_master.effectPerLevel;
     if (t.reward.xp) {

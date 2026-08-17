@@ -5,7 +5,7 @@ import { leagueOf } from "./battle/config";
 import { getSnapshot, replaceState, subjectList, totals } from "./state";
 import { COSMETICS_BY_ID } from "./cosmetics";
 import { currentSeason } from "./seasons";
-import type { GameState } from "./types";
+import type { DayActivity, GameState } from "./types";
 
 export type PublicProfile = {
   publicId: string;
@@ -68,8 +68,110 @@ export type PublicProfile = {
     seasonsPlayed?: number;
   };
 
+  /** resumo diário dos últimos 60 dias (para comparar períodos) */
+  activity: Record<string, DayActivity>;
+  /** troféus no fim de cada dia */
+  trophyLog: Record<string, number>;
+
   updatedAt: string;
 };
+
+export type PeriodKey = "today" | "week" | "month" | "all";
+
+export type PeriodTotals = {
+  studySec: number;
+  readSec: number;
+  totalSec: number;
+  pages: number;
+  sessions: number;
+  xp: number;
+  monsters: number;
+  quests: number;
+  wins: number;
+  losses: number;
+  trophiesDelta: number;
+  streakCurrent: number;
+  streakBest: number;
+};
+
+function dayKeys(period: PeriodKey): string[] | null {
+  if (period === "all") return null;
+  const days = period === "today" ? 1 : period === "week" ? 7 : 30;
+  const out: string[] = [];
+  for (let i = 0; i < days; i += 1) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    out.push(
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+    );
+  }
+  return out.reverse();
+}
+
+/** soma as métricas de um perfil público dentro do período escolhido */
+export function periodTotals(p: PublicProfile, period: PeriodKey): PeriodTotals {
+  const keys = dayKeys(period);
+  const activity = p.activity ?? {};
+  const entries = keys
+    ? keys.map((k) => [k, activity[k]] as const).filter(([, v]) => Boolean(v))
+    : Object.entries(activity);
+
+  const acc: PeriodTotals = {
+    studySec: 0,
+    readSec: 0,
+    totalSec: 0,
+    pages: 0,
+    sessions: 0,
+    xp: 0,
+    monsters: 0,
+    quests: 0,
+    wins: 0,
+    losses: 0,
+    trophiesDelta: 0,
+    streakCurrent: p.streakCurrent,
+    streakBest: p.streakBest,
+  };
+
+  for (const [, v] of entries) {
+    if (!v) continue;
+    acc.studySec += v.studySec ?? 0;
+    acc.readSec += v.readSec ?? 0;
+    acc.pages += v.pages ?? 0;
+    acc.sessions += v.sessions ?? 0;
+    acc.xp += v.xp ?? 0;
+    acc.monsters += v.monsters ?? 0;
+    acc.quests += v.quests ?? 0;
+    acc.wins += v.wins ?? 0;
+    acc.losses += v.losses ?? 0;
+  }
+  acc.totalSec = acc.studySec + acc.readSec;
+
+  // variação de troféus: último registro do período menos o anterior a ele
+  const log = p.trophyLog ?? {};
+  const logDays = Object.keys(log).sort();
+  if (period === "all") {
+    acc.trophiesDelta = p.stats.trophies ?? 0;
+  } else if (keys && logDays.length > 0) {
+    const first = keys[0]!;
+    const before = logDays.filter((d) => d < first).pop();
+    const insideLast = logDays.filter((d) => keys.includes(d)).pop();
+    if (insideLast) acc.trophiesDelta = (log[insideLast] ?? 0) - (before ? log[before] ?? 0 : 0);
+  }
+  if (period !== "all" && acc.studySec === 0 && acc.readSec === 0 && acc.sessions === 0) {
+    // sem atividade no período: mantém zeros (não herda totais)
+  }
+  return acc;
+}
+
+/** série diária de minutos (estudo + leitura) dos últimos N dias */
+export function dailySeries(p: PublicProfile, days = 30): Array<{ day: string; minutes: number }> {
+  const keys = dayKeys(days <= 1 ? "today" : days <= 7 ? "week" : "month") ?? [];
+  const list = keys.length >= days ? keys.slice(-days) : keys;
+  return list.map((day) => {
+    const v = p.activity?.[day];
+    return { day, minutes: Math.round(((v?.studySec ?? 0) + (v?.readSec ?? 0)) / 60) };
+  });
+}
 
 /** monstro de maior raridade (desempate por nível) do jogador */
 function topMonsterOf(s: GameState): string | null {
@@ -83,6 +185,29 @@ function topMonsterOf(s: GameState): string | null {
     }
   }
   return best?.id ?? null;
+}
+
+/** recorte dos últimos 60 dias do diário de atividade (o resto fica só no save) */
+function recentActivity(s: GameState): Record<string, DayActivity> {
+  const limit = new Date();
+  limit.setDate(limit.getDate() - 60);
+  const min = `${limit.getFullYear()}-${String(limit.getMonth() + 1).padStart(2, "0")}-${String(limit.getDate()).padStart(2, "0")}`;
+  const out: Record<string, DayActivity> = {};
+  for (const [day, v] of Object.entries(s.activity ?? {})) {
+    if (day >= min && v) out[day] = v;
+  }
+  return out;
+}
+
+function recentTrophyLog(s: GameState): Record<string, number> {
+  const limit = new Date();
+  limit.setDate(limit.getDate() - 60);
+  const min = `${limit.getFullYear()}-${String(limit.getMonth() + 1).padStart(2, "0")}-${String(limit.getDate()).padStart(2, "0")}`;
+  const out: Record<string, number> = {};
+  for (const [day, v] of Object.entries(s.trophyLog ?? {})) {
+    if (day >= min && typeof v === "number") out[day] = v;
+  }
+  return out;
 }
 
 function summarize(s: GameState) {
@@ -194,6 +319,8 @@ export async function pushToCloud(userId: string): Promise<"pushed" | "refreshed
       shards: s.shards,
       streak_current: s.streak.current,
       streak_best: s.streak.best,
+      activity: recentActivity(s),
+      trophy_log: recentTrophyLog(s),
       monsters: summary.monsters,
       stats: summary.stats,
     })
@@ -256,7 +383,7 @@ export async function myPublicId(userId: string): Promise<string | null> {
   return data?.public_id ?? null;
 }
 
-function mapProfile(row: Record<string, unknown>): PublicProfile {
+export function mapProfile(row: Record<string, unknown>): PublicProfile {
   return {
     publicId: String(row['public_id']),
     displayName: String(row['display_name']),
@@ -270,6 +397,8 @@ function mapProfile(row: Record<string, unknown>): PublicProfile {
     streakBest: Number(row['streak_best']),
     monsters: (row['monsters'] as PublicProfile["monsters"]) ?? {},
     stats: (row['stats'] as PublicProfile["stats"]) ?? {},
+    activity: (row['activity'] as PublicProfile["activity"]) ?? {},
+    trophyLog: (row['trophy_log'] as PublicProfile["trophyLog"]) ?? {},
     updatedAt: String(row['updated_at']),
   };
 }

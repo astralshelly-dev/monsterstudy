@@ -26,6 +26,7 @@ import {
   Trophy,
   User,
   UserRound,
+  Users,
 } from "lucide-react";
 import { useGame, useHydrated } from "@/hooks/use-game";
 import { CloudSyncProvider, useCloudSync } from "@/hooks/use-auth";
@@ -55,6 +56,7 @@ const NAV = [
   { to: "/conquistas", label: "Conquistas", icon: Trophy },
   { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
   { to: "/historico", label: "Histórico", icon: ScrollText },
+  { to: "/amigos", label: "Amigos", icon: Users, primary: true },
   { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
   { to: "/entrar", label: "Conta", icon: UserRound },
   { to: "/perfil", label: "Perfil", icon: User },

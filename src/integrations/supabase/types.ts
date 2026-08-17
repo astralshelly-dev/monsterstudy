@@ -113,6 +113,36 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       game_settings: {
         Row: {
           created_at: string
@@ -225,6 +255,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activity: Json
           avatar: string
           avatar_monster_id: string | null
           created_at: string
@@ -237,11 +268,13 @@ export type Database = {
           stats: Json
           streak_best: number
           streak_current: number
+          trophy_log: Json
           updated_at: string
           user_id: string
           xp: number
         }
         Insert: {
+          activity?: Json
           avatar?: string
           avatar_monster_id?: string | null
           created_at?: string
@@ -254,11 +287,13 @@ export type Database = {
           stats?: Json
           streak_best?: number
           streak_current?: number
+          trophy_log?: Json
           updated_at?: string
           user_id: string
           xp?: number
         }
         Update: {
+          activity?: Json
           avatar?: string
           avatar_monster_id?: string | null
           created_at?: string
@@ -271,6 +306,7 @@ export type Database = {
           stats?: Json
           streak_best?: number
           streak_current?: number
+          trophy_log?: Json
           updated_at?: string
           user_id?: string
           xp?: number
