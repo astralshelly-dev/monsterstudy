@@ -46,11 +46,44 @@ export const ELEMENTS_BY_ID: Record<ElementId, ElementDef> = Object.fromEntries(
 ) as Record<ElementId, ElementDef>;
 
 /**
- * Ciclo elemental: 9 elementos em roda. Cada um é FORTE contra os DOIS
- * seguintes e FRACO contra os DOIS anteriores — ninguém fica sem counter.
- * Luz e Sombrio formam um par próprio (só se counteram entre si) e
- * Deus é neutro: não ganha nem perde vantagem contra ninguém.
+ * Tabela de vantagens: STRONG_AGAINST[atacante] = tipos que sofrem dano extra.
+ * Tabela oficial do jogo (editar aqui muda todo o balanceamento).
  */
+export const STRONG_AGAINST: Record<ElementId, ElementId[]> = {
+  fogo: ["gelo", "natureza", "metal"],
+  gelo: ["natureza", "vento"],
+  natureza: ["agua", "terra"],
+  agua: ["fogo", "terra"],
+  eletrico: ["agua", "vento"],
+  terra: ["eletrico", "fogo", "veneno"],
+  metal: ["gelo", "veneno"],
+  veneno: ["natureza", "luz"],
+  vento: ["terra", "gelo"],
+  sombrio: ["luz"],
+  luz: ["sombrio"],
+  deus: [],
+};
+
+/**
+ * WEAK_AGAINST[defensor] = tipos contra os quais ele sofre penalidade de dano.
+ * Declarado explicitamente porque a tabela não é perfeitamente simétrica.
+ */
+export const WEAK_AGAINST: Record<ElementId, ElementId[]> = {
+  fogo: ["agua", "terra"],
+  gelo: ["fogo", "metal"],
+  natureza: ["fogo", "gelo", "veneno"],
+  agua: ["eletrico", "natureza"],
+  eletrico: ["terra", "metal"],
+  terra: ["agua", "natureza", "vento"],
+  metal: ["fogo", "eletrico", "terra"],
+  veneno: ["terra", "metal"],
+  vento: ["eletrico", "fogo"],
+  sombrio: ["luz"],
+  luz: ["sombrio"],
+  deus: [],
+};
+
+/** ordem de exibição da tabela */
 export const ELEMENT_CYCLE: ElementId[] = [
   "fogo",
   "gelo",
@@ -62,24 +95,6 @@ export const ELEMENT_CYCLE: ElementId[] = [
   "veneno",
   "vento",
 ];
-
-function buildStrongTable(): Record<ElementId, ElementId[]> {
-  const table = {} as Record<ElementId, ElementId[]>;
-  const n = ELEMENT_CYCLE.length;
-  ELEMENT_CYCLE.forEach((id, i) => {
-    table[id] = [ELEMENT_CYCLE[(i + 1) % n]!, ELEMENT_CYCLE[(i + 2) % n]!];
-  });
-  table.luz = ["sombrio"];
-  table.sombrio = ["luz"];
-  table.deus = [];
-  return table;
-}
-
-/**
- * Tabela de vantagens: STRONG_AGAINST[atacante] = tipos que sofrem dano extra.
- * Gerada a partir do ciclo acima (editar o ciclo muda todo o jogo).
- */
-export const STRONG_AGAINST: Record<ElementId, ElementId[]> = buildStrongTable();
 
 /** bônus/penalidade de dano por vantagem de tipo */
 export const TYPE_BONUS = 0.15;
@@ -98,7 +113,7 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
   if (STRONG_AGAINST[attacker].includes(defender)) {
     return { mult: 1 + TYPE_BONUS, kind: "super", label: "SUPER EFETIVO!" };
   }
-  if (STRONG_AGAINST[defender].includes(attacker)) {
+  if (WEAK_AGAINST[defender].includes(attacker)) {
     return { mult: 1 - TYPE_BONUS, kind: "weak", label: "POUCO EFETIVO" };
   }
   return { mult: 1, kind: "normal", label: null };
@@ -108,9 +123,7 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
 export function elementMatchups(id: ElementId) {
   return {
     strong: STRONG_AGAINST[id],
-    weak: ELEMENTS.filter((e) => e.id !== "deus" && STRONG_AGAINST[e.id].includes(id)).map(
-      (e) => e.id,
-    ),
+    weak: WEAK_AGAINST[id],
   };
 }
 
