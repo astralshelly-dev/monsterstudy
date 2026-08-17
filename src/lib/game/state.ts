@@ -529,6 +529,7 @@ function applyReward(s: GameState, reward: Reward) {
   s.money += reward.money;
   s.shards += reward.shards;
   addUserXp(s, reward.xp);
+  bumpActivity(s, { xp: reward.xp, monsters: id ? 1 : 0 });
 }
 
 function addUserXp(s: GameState, amount: number) {
