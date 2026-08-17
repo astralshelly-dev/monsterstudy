@@ -38,8 +38,9 @@ export type Fighter = {
   spdBuff: number;
   /** eco temporal: repete parte do dano nos próximos turnos do usuário */
   echo: { turns: number; dmg: number } | null;
-  /** marcado pelo veredito: recebe dano ampliado de qualquer fonte */
-  mark: { turns: number; pct: number } | null;
+  /** marcado pelo veredito (permanente): dano ampliado + dreno para quem o ferir */
+  mark: { pct: number; lifestealPct: number; abilityLifestealPct: number } | null;
+
 };
 
 export type SideId = "player" | "foe";
