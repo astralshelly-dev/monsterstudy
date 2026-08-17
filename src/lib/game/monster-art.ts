@@ -1,5 +1,7 @@
 // Gerado automaticamente: arte dos monstros hospedada no CDN.
 
+import aChronavyr from "@/assets/monsters/chronavyr.png";
+import aEquinoxis from "@/assets/monsters/equinoxis.png";
 import a0 from "@/assets/monsters/abyssaria.png.asset.json";
 import a1 from "@/assets/monsters/abyssquill.png.asset.json";
 import a2 from "@/assets/monsters/arcanyx.png.asset.json";
@@ -81,6 +83,8 @@ export const MONSTER_ART: Record<string, string> = {
   arcanyx: a2.url,
   ashmole: a3.url,
   astraeon: a4.url,
+  chronavyr: aChronavyr,
+  equinoxis: aEquinoxis,
   aurelith: a5.url,
   barkgolem: a6.url,
   bloomserp: a7.url,
