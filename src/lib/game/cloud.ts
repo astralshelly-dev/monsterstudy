@@ -296,6 +296,8 @@ export async function pushToCloud(userId: string): Promise<"pushed" | "refreshed
       shards: s.shards,
       streak_current: s.streak.current,
       streak_best: s.streak.best,
+      activity: recentActivity(s),
+      trophy_log: recentTrophyLog(s),
       monsters: summary.monsters,
       stats: summary.stats,
     })
