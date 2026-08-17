@@ -39,31 +39,99 @@ import { SceneThemeProvider } from "@/components/game/SceneTheme";
 import { cn } from "@/lib/utils";
 
 
-const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, primary: true },
-  { to: "/estudar", label: "Estudar", icon: GraduationCap, primary: true },
-  { to: "/ler", label: "Ler", icon: BookOpen, primary: true },
-  { to: "/livre", label: "Treino Livre", icon: Brain },
-  { to: "/batalhas", label: "Batalhas", icon: Swords, primary: true },
-  { to: "/missoes", label: "Missões", icon: Target, primary: true },
-  { to: "/temporada", label: "Temporada", icon: CalendarDays },
-  { to: "/inventario", label: "Inventário", icon: Backpack },
-  { to: "/monsterdex", label: "MonsterDex", icon: PawPrint, primary: true },
-  { to: "/monstros", label: "Meus Monstros", icon: Sparkles },
-  { to: "/biblioteca", label: "Biblioteca", icon: Library, primary: true },
-  { to: "/loja", label: "Loja", icon: ShoppingBag },
-  { to: "/codigos", label: "Códigos", icon: Gift },
-  { to: "/conquistas", label: "Conquistas", icon: Trophy },
-  { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
-  { to: "/historico", label: "Histórico", icon: ScrollText },
-  { to: "/amigos", label: "Amigos", icon: Users, primary: true },
-  { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
-  { to: "/entrar", label: "Conta", icon: UserRound },
-  { to: "/perfil", label: "Perfil", icon: User },
-  { to: "/configuracoes", label: "Configurações", icon: Settings },
-] as const;
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; primary?: boolean };
+type NavGroup = { id: string; label: string; emoji: string; items: NavItem[] };
 
-const ADMIN_NAV = { to: "/adm", label: "Painel ADM", icon: ShieldAlert } as const;
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: "principal",
+    label: "Principal",
+    emoji: "🏠",
+    items: [
+      { to: "/", label: "Dashboard", icon: LayoutDashboard, primary: true },
+      { to: "/estatisticas", label: "Estatísticas", icon: LineChart },
+      { to: "/historico", label: "Histórico", icon: ScrollText },
+    ],
+  },
+  {
+    id: "estudo",
+    label: "Estudo",
+    emoji: "📚",
+    items: [
+      { to: "/estudar", label: "Estudar", icon: GraduationCap, primary: true },
+      { to: "/livre", label: "Treino Livre", icon: Brain },
+      { to: "/ler", label: "Ler", icon: BookOpen, primary: true },
+      { to: "/biblioteca", label: "Biblioteca", icon: Library },
+    ],
+  },
+  {
+    id: "monstros",
+    label: "Monstros",
+    emoji: "🐉",
+    items: [
+      { to: "/monstros", label: "Meus Monstros", icon: Sparkles },
+      { to: "/monsterdex", label: "MonsterDex", icon: PawPrint, primary: true },
+    ],
+  },
+  {
+    id: "batalhas",
+    label: "Batalhas",
+    emoji: "⚔️",
+    items: [
+      { to: "/batalhas", label: "Batalhas", icon: Swords, primary: true },
+      { to: "/temporada", label: "Temporada", icon: CalendarDays },
+    ],
+  },
+  {
+    id: "progresso",
+    label: "Progresso",
+    emoji: "🏆",
+    items: [
+      { to: "/conquistas", label: "Conquistas", icon: Trophy },
+      { to: "/missoes", label: "Missões", icon: Target },
+    ],
+  },
+  {
+    id: "social",
+    label: "Social",
+    emoji: "👥",
+    items: [
+      { to: "/amigos", label: "Amigos", icon: Users },
+      { to: "/jogadores", label: "Pesquisar jogador", icon: Search },
+    ],
+  },
+  {
+    id: "recursos",
+    label: "Recursos",
+    emoji: "🛒",
+    items: [
+      { to: "/loja", label: "Loja", icon: ShoppingBag },
+      { to: "/codigos", label: "Códigos", icon: Gift },
+      { to: "/inventario", label: "Inventário", icon: Backpack },
+    ],
+  },
+  {
+    id: "perfil",
+    label: "Perfil",
+    emoji: "👤",
+    items: [
+      { to: "/perfil", label: "Perfil", icon: User },
+      { to: "/entrar", label: "Conta", icon: UserRound },
+      { to: "/configuracoes", label: "Configurações", icon: Settings },
+    ],
+  },
+];
+
+const ADMIN_GROUP: NavGroup = {
+  id: "adm",
+  label: "Painel ADM",
+  emoji: "💻",
+  items: [{ to: "/adm", label: "Painel ADM", icon: ShieldAlert }],
+};
+
+function isActivePath(pathname: string, to: string) {
+  return pathname === to || (to !== "/" && pathname.startsWith(to));
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
