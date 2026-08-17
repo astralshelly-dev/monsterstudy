@@ -229,6 +229,66 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   malachor: "veneno",
 };
 
+/**
+ * Segundo elemento (tipo duplo) — apenas para monstros em que faz sentido.
+ * Um monstro de tipo duplo herda TODAS as vantagens e TODAS as fraquezas
+ * dos dois elementos.
+ */
+export const MONSTER_ELEMENTS_2: Record<string, ElementId> = {
+  frostnib: "agua",
+  mistmote: "agua",
+  glowfin: "luz",
+  lumibug: "natureza",
+  ashmole: "fogo",
+  moonfang: "gelo",
+  abyssquill: "agua",
+  barkgolem: "terra",
+  mirasand: "terra",
+  quartzox: "gelo",
+  stormhorn: "gelo",
+  voidbloom: "natureza",
+  magmaw: "terra",
+  thornmaw: "natureza",
+  cryotaur: "terra",
+  sylvaqueen: "vento",
+  obsidrake: "terra",
+  tempestrix: "agua",
+  dunephar: "terra",
+  aurelith: "vento",
+  bloomserp: "veneno",
+  solmyrr: "luz",
+  nebulith: "agua",
+  thundrix: "gelo",
+  seraphae: "natureza",
+  eclipsaur: "luz",
+  arcanyx: "luz",
+  abyssaria: "sombrio",
+  umbraleth: "gelo",
+  astraeon: "vento",
+  chronavyr: "metal",
+  equinoxis: "luz",
+  terrabor: "metal",
+  gaiaruk: "natureza",
+  titanox: "terra",
+  chromaw: "luz",
+  aeromyr: "luz",
+  toxlet: "agua",
+  venomyra: "natureza",
+  malachor: "sombrio",
+};
+
 export function elementOf(monsterId: string): ElementDef {
   return ELEMENTS_BY_ID[MONSTER_ELEMENTS[monsterId] ?? "natureza"];
 }
+
+/** todos os elementos de um monstro (1 ou 2) */
+export function elementIdsOf(monsterId: string): ElementId[] {
+  const primary = MONSTER_ELEMENTS[monsterId] ?? "natureza";
+  const second = MONSTER_ELEMENTS_2[monsterId];
+  return second && second !== primary ? [primary, second] : [primary];
+}
+
+export function elementDefsOf(monsterId: string): ElementDef[] {
+  return elementIdsOf(monsterId).map((id) => ELEMENTS_BY_ID[id]);
+}
+
