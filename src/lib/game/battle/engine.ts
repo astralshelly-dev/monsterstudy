@@ -500,8 +500,11 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       break;
     }
   }
-  attacker.charge = a.cooldown;
+  attacker.abilityUses += 1;
+  // Equinoxis: primeira recarga leva 3 rodadas, depois 4
+  attacker.charge = attacker.abilityUses === 1 ? 3 : a.cooldown;
 }
+
 
 function basicAttack(
   b: Battle,
