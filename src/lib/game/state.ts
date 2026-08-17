@@ -595,6 +595,26 @@ function buildReward(minutes: number, earlyEnd: boolean, extraXp = 0, completion
 // ------------------------------------------------------------
 // Streak / atividade
 // ------------------------------------------------------------
+/** acumula métricas no dia atual (base das comparações entre amigos) */
+export function bumpActivity(s: GameState, patch: Partial<DayActivity>) {
+  const key = todayKey();
+  const cur: DayActivity = s.activity[key] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
+  s.activity = {
+    ...s.activity,
+    [key]: {
+      studySec: cur.studySec + (patch.studySec ?? 0),
+      readSec: cur.readSec + (patch.readSec ?? 0),
+      pages: cur.pages + (patch.pages ?? 0),
+      sessions: cur.sessions + (patch.sessions ?? 0),
+      xp: (cur.xp ?? 0) + (patch.xp ?? 0),
+      monsters: (cur.monsters ?? 0) + (patch.monsters ?? 0),
+      quests: (cur.quests ?? 0) + (patch.quests ?? 0),
+      wins: (cur.wins ?? 0) + (patch.wins ?? 0),
+      losses: (cur.losses ?? 0) + (patch.losses ?? 0),
+    },
+  };
+}
+
 function markActivity(
   s: GameState,
   kind: "study" | "read",
@@ -603,16 +623,12 @@ function markActivity(
   subject?: string | undefined,
 ) {
   const key = todayKey();
-  const cur = s.activity[key] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0 };
-  s.activity = {
-    ...s.activity,
-    [key]: {
-      studySec: cur.studySec + (kind === "study" ? seconds : 0),
-      readSec: cur.readSec + (kind === "read" ? seconds : 0),
-      pages: cur.pages + pages,
-      sessions: cur.sessions + 1,
-    },
-  };
+  bumpActivity(s, {
+    studySec: kind === "study" ? seconds : 0,
+    readSec: kind === "read" ? seconds : 0,
+    pages,
+    sessions: 1,
+  });
   // ---- expansão: matérias, itens e missões acompanham o tempo real ----
   if (kind === "study") {
     addSubjectProgress(s, subject, seconds);
