@@ -105,7 +105,7 @@ export type TypeEffect = {
   label: string | null;
 };
 
-/** vantagem de tipo aplicada ao dano */
+/** vantagem de tipo aplicada ao dano (um tipo contra um tipo) */
 export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect {
   if (attacker === "deus" || defender === "deus") {
     return { mult: 1, kind: "normal", label: null };
@@ -119,6 +119,21 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
   return { mult: 1, kind: "normal", label: null };
 }
 
+/**
+ * Monstros de tipo duplo: somam TODAS as vantagens e TODAS as fraquezas
+ * dos dois elementos (sem acumular — o bônus continua sendo ±15%).
+ */
+export function typeEffectMulti(attackers: ElementId[], defenders: ElementId[]): TypeEffect {
+  if (attackers.includes("deus") || defenders.includes("deus")) {
+    return { mult: 1, kind: "normal", label: null };
+  }
+  const strong = attackers.some((a) => defenders.some((d) => STRONG_AGAINST[a].includes(d)));
+  if (strong) return { mult: 1 + TYPE_BONUS, kind: "super", label: "SUPER EFETIVO!" };
+  const weak = defenders.some((d) => attackers.some((a) => WEAK_AGAINST[d].includes(a)));
+  if (weak) return { mult: 1 - TYPE_BONUS, kind: "weak", label: "POUCO EFETIVO" };
+  return { mult: 1, kind: "normal", label: null };
+}
+
 /** tipos que este elemento vence / perde */
 export function elementMatchups(id: ElementId) {
   return {
@@ -126,6 +141,16 @@ export function elementMatchups(id: ElementId) {
     weak: WEAK_AGAINST[id],
   };
 }
+
+/** união das vantagens/fraquezas de um monstro (funciona para tipo duplo) */
+export function combinedMatchups(ids: ElementId[]) {
+  const uniq = (xs: ElementId[]) => Array.from(new Set(xs));
+  return {
+    strong: uniq(ids.flatMap((i) => STRONG_AGAINST[i])),
+    weak: uniq(ids.flatMap((i) => WEAK_AGAINST[i])),
+  };
+}
+
 
 /** elemento de cada monstro (o secreto é o único "Deus") */
 export const MONSTER_ELEMENTS: Record<string, ElementId> = {
@@ -185,7 +210,7 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   // divinos
   astraeon: "gelo",
   chronavyr: "vento",
-  equinoxis: "deus",
+  equinoxis: "sombrio",
   luminara: "luz",
   // secreto
   aetheryon: "deus",
@@ -204,6 +229,66 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   malachor: "veneno",
 };
 
+/**
+ * Segundo elemento (tipo duplo) — apenas para monstros em que faz sentido.
+ * Um monstro de tipo duplo herda TODAS as vantagens e TODAS as fraquezas
+ * dos dois elementos.
+ */
+export const MONSTER_ELEMENTS_2: Record<string, ElementId> = {
+  frostnib: "agua",
+  mistmote: "agua",
+  glowfin: "luz",
+  lumibug: "natureza",
+  ashmole: "fogo",
+  moonfang: "gelo",
+  abyssquill: "agua",
+  barkgolem: "terra",
+  mirasand: "terra",
+  quartzox: "gelo",
+  stormhorn: "gelo",
+  voidbloom: "natureza",
+  magmaw: "terra",
+  thornmaw: "natureza",
+  cryotaur: "terra",
+  sylvaqueen: "vento",
+  obsidrake: "terra",
+  tempestrix: "agua",
+  dunephar: "terra",
+  aurelith: "vento",
+  bloomserp: "veneno",
+  solmyrr: "luz",
+  nebulith: "agua",
+  thundrix: "gelo",
+  seraphae: "natureza",
+  eclipsaur: "luz",
+  arcanyx: "luz",
+  abyssaria: "sombrio",
+  umbraleth: "gelo",
+  astraeon: "vento",
+  chronavyr: "metal",
+  equinoxis: "luz",
+  terrabor: "metal",
+  gaiaruk: "natureza",
+  titanox: "terra",
+  chromaw: "luz",
+  aeromyr: "luz",
+  toxlet: "agua",
+  venomyra: "natureza",
+  malachor: "sombrio",
+};
+
 export function elementOf(monsterId: string): ElementDef {
   return ELEMENTS_BY_ID[MONSTER_ELEMENTS[monsterId] ?? "natureza"];
 }
+
+/** todos os elementos de um monstro (1 ou 2) */
+export function elementIdsOf(monsterId: string): ElementId[] {
+  const primary = MONSTER_ELEMENTS[monsterId] ?? "natureza";
+  const second = MONSTER_ELEMENTS_2[monsterId];
+  return second && second !== primary ? [primary, second] : [primary];
+}
+
+export function elementDefsOf(monsterId: string): ElementDef[] {
+  return elementIdsOf(monsterId).map((id) => ELEMENTS_BY_ID[id]);
+}
+

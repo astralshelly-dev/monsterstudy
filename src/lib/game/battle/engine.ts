@@ -5,7 +5,7 @@
 import { MONSTERS_BY_ID } from "../monsters";
 import type { RarityId } from "../config";
 import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
-import { elementOf, typeEffect, type ElementId } from "../elements";
+import { elementIdsOf, elementOf, typeEffectMulti, type ElementId } from "../elements";
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
 
@@ -22,8 +22,10 @@ export type Fighter = {
   def: number;
   spd: number;
   ability: Ability;
-  /** tipo elemental (vantagens e fraquezas no cálculo de dano) */
+  /** tipo elemental principal */
   element: ElementId;
+  /** todos os tipos do monstro (1 ou 2) — tipo duplo soma vantagens e fraquezas */
+  elements: ElementId[];
   /** turnos restantes para a habilidade disparar */
   charge: number;
   atkBuff: number;
@@ -38,8 +40,9 @@ export type Fighter = {
   spdBuff: number;
   /** eco temporal: repete parte do dano nos próximos turnos do usuário */
   echo: { turns: number; dmg: number } | null;
-  /** marcado pelo veredito: recebe dano ampliado de qualquer fonte */
-  mark: { turns: number; pct: number } | null;
+  /** marcado pelo veredito (permanente): dano ampliado + dreno para quem o ferir */
+  mark: { pct: number; lifestealPct: number; abilityLifestealPct: number } | null;
+
 };
 
 export type SideId = "player" | "foe";
@@ -99,6 +102,7 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     spd: s.spd,
     ability: abilityFor(monsterId),
     element: elementOf(monsterId).id,
+    elements: elementIdsOf(monsterId),
     charge: abilityFor(monsterId).cooldown,
     atkBuff: 0,
     defBuff: 0,
@@ -198,7 +202,10 @@ let escalation = 1;
 
 /** vantagem elemental entre dois lutadores */
 export function matchupOf(attacker: Fighter, defender: Fighter) {
-  return typeEffect(attacker.element, defender.element);
+  return typeEffectMulti(
+    attacker.elements ?? [attacker.element],
+    defender.elements ?? [defender.element],
+  );
 }
 
 /** anuncia SUPER EFETIVO / POUCO EFETIVO */
@@ -225,9 +232,16 @@ function hpShare(side: Side): number {
   return side.fighters.reduce((a, f) => a + f.hp, 0) / max;
 }
 
-function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number): number {
+function applyDamage(
+  b: Battle,
+  target: SideId,
+  fighter: Fighter,
+  amount: number,
+  src?: { attacker?: Fighter; viaAbility?: boolean },
+): number {
   let dmg = amount;
-  if (fighter.mark && fighter.mark.turns > 0) {
+  const marked = !!fighter.mark;
+  if (fighter.mark) {
     const extra = Math.max(1, Math.round(dmg * fighter.mark.pct));
     dmg += extra;
     b.events.push({
@@ -263,8 +277,24 @@ function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number
     }
   }
   fighter.hp = Math.max(0, fighter.hp - dmg);
+
+  // a marca do veredito alimenta quem ferir o alvo marcado
+  const healer = src?.attacker;
+  if (marked && fighter.mark && healer && healer.hp > 0 && dmg > 0) {
+    const pct = src?.viaAbility ? fighter.mark.abilityLifestealPct : fighter.mark.lifestealPct;
+    const heal = Math.max(1, Math.round(dmg * pct));
+    healer.hp = Math.min(healer.maxHp, healer.hp + heal);
+    b.events.push({
+      id: eid(),
+      kind: "heal",
+      side: target === "player" ? "foe" : "player",
+      text: `⚖️ ${healer.name} drena ${heal} de vida do marcado`,
+      heal,
+    });
+  }
   return dmg;
 }
+
 
 function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Side, defSideId: SideId) {
   const a = attacker.ability;
@@ -289,7 +319,9 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       defSideId,
       defender,
       rawDamage(atk, dfn, mult * k * eff.mult, ignoreDef),
+      { attacker, viaAbility: true },
     );
+
     b.events.push({
       id: eid(),
       kind: "damage",
@@ -331,7 +363,7 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       hit(e.mult);
       for (const f of defenderSide.fighters) {
         if (f === defender || f.hp <= 0) continue;
-        const dealt = applyDamage(b, defSideId, f, Math.max(1, Math.round(rawDamage(atk, f.def, e.mult * k) * e.benchPct)));
+        const dealt = applyDamage(b, defSideId, f, Math.max(1, Math.round(rawDamage(atk, f.def, e.mult * k) * e.benchPct)), { attacker, viaAbility: true });
         b.events.push({
           id: eid(),
           kind: "damage",
@@ -440,19 +472,21 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       break;
     }
     case "judgment": {
-      hit(e.mult);
-      defender.mark = { turns: e.turns, pct: e.markPct * k };
-      const heal = Math.round(attacker.maxHp * e.healPct * k);
-      attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
+      // não causa dano próprio: apenas marca o alvo até a morte dele
+      defender.mark = {
+        pct: e.markPct,
+        lifestealPct: e.lifestealPct,
+        abilityLifestealPct: e.abilityLifestealPct,
+      };
       b.events.push({
         id: eid(),
         kind: "buff",
         side,
-        text: `⚖️ ${defender.name} foi marcado pelo veredito (+${Math.round(e.markPct * k * 100)}% de dano recebido)`,
+        text: `⚖️ ${defender.name} foi marcado pelo veredito: +${Math.round(e.markPct * 100)}% de dano recebido e quem o ferir drena vida`,
       });
-      b.events.push({ id: eid(), kind: "heal", side, text: `${attacker.name} reequilibra-se e recupera ${heal}`, heal });
       break;
     }
+
     case "fortify": {
       attacker.defBuff += e.defPct * k;
       const heal = Math.round(attacker.maxHp * e.healPct * k);
@@ -485,7 +519,9 @@ function basicAttack(
       effDef(defender, defenderSide.behavior),
       mult * eff.mult,
     ),
+    { attacker, viaAbility: false },
   );
+
   b.events.push({
     id: eid(),
     kind: "damage",
@@ -528,16 +564,6 @@ function tickPoison(b: Battle, side: SideId) {
   });
 }
 
-function tickMark(b: Battle, side: SideId) {
-  const f = activeOf(b, side);
-  if (!f.mark) return;
-  f.mark.turns -= 1;
-  if (f.mark.turns <= 0) {
-    f.mark = null;
-    b.events.push({ id: eid(), kind: "buff", side, text: `⚖️ A marca em ${f.name} se desfez` });
-  }
-}
-
 /** o eco temporal repete parte do dano no início do turno de quem o criou */
 function tickEcho(b: Battle, side: SideId) {
   const attacker = activeOf(b, side);
@@ -546,7 +572,11 @@ function tickEcho(b: Battle, side: SideId) {
   const defSide = side === "player" ? b.foe : b.player;
   const defender = defSide.fighters[defSide.active]!;
   if (defender.hp <= 0) return;
-  const dealt = applyDamage(b, defSideId, defender, attacker.echo.dmg);
+  const dealt = applyDamage(b, defSideId, defender, attacker.echo.dmg, {
+    attacker,
+    viaAbility: true,
+  });
+
   attacker.echo.turns -= 1;
   if (attacker.echo.turns <= 0) attacker.echo = null;
   b.events.push({
@@ -562,7 +592,6 @@ function tickEcho(b: Battle, side: SideId) {
 function tickBurn(b: Battle, side: SideId) {
   const f = activeOf(b, side);
   tickPoison(b, side);
-  tickMark(b, side);
   if (!f.burn || f.hp <= 0) return;
   const dealt = Math.min(f.hp, f.burn.dmg);
   f.hp -= dealt;

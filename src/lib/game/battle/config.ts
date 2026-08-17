@@ -75,8 +75,9 @@ export type AbilityEffect =
   | { type: "purge"; healPct: number; defPct: number }
   /** eco temporal: o dano de agora se repete sozinho no próximo turno */
   | { type: "echo"; mult: number; echoPct: number; turns: number }
-  /** veredito: marca o alvo, que passa a receber mais dano de qualquer fonte */
-  | { type: "judgment"; mult: number; markPct: number; turns: number; healPct: number };
+  /** veredito: marca permanente — o alvo sofre mais dano e alimenta quem o ferir */
+  | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number };
+
 
 export type Ability = {
   id: string;
@@ -264,10 +265,11 @@ export const ABILITIES: Ability[] = [
     name: "Veredito do Equinócio",
     icon: "⚖️",
     description:
-      "Pesa o adversário na balança: ele fica marcado e sofre 25% mais dano de qualquer fonte por 3 turnos, enquanto o usuário se equilibra recuperando vida.",
-    cooldown: 5,
-    effect: { type: "judgment", mult: 1.25, markPct: 0.25, turns: 3, healPct: 0.12 },
+      "Não causa dano próprio: marca o adversário até a morte dele. O marcado sofre +20% de dano de qualquer fonte e, sempre que é ferido, quem atacou drena 70% do dano em vida (50% se o golpe vier de uma habilidade especial). A marca não acumula.",
+    cooldown: 3,
+    effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.7, abilityLifestealPct: 0.5 },
   },
+
 ];
 
 export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
@@ -427,13 +429,101 @@ export function speedFactor(monsterId: string): number {
   return SPEED_FACTOR[monsterId] ?? 1;
 }
 
+/**
+ * Perfil físico de CADA monstro: vida, ataque e defesa vêm do que faz sentido
+ * para a criatura (uma baleia cósmica tem muita vida e pouco dano; um lince
+ * elétrico o contrário). A raridade ainda pesa, mas pouco.
+ */
+export type StatProfile = { hp: number; atk: number; def: number };
+
+export const STAT_PROFILE: Record<string, StatProfile> = {
+  // ---- comuns ----
+  mosslet: { hp: 1.15, atk: 0.82, def: 1.12 },
+  pebbly: { hp: 1.1, atk: 0.85, def: 1.35 },
+  drippet: { hp: 0.98, atk: 0.95, def: 0.95 },
+  sparkid: { hp: 0.8, atk: 1.28, def: 0.8 },
+  frostnib: { hp: 0.92, atk: 1.05, def: 1.0 },
+  vinelet: { hp: 1.08, atk: 0.9, def: 1.05 },
+  twiglin: { hp: 0.95, atk: 1.0, def: 0.95 },
+  sandpip: { hp: 0.85, atk: 1.12, def: 0.85 },
+  cragling: { hp: 1.22, atk: 0.9, def: 1.4 },
+  toxlet: { hp: 0.95, atk: 1.1, def: 0.9 },
+  ferrik: { hp: 1.0, atk: 0.95, def: 1.38 },
+  // ---- incomuns ----
+  thornhop: { hp: 0.88, atk: 1.2, def: 0.9 },
+  tidewhisk: { hp: 1.02, atk: 1.0, def: 0.98 },
+  cindertail: { hp: 0.9, atk: 1.22, def: 0.85 },
+  glaciva: { hp: 1.2, atk: 0.88, def: 1.22 },
+  dunecoil: { hp: 1.0, atk: 1.05, def: 1.0 },
+  lumibug: { hp: 0.8, atk: 1.15, def: 0.85 },
+  mistmote: { hp: 0.85, atk: 1.05, def: 0.95 },
+  glowfin: { hp: 0.95, atk: 1.08, def: 0.92 },
+  zephyx: { hp: 0.82, atk: 1.18, def: 0.85 },
+  // ---- raros ----
+  ashmole: { hp: 1.18, atk: 0.95, def: 1.28 },
+  emberfang: { hp: 0.92, atk: 1.35, def: 0.88 },
+  moonfang: { hp: 0.95, atk: 1.3, def: 0.9 },
+  abyssquill: { hp: 1.0, atk: 1.12, def: 0.95 },
+  barkgolem: { hp: 1.45, atk: 0.82, def: 1.5 },
+  mirasand: { hp: 0.9, atk: 1.18, def: 0.88 },
+  petalynx: { hp: 0.85, atk: 1.28, def: 0.85 },
+  quartzox: { hp: 1.12, atk: 0.88, def: 1.45 },
+  bloomserp: { hp: 1.05, atk: 1.08, def: 0.98 },
+  starkit: { hp: 0.82, atk: 1.22, def: 0.88 },
+  gustwing: { hp: 0.85, atk: 1.3, def: 0.82 },
+  terrabor: { hp: 1.3, atk: 0.92, def: 1.42 },
+  // ---- super raros ----
+  stormhorn: { hp: 1.15, atk: 1.15, def: 1.08 },
+  voidbloom: { hp: 1.05, atk: 1.2, def: 0.95 },
+  kraveel: { hp: 1.22, atk: 1.05, def: 1.0 },
+  magmaw: { hp: 1.35, atk: 1.25, def: 1.05 },
+  thornmaw: { hp: 1.18, atk: 1.22, def: 0.9 },
+  voltyx: { hp: 0.8, atk: 1.42, def: 0.82 },
+  venomyra: { hp: 0.9, atk: 1.32, def: 0.9 },
+  chromaw: { hp: 0.92, atk: 1.2, def: 1.25 },
+  // ---- épicos ----
+  aurelith: { hp: 0.95, atk: 1.22, def: 0.95 },
+  cryotaur: { hp: 1.42, atk: 1.05, def: 1.35 },
+  sylvaqueen: { hp: 1.05, atk: 1.15, def: 1.05 },
+  obsidrake: { hp: 1.1, atk: 1.3, def: 1.15 },
+  tempestrix: { hp: 0.9, atk: 1.32, def: 0.88 },
+  dunephar: { hp: 1.15, atk: 1.0, def: 1.25 },
+  gaiaruk: { hp: 1.5, atk: 1.0, def: 1.45 },
+  aeromyr: { hp: 0.88, atk: 1.25, def: 0.95 },
+  // ---- lendários ----
+  solmyrr: { hp: 1.12, atk: 1.3, def: 1.05 },
+  nebulith: { hp: 1.55, atk: 0.82, def: 1.2 }, // baleia: muita vida, pouco dano
+  thundrix: { hp: 0.9, atk: 1.4, def: 0.92 },
+  seraphae: { hp: 1.05, atk: 1.05, def: 1.15 },
+  chronavyr: { hp: 1.0, atk: 1.18, def: 1.05 },
+  titanox: { hp: 1.4, atk: 1.05, def: 1.55 },
+  // ---- míticos ----
+  eclipsaur: { hp: 1.35, atk: 1.1, def: 1.3 },
+  arcanyx: { hp: 0.92, atk: 1.38, def: 0.95 },
+  abyssaria: { hp: 1.45, atk: 1.0, def: 1.18 },
+  umbraleth: { hp: 0.95, atk: 1.4, def: 0.9 },
+  malachor: { hp: 1.0, atk: 1.35, def: 1.0 },
+  // ---- divinos ----
+  astraeon: { hp: 1.25, atk: 1.2, def: 1.25 },
+  equinoxis: { hp: 1.2, atk: 1.05, def: 1.2 },
+  luminara: { hp: 1.1, atk: 1.15, def: 1.15 },
+  // ---- secreto ----
+  aetheryon: { hp: 1.2, atk: 1.35, def: 1.15 },
+};
+
+export function statProfile(monsterId?: string): StatProfile {
+  return (monsterId ? STAT_PROFILE[monsterId] : undefined) ?? { hp: 1, atk: 1, def: 1 };
+}
+
 export function battleStats(rarity: RarityId, level: number, monsterId?: string): MonsterBattleStats {
   const tier = RARITY_ORDER.indexOf(rarity);
   const lv = Math.max(1, level);
+  const p = statProfile(monsterId);
   return {
-    maxHp: Math.round((72 + tier * 16) * (1 + (lv - 1) * 0.09)),
-    atk: Math.round((18 + tier * 5.4) * (1 + (lv - 1) * 0.09)),
-    def: Math.round((6 + tier * 2.6) * (1 + (lv - 1) * 0.07)),
+    // a raridade dá uma base; o perfil da criatura define o resto
+    maxHp: Math.round((86 + tier * 11) * p.hp * (1 + (lv - 1) * 0.09)),
+    atk: Math.round((21 + tier * 3.7) * p.atk * (1 + (lv - 1) * 0.09)),
+    def: Math.round((7 + tier * 1.8) * p.def * (1 + (lv - 1) * 0.07)),
     // a velocidade vem das características do monstro; a raridade quase não conta
     spd:
       Math.round(
@@ -441,6 +531,7 @@ export function battleStats(rarity: RarityId, level: number, monsterId?: string)
       ) / 10,
   };
 }
+
 
 export function monsterPower(monsterId: string, level: number): number {
   const def = MONSTERS_BY_ID[monsterId];
