@@ -513,7 +513,9 @@ function basicAttack(
       effDef(defender, defenderSide.behavior),
       mult * eff.mult,
     ),
+    { attacker, viaAbility: false },
   );
+
   b.events.push({
     id: eid(),
     kind: "damage",
