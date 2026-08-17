@@ -233,6 +233,22 @@ export type GameState = {
   cosmetics: CosmeticState;
 };
 
+/** resumo de um dia — base das comparações por período */
+export type DayActivity = {
+  studySec: number;
+  readSec: number;
+  pages: number;
+  sessions: number;
+  /** XP de jogador ganho no dia */
+  xp?: number | undefined;
+  /** monstros capturados no dia */
+  monsters?: number | undefined;
+  /** missões diárias concluídas (coletadas) no dia */
+  quests?: number | undefined;
+  wins?: number | undefined;
+  losses?: number | undefined;
+};
+
 export type SubjectStat = {
   name: string;
   xp: number;
