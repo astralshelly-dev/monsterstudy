@@ -282,9 +282,12 @@ function FighterView({
         </div>
         <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
           {fighter.hp}/{fighter.maxHp} PV · ATQ {Math.round(fighter.atk * (1 + fighter.atkBuff))} · DEF{" "}
-          {Math.round(fighter.def * (1 + fighter.defBuff))} · VEL {fighter.spd}
+          {Math.round(fighter.def * (1 + fighter.defBuff))} · VEL{" "}
+          {Math.round(fighter.spd * (1 + (fighter.spdBuff ?? 0)) * 10) / 10}
           {fighter.shield > 0 && ` · 🛡️ ${fighter.shield}`}
           {fighter.guard > 0 && " · 🌀 -30% dano"}
+          {fighter.burn && ` · 🔥 ${fighter.burn.turns}t`}
+          {fighter.poison && ` · ☠️ ${fighter.poison.turns}t`}
         </p>
         <div className={cn("mt-1 flex items-center gap-1", side === "foe" && "justify-end")}>
           <RarityBadge rarity={fighter.rarity} />
