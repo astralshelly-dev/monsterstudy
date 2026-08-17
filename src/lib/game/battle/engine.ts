@@ -226,9 +226,16 @@ function hpShare(side: Side): number {
   return side.fighters.reduce((a, f) => a + f.hp, 0) / max;
 }
 
-function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number): number {
+function applyDamage(
+  b: Battle,
+  target: SideId,
+  fighter: Fighter,
+  amount: number,
+  src?: { attacker?: Fighter; viaAbility?: boolean },
+): number {
   let dmg = amount;
-  if (fighter.mark && fighter.mark.turns > 0) {
+  const marked = !!fighter.mark;
+  if (fighter.mark) {
     const extra = Math.max(1, Math.round(dmg * fighter.mark.pct));
     dmg += extra;
     b.events.push({
@@ -264,8 +271,24 @@ function applyDamage(b: Battle, target: SideId, fighter: Fighter, amount: number
     }
   }
   fighter.hp = Math.max(0, fighter.hp - dmg);
+
+  // a marca do veredito alimenta quem ferir o alvo marcado
+  const healer = src?.attacker;
+  if (marked && fighter.mark && healer && healer.hp > 0 && dmg > 0) {
+    const pct = src?.viaAbility ? fighter.mark.abilityLifestealPct : fighter.mark.lifestealPct;
+    const heal = Math.max(1, Math.round(dmg * pct));
+    healer.hp = Math.min(healer.maxHp, healer.hp + heal);
+    b.events.push({
+      id: eid(),
+      kind: "heal",
+      side: target === "player" ? "foe" : "player",
+      text: `⚖️ ${healer.name} drena ${heal} de vida do marcado`,
+      heal,
+    });
+  }
   return dmg;
 }
+
 
 function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Side, defSideId: SideId) {
   const a = attacker.ability;
