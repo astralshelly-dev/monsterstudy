@@ -582,7 +582,6 @@ function tickEcho(b: Battle, side: SideId) {
 function tickBurn(b: Battle, side: SideId) {
   const f = activeOf(b, side);
   tickPoison(b, side);
-  tickMark(b, side);
   if (!f.burn || f.hp <= 0) return;
   const dealt = Math.min(f.hp, f.burn.dmg);
   f.hp -= dealt;
