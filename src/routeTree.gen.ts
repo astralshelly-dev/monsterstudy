@@ -32,6 +32,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as TemporadaRouteImport } from './routes/temporada'
 import { Route as BibliotecaIndexRouteImport } from './routes/biblioteca.index'
 import { Route as BibliotecaBookIdRouteImport } from './routes/biblioteca.$bookId'
+import { Route as CompararPublicIdRouteImport } from './routes/comparar.$publicId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -148,6 +149,11 @@ const BibliotecaBookIdRoute = BibliotecaBookIdRouteImport.update({
   path: '/biblioteca/$bookId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompararPublicIdRoute = CompararPublicIdRouteImport.update({
+  id: '/comparar/$publicId',
+  path: '/comparar/$publicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/comparar/$publicId': typeof CompararPublicIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
 export interface FileRoutesByTo {
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/comparar/$publicId': typeof CompararPublicIdRoute
   '/biblioteca': typeof BibliotecaIndexRoute
 }
 export interface FileRoutesById {
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/temporada': typeof TemporadaRoute
   '/biblioteca/$bookId': typeof BibliotecaBookIdRoute
+  '/comparar/$publicId': typeof CompararPublicIdRoute
   '/biblioteca/': typeof BibliotecaIndexRoute
 }
 export interface FileRouteTypes {
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/temporada'
     | '/biblioteca/$bookId'
+    | '/comparar/$publicId'
     | '/biblioteca/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/temporada'
     | '/biblioteca/$bookId'
+    | '/comparar/$publicId'
     | '/biblioteca'
   id:
     | '__root__'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/temporada'
     | '/biblioteca/$bookId'
+    | '/comparar/$publicId'
     | '/biblioteca/'
   fileRoutesById: FileRoutesById
 }
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   TemporadaRoute: typeof TemporadaRoute
   BibliotecaBookIdRoute: typeof BibliotecaBookIdRoute
+  CompararPublicIdRoute: typeof CompararPublicIdRoute
   BibliotecaIndexRoute: typeof BibliotecaIndexRoute
 }
 
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BibliotecaBookIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comparar/$publicId': {
+      id: '/comparar/$publicId'
+      path: '/comparar/$publicId'
+      fullPath: '/comparar/$publicId'
+      preLoaderRoute: typeof CompararPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -518,6 +538,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   TemporadaRoute: TemporadaRoute,
   BibliotecaBookIdRoute: BibliotecaBookIdRoute,
+  CompararPublicIdRoute: CompararPublicIdRoute,
   BibliotecaIndexRoute: BibliotecaIndexRoute,
 }
 export const routeTree = rootRouteImport
