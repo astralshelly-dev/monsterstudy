@@ -108,9 +108,9 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
 export function elementMatchups(id: ElementId) {
   return {
     strong: STRONG_AGAINST[id],
-    weak: ELEMENTS.filter(
-      (e) => e.id !== "deus" && STRONG_AGAINST[e.id].includes(id) && !STRONG_AGAINST[id].includes(e.id),
-    ).map((e) => e.id),
+    weak: ELEMENTS.filter((e) => e.id !== "deus" && STRONG_AGAINST[e.id].includes(id)).map(
+      (e) => e.id,
+    ),
   };
 }
 
