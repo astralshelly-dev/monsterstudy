@@ -146,7 +146,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 function AppShellContent({ children }: { children: ReactNode }) {
   const { offline, dismissOffline } = useHydrated();
   const { user } = useCloudSync();
-  const nav = isAdminEmail(user?.email) ? [...NAV, ADMIN_NAV] : [...NAV];
+  const groups = isAdminEmail(user?.email) ? [...NAV_GROUPS, ADMIN_GROUP] : NAV_GROUPS;
+  const flatNav = groups.flatMap((g) => g.items);
 
   const state = useGame();
 
@@ -154,9 +155,14 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const prog = userProgress(state);
   const rate = moneyPerSecond(state);
   const [moreOpen, setMoreOpen] = useState(false);
+  const activeGroup =
+    groups.find((g) => g.items.some((i) => isActivePath(pathname, i.to)))?.id ?? "principal";
+  const [openGroup, setOpenGroup] = useState<string | null>(activeGroup);
   useEffect(() => {
     setMoreOpen(false);
-  }, [pathname]);
+    setOpenGroup(activeGroup);
+  }, [pathname, activeGroup]);
+
 
   return (
     <div className="flex min-h-screen w-full">
