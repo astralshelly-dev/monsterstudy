@@ -197,7 +197,9 @@ export type GameState = {
   unlockedTimers: number[];
   achievements: Record<string, string>;
   streak: { current: number; best: number; lastDay: string | null; claimed: number[] };
-  activity: Record<string, { studySec: number; readSec: number; pages: number; sessions: number }>;
+  activity: Record<string, DayActivity>;
+  /** troféus registrados no fim de cada dia (para comparar períodos) */
+  trophyLog?: Record<string, number> | undefined;
   settings: {
     sounds: boolean;
     animations: boolean;
