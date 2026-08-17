@@ -5,6 +5,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type Json = Record<string, any>;
+
 const idOf = (v: unknown) => String(v ?? "").trim().toUpperCase();
 
 const PROFILE_COLS =
@@ -15,7 +18,7 @@ export type FriendEdge = {
   status: "pending" | "accepted";
   direction: "incoming" | "outgoing";
   createdAt: string;
-  profile: Record<string, unknown> | null;
+  profile: Json | null;
 };
 
 /** lista amigos aceitos + pedidos recebidos/enviados, já com o perfil público */
@@ -34,11 +37,11 @@ export const listFriends = createServerFn({ method: "GET" })
     const otherIds = Array.from(
       new Set(list.map((r) => (r.requester_id === userId ? r.addressee_id : r.requester_id))),
     );
-    let profiles: Record<string, Record<string, unknown>> = {};
+    let profiles: Record<string, Json> = {};
     if (otherIds.length > 0) {
       const { data: profs } = await supabase.from("profiles").select(PROFILE_COLS).in("user_id", otherIds);
       profiles = Object.fromEntries(
-        (profs ?? []).map((p) => [String((p as Record<string, unknown>)['user_id']), p as Record<string, unknown>]),
+        (profs ?? []).map((p) => [String((p as Json)['user_id']), p as Json]),
       );
     }
 
@@ -148,7 +151,7 @@ export const compareProfiles = createServerFn({ method: "GET" })
       supabase.from("profiles").select(PROFILE_COLS).eq("public_id", data.publicId).maybeSingle(),
     ]);
     return {
-      me: (mine.data as Record<string, unknown> | null) ?? null,
-      other: (theirs.data as Record<string, unknown> | null) ?? null,
+      me: (mine.data as Json | null) ?? null,
+      other: (theirs.data as Json | null) ?? null,
     };
   });
