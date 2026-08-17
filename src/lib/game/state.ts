@@ -529,7 +529,7 @@ function applyReward(s: GameState, reward: Reward) {
   s.money += reward.money;
   s.shards += reward.shards;
   addUserXp(s, reward.xp);
-  bumpActivity(s, { xp: reward.xp, monsters: id ? 1 : 0 });
+  if (id) bumpActivity(s, { monsters: 1 });
 }
 
 function addUserXp(s: GameState, amount: number) {
@@ -540,6 +540,7 @@ function addUserXp(s: GameState, amount: number) {
     level += 1;
   }
   s.profile = { ...s.profile, xp, level };
+  if (amount > 0) bumpActivity(s, { xp: amount });
 }
 
 export function addMonsterXp(monsterId: string, amount: number): { levelsGained: number } {
