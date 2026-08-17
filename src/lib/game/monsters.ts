@@ -414,14 +414,14 @@ const SEEDS: MonsterSeed[] = [
   {
     id: "venomyra",
     name: "Venomyra",
-    rarity: "super",
+    rarity: "super_raro",
     habitat: "selva",
     description: "Serpente-orquídea de presas translúcidas. Seu veneno dissolve a preguiça.",
   },
   {
     id: "chromaw",
     name: "Chromaw",
-    rarity: "super",
+    rarity: "super_raro",
     habitat: "espaco",
     description: "Felino de placas cromadas. Reflete a própria luz das estrelas que caça.",
   },
