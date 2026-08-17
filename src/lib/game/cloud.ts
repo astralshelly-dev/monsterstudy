@@ -5,7 +5,7 @@ import { leagueOf } from "./battle/config";
 import { getSnapshot, replaceState, subjectList, totals } from "./state";
 import { COSMETICS_BY_ID } from "./cosmetics";
 import { currentSeason } from "./seasons";
-import type { GameState } from "./types";
+import type { DayActivity, GameState } from "./types";
 
 export type PublicProfile = {
   publicId: string;
@@ -372,6 +372,8 @@ function mapProfile(row: Record<string, unknown>): PublicProfile {
     streakBest: Number(row['streak_best']),
     monsters: (row['monsters'] as PublicProfile["monsters"]) ?? {},
     stats: (row['stats'] as PublicProfile["stats"]) ?? {},
+    activity: (row['activity'] as PublicProfile["activity"]) ?? {},
+    trophyLog: (row['trophy_log'] as PublicProfile["trophyLog"]) ?? {},
     updatedAt: String(row['updated_at']),
   };
 }
