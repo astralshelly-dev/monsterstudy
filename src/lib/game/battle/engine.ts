@@ -357,7 +357,7 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       hit(e.mult);
       for (const f of defenderSide.fighters) {
         if (f === defender || f.hp <= 0) continue;
-        const dealt = applyDamage(b, defSideId, f, Math.max(1, Math.round(rawDamage(atk, f.def, e.mult * k) * e.benchPct)));
+        const dealt = applyDamage(b, defSideId, f, Math.max(1, Math.round(rawDamage(atk, f.def, e.mult * k) * e.benchPct)), { attacker, viaAbility: true });
         b.events.push({
           id: eid(),
           kind: "damage",
