@@ -30,6 +30,7 @@ import { RARITY_ORDER } from "@/lib/game/config";
 import { BattleArena } from "@/components/game/battle/BattleArena";
 import { TeamPicker } from "@/components/game/battle/TeamPicker";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
+import { ElementTable } from "@/components/game/ElementTable";
 import { ProfileAvatar } from "@/components/game/Avatar";
 import { MonsterArt } from "@/components/game/MonsterArt";
 import { Button } from "@/components/ui/button";
@@ -603,6 +604,8 @@ function BattlesPage() {
         <StatCard label="Total de batalhas" value={num(bd.wins + bd.losses)} />
         <StatCard label="Maior troféus" value={num(bd.bestTrophies)} />
       </div>
+
+      <ElementTable />
 
       <section className="panel p-5">
         <h2 className="font-display text-lg font-semibold">Ligas</h2>

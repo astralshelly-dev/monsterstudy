@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/game/Primitives";
 import { MonsterCard } from "@/components/game/MonsterCard";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
+import { ElementTable } from "@/components/game/ElementTable";
 import { ELEMENTS_BY_ID, elementMatchups, elementOf } from "@/lib/game/elements";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,8 @@ function MonsterDex() {
         icon="🐾"
         subtitle={`${discovered} / ${pool.length} descobertos`}
       />
+
+      <ElementTable />
 
       <div className="panel space-y-3 p-4">
         <Filters

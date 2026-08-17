@@ -32,6 +32,10 @@ export type Fighter = {
   /** turnos de proteção por troca: recebe 30% menos dano na rodada em que entrou */
   guard: number;
   burn: { turns: number; dmg: number } | null;
+  /** veneno: dano contínuo que ignora escudos */
+  poison: { turns: number; dmg: number } | null;
+  /** modificador de velocidade (haste / ferrugem) */
+  spdBuff: number;
 };
 
 export type SideId = "player" | "foe";
@@ -97,6 +101,8 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     shield: 0,
     guard: 0,
     burn: null,
+    poison: null,
+    spdBuff: 0,
   };
 }
 
@@ -141,7 +147,7 @@ export function createBattle(input: {
 /** velocidade efetiva: comportamento da IA muda um pouco a iniciativa */
 export function effSpd(f: Fighter, behavior: AiBehavior): number {
   const bias = behavior === "ofensivo" ? 1.06 : behavior === "defensivo" ? 0.96 : 1;
-  return f.spd * bias;
+  return f.spd * (1 + (f.spdBuff ?? 0)) * bias;
 }
 
 /** quem age primeiro: o monstro em campo com mais velocidade (empate = sorteio) */
@@ -348,6 +354,64 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       attacker.shield += Math.round(attacker.maxHp * e.pct * k);
       b.events.push({ id: eid(), kind: "buff", side, text: `${attacker.name} ergue um escudo` });
       break;
+    case "poison": {
+      hit(e.mult);
+      defender.poison = { turns: e.turns, dmg: Math.max(1, Math.round(atk * e.dotPct * k)) };
+      b.events.push({ id: eid(), kind: "buff", side, text: `☠️ ${defender.name} foi envenenado` });
+      break;
+    }
+    case "break_def": {
+      hit(e.mult);
+      defender.defBuff = Math.max(-0.7, defender.defBuff - e.defPct * k);
+      b.events.push({ id: eid(), kind: "buff", side, text: `🧪 A defesa de ${defender.name} foi corroída` });
+      break;
+    }
+    case "haste": {
+      hit(e.mult);
+      attacker.spdBuff = Math.min(1.5, (attacker.spdBuff ?? 0) + e.spdPct * k);
+      b.events.push({ id: eid(), kind: "buff", side, text: `🌪️ ${attacker.name} ficou mais rápido` });
+      break;
+    }
+    case "slow": {
+      hit(e.mult);
+      defender.spdBuff = Math.max(-0.6, (defender.spdBuff ?? 0) - e.spdPct * k);
+      b.events.push({ id: eid(), kind: "buff", side, text: `⚙️ ${defender.name} ficou mais lento` });
+      break;
+    }
+    case "double_edge": {
+      hit(e.mult);
+      const recoil = Math.max(1, Math.round(attacker.maxHp * e.selfPct));
+      attacker.hp = Math.max(1, attacker.hp - recoil);
+      b.events.push({
+        id: eid(),
+        kind: "damage",
+        side,
+        target: side,
+        text: `${attacker.name} sofre ${recoil} de recuo`,
+        damage: recoil,
+      });
+      break;
+    }
+    case "team_shield": {
+      for (const f of mySide.fighters) {
+        if (f.hp <= 0) continue;
+        f.shield += Math.round(f.maxHp * e.pct * k);
+      }
+      b.events.push({ id: eid(), kind: "buff", side, text: `🛡️ A equipe de ${mySide.name} ganhou escudos` });
+      break;
+    }
+    case "purge": {
+      attacker.burn = null;
+      attacker.poison = null;
+      if (attacker.atkBuff < 0) attacker.atkBuff = 0;
+      if (attacker.defBuff < 0) attacker.defBuff = 0;
+      if ((attacker.spdBuff ?? 0) < 0) attacker.spdBuff = 0;
+      attacker.defBuff += e.defPct * k;
+      const heal = Math.round(attacker.maxHp * e.healPct * k);
+      attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
+      b.events.push({ id: eid(), kind: "heal", side, text: `🌬️ ${attacker.name} se purificou`, heal });
+      break;
+    }
     case "fortify": {
       attacker.defBuff += e.defPct * k;
       const heal = Math.round(attacker.maxHp * e.healPct * k);
@@ -406,8 +470,26 @@ export function pickAiSwitch(side: Side): number {
   return options.sort((a, z) => score(z.f) - score(a.f))[0]!.i;
 }
 
+function tickPoison(b: Battle, side: SideId) {
+  const f = activeOf(b, side);
+  if (!f.poison || f.hp <= 0) return;
+  const dealt = Math.min(f.hp, f.poison.dmg);
+  f.hp -= dealt;
+  f.poison.turns -= 1;
+  if (f.poison.turns <= 0) f.poison = null;
+  b.events.push({
+    id: eid(),
+    kind: "damage",
+    side: side === "player" ? "foe" : "player",
+    target: side,
+    text: `☠️ ${f.name} sofre ${dealt} de veneno`,
+    damage: dealt,
+  });
+}
+
 function tickBurn(b: Battle, side: SideId) {
   const f = activeOf(b, side);
+  tickPoison(b, side);
   if (!f.burn || f.hp <= 0) return;
   const dealt = Math.min(f.hp, f.burn.dmg);
   f.hp -= dealt;

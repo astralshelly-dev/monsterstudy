@@ -368,6 +368,92 @@ const SEEDS: MonsterSeed[] = [
       "Nascida da primeira página já escrita. Sua luz reordena o tempo em favor de quem aprende.",
   },
 
+  // ---------- Expansão elemental: Terra, Metal, Vento e Veneno ----------
+  {
+    id: "cragling",
+    name: "Cragling",
+    rarity: "comum",
+    habitat: "deserto",
+    description: "Um bebê de rocha rachada. Empilha pedrinhas a cada matéria que você conclui.",
+  },
+  {
+    id: "toxlet",
+    name: "Toxlet",
+    rarity: "comum",
+    habitat: "selva",
+    description: "Girino roxo de baba ácida. Inofensivo, desde que você não pare de estudar.",
+  },
+  {
+    id: "ferrik",
+    name: "Ferrik",
+    rarity: "comum",
+    habitat: "mistico",
+    description: "Bonequinho de ferro fundido em uma forja de biblioteca. Range ao anotar.",
+  },
+  {
+    id: "zephyx",
+    name: "Zephyx",
+    rarity: "incomum",
+    habitat: "espaco",
+    description: "Redemoinho travesso que vira as páginas antes de você terminar de ler.",
+  },
+  {
+    id: "gustwing",
+    name: "Gustwing",
+    rarity: "raro",
+    habitat: "selva",
+    description: "Falcão de vento cortante. Aparece quando o foco fica leve e constante.",
+  },
+  {
+    id: "terrabor",
+    name: "Terrabor",
+    rarity: "raro",
+    habitat: "floresta",
+    description: "Tatu de granito que cava túneis entre raízes e enterra distrações.",
+  },
+  {
+    id: "venomyra",
+    name: "Venomyra",
+    rarity: "super_raro",
+    habitat: "selva",
+    description: "Serpente-orquídea de presas translúcidas. Seu veneno dissolve a preguiça.",
+  },
+  {
+    id: "chromaw",
+    name: "Chromaw",
+    rarity: "super_raro",
+    habitat: "espaco",
+    description: "Felino de placas cromadas. Reflete a própria luz das estrelas que caça.",
+  },
+  {
+    id: "gaiaruk",
+    name: "Gaiaruk",
+    rarity: "epico",
+    habitat: "floresta",
+    description: "Colosso de terra viva com um jardim inteiro nas costas. Anda no ritmo das estações.",
+  },
+  {
+    id: "aeromyr",
+    name: "Aeromyr",
+    rarity: "epico",
+    habitat: "espaco",
+    description: "Guardiã dos ventos altos. Suas asas desenham correntes que carregam ideias.",
+  },
+  {
+    id: "titanox",
+    name: "Titanox",
+    rarity: "lendario",
+    habitat: "mistico",
+    description: "Touro de aço antigo forjado nas fundações do mundo. Cada passo soa como um sino.",
+  },
+  {
+    id: "malachor",
+    name: "Malachor",
+    rarity: "mitico",
+    habitat: "mistico",
+    description: "O Alquimista Corrompido. Transforma o próprio veneno em conhecimento proibido.",
+  },
+
   // ---------- Secreto (oculto até ser desbloqueado) ----------
   {
     id: "aetheryon",

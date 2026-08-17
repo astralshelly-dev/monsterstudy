@@ -64,7 +64,15 @@ export type AbilityEffect =
   | { type: "rage"; atkPct: number }
   | { type: "weaken"; atkPct: number }
   | { type: "shield"; pct: number }
-  | { type: "fortify"; defPct: number; healPct: number };
+  | { type: "fortify"; defPct: number; healPct: number }
+  // ---- expansão ----
+  | { type: "poison"; mult: number; dotPct: number; turns: number }
+  | { type: "break_def"; mult: number; defPct: number }
+  | { type: "haste"; mult: number; spdPct: number }
+  | { type: "slow"; mult: number; spdPct: number }
+  | { type: "double_edge"; mult: number; selfPct: number }
+  | { type: "team_shield"; pct: number }
+  | { type: "purge"; healPct: number; defPct: number };
 
 export type Ability = {
   id: string;
@@ -173,6 +181,71 @@ export const ABILITIES: Ability[] = [
     cooldown: 3,
     effect: { type: "fortify", defPct: 0.45, healPct: 0.12 },
   },
+  // ---------------- Expansão de habilidades ----------------
+  {
+    id: "sopro_toxico",
+    name: "Sopro Tóxico",
+    icon: "☠️",
+    description: "Envenena o adversário: dano contínuo por vários turnos que ignora escudos.",
+    cooldown: 3,
+    effect: { type: "poison", mult: 1.05, dotPct: 0.3, turns: 4 },
+  },
+  {
+    id: "corrosao",
+    name: "Corrosão",
+    icon: "🧪",
+    description: "Fere e derrete a armadura inimiga, reduzindo a defesa dele.",
+    cooldown: 3,
+    effect: { type: "break_def", mult: 1.15, defPct: 0.35 },
+  },
+  {
+    id: "rajada_de_vento",
+    name: "Rajada de Vento",
+    icon: "🌪️",
+    description: "Golpe leve que acelera o usuário, ajudando a atacar primeiro.",
+    cooldown: 3,
+    effect: { type: "haste", mult: 0.85, spdPct: 0.3 },
+  },
+  {
+    id: "ventania_cortante",
+    name: "Ventania Cortante",
+    icon: "🍃",
+    description: "Três cortes de ar em sequência.",
+    cooldown: 3,
+    effect: { type: "damage_hits", mult: 0.8, hits: 3 },
+  },
+  {
+    id: "ferrugem",
+    name: "Ferrugem",
+    icon: "⚙️",
+    description: "Enferruja o oponente, tirando velocidade dele por toda a batalha.",
+    cooldown: 3,
+    effect: { type: "slow", mult: 1.0, spdPct: 0.25 },
+  },
+  {
+    id: "avalanche",
+    name: "Avalanche",
+    icon: "🪨",
+    description: "Impacto devastador — mas o próprio usuário sofre parte do recuo.",
+    cooldown: 4,
+    effect: { type: "double_edge", mult: 2.9, selfPct: 0.12 },
+  },
+  {
+    id: "muralha_de_aco",
+    name: "Muralha de Aço",
+    icon: "🛡️",
+    description: "Ergue escudos de metal para toda a equipe.",
+    cooldown: 4,
+    effect: { type: "team_shield", pct: 0.18 },
+  },
+  {
+    id: "purificar",
+    name: "Purificar",
+    icon: "🌬️",
+    description: "Limpa veneno, queimadura e reduções, cura e reforça a defesa.",
+    cooldown: 4,
+    effect: { type: "purge", healPct: 0.2, defPct: 0.25 },
+  },
 ];
 
 export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
@@ -200,6 +273,26 @@ const ABILITY_MAP: Record<string, string> = (() => {
   map['barkgolem'] = "postura_ancestral";
   map['abyssaria'] = "sugar_essencia";
   map['voltyx'] = "rajada_dupla";
+  // expansão: identidade dos novos elementos
+  map['cragling'] = "avalanche";
+  map['terrabor'] = "postura_ancestral";
+  map['gaiaruk'] = "avalanche";
+  map['ferrik'] = "ferrugem";
+  map['chromaw'] = "corrosao";
+  map['titanox'] = "muralha_de_aco";
+  map['zephyx'] = "rajada_de_vento";
+  map['gustwing'] = "ventania_cortante";
+  map['aeromyr'] = "purificar";
+  map['toxlet'] = "sopro_toxico";
+  map['venomyra'] = "sopro_toxico";
+  map['malachor'] = "corrosao";
+  map['quartzox'] = "muralha_de_aco";
+  map['thornmaw'] = "sopro_toxico";
+  map['abyssquill'] = "sopro_toxico";
+  map['tempestrix'] = "rajada_de_vento";
+  map['mistmote'] = "ventania_cortante";
+  map['pebbly'] = "postura_ancestral";
+  map['dunecoil'] = "ferrugem";
   return map;
 })();
 
@@ -287,6 +380,19 @@ export const SPEED_FACTOR: Record<string, number> = {
   // divinos
   astraeon: 1.02,
   luminara: 1.22,
+  // expansão
+  cragling: 0.68,
+  terrabor: 0.74,
+  gaiaruk: 0.58,
+  ferrik: 0.8,
+  chromaw: 1.4,
+  titanox: 0.64,
+  zephyx: 1.36,
+  gustwing: 1.43,
+  aeromyr: 1.45,
+  toxlet: 0.9,
+  venomyra: 1.16,
+  malachor: 1.0,
   // secreto
   aetheryon: 1.38,
 };
@@ -318,8 +424,28 @@ export function monsterPower(monsterId: string, level: number): number {
 }
 
 /** estilos de habilidade — usados pela IA para montar times coerentes */
-export const OFFENSIVE_EFFECTS = ["damage", "damage_hits", "execute", "burn", "splash", "rage"] as const;
-export const DEFENSIVE_EFFECTS = ["shield", "fortify", "team_heal", "drain", "weaken"] as const;
+export const OFFENSIVE_EFFECTS = [
+  "damage",
+  "damage_hits",
+  "execute",
+  "burn",
+  "splash",
+  "rage",
+  "poison",
+  "break_def",
+  "double_edge",
+  "haste",
+] as const;
+export const DEFENSIVE_EFFECTS = [
+  "shield",
+  "fortify",
+  "team_heal",
+  "drain",
+  "weaken",
+  "team_shield",
+  "purge",
+  "slow",
+] as const;
 
 export function abilityStyle(monsterId: string): "ofensivo" | "defensivo" {
   const t = abilityFor(monsterId).effect.type;

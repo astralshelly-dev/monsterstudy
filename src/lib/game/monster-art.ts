@@ -49,9 +49,33 @@ import a45 from "@/assets/monsters/vinelet.png.asset.json";
 import a46 from "@/assets/monsters/voidbloom.png.asset.json";
 import a47 from "@/assets/monsters/voltyx.png.asset.json";
 import aetheryon from "@/assets/monsters/aetheryon.png";
+import cragling from "@/assets/monsters/cragling.png";
+import toxlet from "@/assets/monsters/toxlet.png";
+import ferrik from "@/assets/monsters/ferrik.png";
+import zephyx from "@/assets/monsters/zephyx.png";
+import gustwing from "@/assets/monsters/gustwing.png";
+import terrabor from "@/assets/monsters/terrabor.png";
+import venomyra from "@/assets/monsters/venomyra.png";
+import chromaw from "@/assets/monsters/chromaw.png";
+import gaiaruk from "@/assets/monsters/gaiaruk.png";
+import aeromyr from "@/assets/monsters/aeromyr.png";
+import titanox from "@/assets/monsters/titanox.png";
+import malachor from "@/assets/monsters/malachor.png";
 
 export const MONSTER_ART: Record<string, string> = {
   aetheryon,
+  cragling,
+  toxlet,
+  ferrik,
+  zephyx,
+  gustwing,
+  terrabor,
+  venomyra,
+  chromaw,
+  gaiaruk,
+  aeromyr,
+  titanox,
+  malachor,
   abyssaria: a0.url,
   abyssquill: a1.url,
   arcanyx: a2.url,

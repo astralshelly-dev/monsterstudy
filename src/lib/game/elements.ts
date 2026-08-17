@@ -6,9 +6,13 @@
 export type ElementId =
   | "fogo"
   | "gelo"
-  | "agua"
   | "natureza"
+  | "agua"
   | "eletrico"
+  | "terra"
+  | "metal"
+  | "veneno"
+  | "vento"
   | "sombrio"
   | "luz"
   | "deus";
@@ -25,9 +29,13 @@ export type ElementDef = {
 export const ELEMENTS: ElementDef[] = [
   { id: "fogo", name: "Fogo", icon: "🔥", text: "text-rarity-lendario", ring: "ring-rarity-lendario/40" },
   { id: "gelo", name: "Gelo", icon: "❄️", text: "text-rarity-super", ring: "ring-rarity-super/40" },
-  { id: "agua", name: "Água", icon: "🌊", text: "text-primary", ring: "ring-primary/40" },
   { id: "natureza", name: "Natureza", icon: "🌿", text: "text-rarity-incomum", ring: "ring-rarity-incomum/40" },
+  { id: "agua", name: "Água", icon: "🌊", text: "text-primary", ring: "ring-primary/40" },
   { id: "eletrico", name: "Elétrico", icon: "⚡", text: "text-gold", ring: "ring-gold/40" },
+  { id: "terra", name: "Terra", icon: "🪨", text: "text-rarity-comum", ring: "ring-rarity-comum/40" },
+  { id: "metal", name: "Metal", icon: "⚙️", text: "text-muted-foreground", ring: "ring-border" },
+  { id: "veneno", name: "Veneno", icon: "☠️", text: "text-rarity-epico", ring: "ring-rarity-epico/40" },
+  { id: "vento", name: "Vento", icon: "🌪️", text: "text-mana", ring: "ring-mana/40" },
   { id: "sombrio", name: "Sombrio", icon: "🌑", text: "text-rarity-epico", ring: "ring-rarity-epico/40" },
   { id: "luz", name: "Luz", icon: "✨", text: "text-rarity-mitico", ring: "ring-rarity-mitico/40" },
   { id: "deus", name: "Deus", icon: "🌌", text: "text-rarity-divino", ring: "ring-rarity-divino/40" },
@@ -38,19 +46,40 @@ export const ELEMENTS_BY_ID: Record<ElementId, ElementDef> = Object.fromEntries(
 ) as Record<ElementId, ElementDef>;
 
 /**
- * Tabela de vantagens: STRONG_AGAINST[atacante] = tipos que sofrem dano extra.
- * Editar aqui muda todo o jogo (batalhas, dex, seleção de deck).
+ * Ciclo elemental: 9 elementos em roda. Cada um é FORTE contra os DOIS
+ * seguintes e FRACO contra os DOIS anteriores — ninguém fica sem counter.
+ * Luz e Sombrio formam um par próprio (só se counteram entre si) e
+ * Deus é neutro: não ganha nem perde vantagem contra ninguém.
  */
-export const STRONG_AGAINST: Record<ElementId, ElementId[]> = {
-  fogo: ["natureza", "gelo"],
-  gelo: ["natureza"],
-  agua: ["fogo"],
-  natureza: ["agua"],
-  eletrico: ["agua"],
-  luz: ["sombrio"],
-  sombrio: ["luz"],
-  deus: [],
-};
+export const ELEMENT_CYCLE: ElementId[] = [
+  "fogo",
+  "gelo",
+  "natureza",
+  "agua",
+  "eletrico",
+  "terra",
+  "metal",
+  "veneno",
+  "vento",
+];
+
+function buildStrongTable(): Record<ElementId, ElementId[]> {
+  const table = {} as Record<ElementId, ElementId[]>;
+  const n = ELEMENT_CYCLE.length;
+  ELEMENT_CYCLE.forEach((id, i) => {
+    table[id] = [ELEMENT_CYCLE[(i + 1) % n]!, ELEMENT_CYCLE[(i + 2) % n]!];
+  });
+  table.luz = ["sombrio"];
+  table.sombrio = ["luz"];
+  table.deus = [];
+  return table;
+}
+
+/**
+ * Tabela de vantagens: STRONG_AGAINST[atacante] = tipos que sofrem dano extra.
+ * Gerada a partir do ciclo acima (editar o ciclo muda todo o jogo).
+ */
+export const STRONG_AGAINST: Record<ElementId, ElementId[]> = buildStrongTable();
 
 /** bônus/penalidade de dano por vantagem de tipo */
 export const TYPE_BONUS = 0.15;
@@ -69,7 +98,6 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
   if (STRONG_AGAINST[attacker].includes(defender)) {
     return { mult: 1 + TYPE_BONUS, kind: "super", label: "SUPER EFETIVO!" };
   }
-  // Exceção Luz/Sombrio: ambos são apenas super efetivos entre si (nunca resistentes)
   if (STRONG_AGAINST[defender].includes(attacker)) {
     return { mult: 1 - TYPE_BONUS, kind: "weak", label: "POUCO EFETIVO" };
   }
@@ -80,7 +108,7 @@ export function typeEffect(attacker: ElementId, defender: ElementId): TypeEffect
 export function elementMatchups(id: ElementId) {
   return {
     strong: STRONG_AGAINST[id],
-    weak: ELEMENTS.filter((e) => e.id !== "deus" && STRONG_AGAINST[e.id].includes(id) && !STRONG_AGAINST[id].includes(e.id)).map(
+    weak: ELEMENTS.filter((e) => e.id !== "deus" && STRONG_AGAINST[e.id].includes(id)).map(
       (e) => e.id,
     ),
   };
@@ -90,31 +118,31 @@ export function elementMatchups(id: ElementId) {
 export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   // comuns
   mosslet: "natureza",
-  pebbly: "natureza",
+  pebbly: "terra",
   drippet: "agua",
   sparkid: "fogo",
   frostnib: "gelo",
   vinelet: "natureza",
   twiglin: "natureza",
-  sandpip: "luz",
+  sandpip: "terra",
   // incomuns
   thornhop: "natureza",
   tidewhisk: "agua",
   cindertail: "fogo",
   glaciva: "gelo",
-  dunecoil: "luz",
+  dunecoil: "terra",
   lumibug: "luz",
-  mistmote: "sombrio",
+  mistmote: "vento",
   glowfin: "agua",
   // raros
-  ashmole: "fogo",
+  ashmole: "terra",
   emberfang: "fogo",
   moonfang: "sombrio",
-  abyssquill: "sombrio",
+  abyssquill: "veneno",
   barkgolem: "natureza",
   mirasand: "luz",
   petalynx: "natureza",
-  quartzox: "gelo",
+  quartzox: "metal",
   bloomserp: "natureza",
   starkit: "luz",
   // super raros
@@ -122,14 +150,14 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   voidbloom: "sombrio",
   kraveel: "agua",
   magmaw: "fogo",
-  thornmaw: "natureza",
+  thornmaw: "veneno",
   voltyx: "eletrico",
   // épicos
   aurelith: "luz",
   cryotaur: "gelo",
   sylvaqueen: "natureza",
   obsidrake: "fogo",
-  tempestrix: "eletrico",
+  tempestrix: "vento",
   dunephar: "luz",
   // lendários
   solmyrr: "fogo",
@@ -146,6 +174,19 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   luminara: "luz",
   // secreto
   aetheryon: "deus",
+  // ---- expansão: novos elementos ----
+  cragling: "terra",
+  terrabor: "terra",
+  gaiaruk: "terra",
+  ferrik: "metal",
+  chromaw: "metal",
+  titanox: "metal",
+  zephyx: "vento",
+  gustwing: "vento",
+  aeromyr: "vento",
+  toxlet: "veneno",
+  venomyra: "veneno",
+  malachor: "veneno",
 };
 
 export function elementOf(monsterId: string): ElementDef {
