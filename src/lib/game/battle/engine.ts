@@ -313,7 +313,9 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       defSideId,
       defender,
       rawDamage(atk, dfn, mult * k * eff.mult, ignoreDef),
+      { attacker, viaAbility: true },
     );
+
     b.events.push({
       id: eid(),
       kind: "damage",
