@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdmRouteImport } from './routes/adm'
+import { Route as AmigosRouteImport } from './routes/amigos'
 import { Route as BatalhasRouteImport } from './routes/batalhas'
 import { Route as CodigosRouteImport } from './routes/codigos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
@@ -40,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdmRoute = AdmRouteImport.update({
   id: '/adm',
   path: '/adm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmigosRoute = AmigosRouteImport.update({
+  id: '/amigos',
+  path: '/amigos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BatalhasRoute = BatalhasRouteImport.update({
@@ -146,6 +152,7 @@ const BibliotecaBookIdRoute = BibliotecaBookIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/adm': typeof AdmRoute
+  '/amigos': typeof AmigosRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/adm': typeof AdmRoute
+  '/amigos': typeof AmigosRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/adm': typeof AdmRoute
+  '/amigos': typeof AmigosRoute
   '/batalhas': typeof BatalhasRoute
   '/codigos': typeof CodigosRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/adm'
+    | '/amigos'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/adm'
+    | '/amigos'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/adm'
+    | '/amigos'
     | '/batalhas'
     | '/codigos'
     | '/configuracoes'
@@ -294,6 +306,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdmRoute: typeof AdmRoute
+  AmigosRoute: typeof AmigosRoute
   BatalhasRoute: typeof BatalhasRoute
   CodigosRoute: typeof CodigosRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -330,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/adm'
       fullPath: '/adm'
       preLoaderRoute: typeof AdmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/amigos': {
+      id: '/amigos'
+      path: '/amigos'
+      fullPath: '/amigos'
+      preLoaderRoute: typeof AmigosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/batalhas': {
@@ -478,6 +498,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdmRoute: AdmRoute,
+  AmigosRoute: AmigosRoute,
   BatalhasRoute: BatalhasRoute,
   CodigosRoute: CodigosRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
