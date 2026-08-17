@@ -118,31 +118,31 @@ export function elementMatchups(id: ElementId) {
 export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   // comuns
   mosslet: "natureza",
-  pebbly: "natureza",
+  pebbly: "terra",
   drippet: "agua",
   sparkid: "fogo",
   frostnib: "gelo",
   vinelet: "natureza",
   twiglin: "natureza",
-  sandpip: "luz",
+  sandpip: "terra",
   // incomuns
   thornhop: "natureza",
   tidewhisk: "agua",
   cindertail: "fogo",
   glaciva: "gelo",
-  dunecoil: "luz",
+  dunecoil: "terra",
   lumibug: "luz",
-  mistmote: "sombrio",
+  mistmote: "vento",
   glowfin: "agua",
   // raros
-  ashmole: "fogo",
+  ashmole: "terra",
   emberfang: "fogo",
   moonfang: "sombrio",
-  abyssquill: "sombrio",
+  abyssquill: "veneno",
   barkgolem: "natureza",
   mirasand: "luz",
   petalynx: "natureza",
-  quartzox: "gelo",
+  quartzox: "metal",
   bloomserp: "natureza",
   starkit: "luz",
   // super raros
@@ -150,14 +150,14 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   voidbloom: "sombrio",
   kraveel: "agua",
   magmaw: "fogo",
-  thornmaw: "natureza",
+  thornmaw: "veneno",
   voltyx: "eletrico",
   // épicos
   aurelith: "luz",
   cryotaur: "gelo",
   sylvaqueen: "natureza",
   obsidrake: "fogo",
-  tempestrix: "eletrico",
+  tempestrix: "vento",
   dunephar: "luz",
   // lendários
   solmyrr: "fogo",
@@ -174,6 +174,19 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   luminara: "luz",
   // secreto
   aetheryon: "deus",
+  // ---- expansão: novos elementos ----
+  cragling: "terra",
+  terrabor: "terra",
+  gaiaruk: "terra",
+  ferrik: "metal",
+  chromaw: "metal",
+  titanox: "metal",
+  zephyx: "vento",
+  gustwing: "vento",
+  aeromyr: "vento",
+  toxlet: "veneno",
+  venomyra: "veneno",
+  malachor: "veneno",
 };
 
 export function elementOf(monsterId: string): ElementDef {
