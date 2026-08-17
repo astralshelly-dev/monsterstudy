@@ -210,7 +210,7 @@ export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   // divinos
   astraeon: "gelo",
   chronavyr: "vento",
-  equinoxis: "deus",
+  equinoxis: "sombrio",
   luminara: "luz",
   // secreto
   aetheryon: "deus",
