@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, History, Users, ArrowRight, ShieldCheck, Trophy, Flame, Clock, BookOpen, Layers } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Search, History, Users, ArrowRight, ShieldCheck, Trophy, Flame, Clock, BookOpen, Layers, Zap, Star, Layout, Briefcase, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useCloudSync } from "@/hooks/use-auth";
+import { sendFriendRequest } from "@/lib/friends.functions";
 import { findProfile, topProfiles, type PublicProfile } from "@/lib/game/cloud";
 import { EmptyState, PageHeader, StatCard } from "@/components/game/Primitives";
 import { ProfileAvatar } from "@/components/game/Avatar";
@@ -43,6 +45,7 @@ function PlayersPage() {
   const [found, setFound] = useState<PublicProfile | null>(null);
   const [recent, setRecent] = useState<PublicProfile[]>([]);
   const [busy, setBusy] = useState(false);
+  const sendRequest = useServerFn(sendFriendRequest);
 
   // Carrega histórico do localStorage
   useEffect(() => {
@@ -74,6 +77,18 @@ function PlayersPage() {
     }
     setFound(p);
     saveToRecent(p);
+  }
+  
+  async function addFriend(targetId: string) {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const r = await sendRequest({ data: { publicId: targetId } });
+      if (r.ok) toast.success(r.message);
+      else toast.error(r.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!user) {
@@ -151,7 +166,7 @@ function PlayersPage() {
           </div>
           <PlayerCardSummary profile={found} />
           <div className="mt-10">
-            <ProfileDetailedView profile={found} />
+            <ProfileDetailedView profile={found} addFriend={addFriend} />
           </div>
         </div>
       ) : (
@@ -259,10 +274,19 @@ function PlayerCardSummary({ profile: p }: { profile: PublicProfile }) {
   );
 }
 
-function ProfileDetailedView({ profile: p }: { profile: PublicProfile }) {
+function ProfileDetailedView({ profile: p, addFriend }: { profile: PublicProfile; addFriend: (id: string) => Promise<void> }) {
   const cos = p.stats.cosmetics ?? {};
   const bg = cos.background ? COSMETICS_BY_ID[cos.background] : undefined;
-  const team = (p.stats.team ?? []).map((id) => MONSTERS_BY_ID[id]).filter(Boolean);
+  
+  // Monstros em destaque: ordenados por geração de dinheiro (moneyPerSec)
+  const team = (p.stats.team ?? [])
+    .map((id) => MONSTERS_BY_ID[id])
+    .filter(Boolean)
+    .sort((a, b) => {
+      const aYield = RARITIES[a!.rarity].moneyPerSec;
+      const bYield = RARITIES[b!.rarity].moneyPerSec;
+      return bYield - aYield;
+    });
   
   // o tema do jogador vale enquanto o perfil estiver aberto
   useSceneThemeOverride(bg?.id ?? null);
@@ -273,11 +297,24 @@ function ProfileDetailedView({ profile: p }: { profile: PublicProfile }) {
         <h3 className="font-display text-lg font-black flex items-center gap-2 tracking-widest text-primary/80">
           <ShieldCheck className="h-5 w-5" /> VISÃO GERAL
         </h3>
-        <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
           <StatMiniCard icon={<Clock />} label="Estudado" value={duration(p.stats.studySec ?? 0)} />
           <StatMiniCard icon={<BookOpen />} label="Páginas" value={num(p.stats.pages ?? 0)} />
           <StatMiniCard icon={<Layers />} label="Monstros" value={num(p.stats.discovered ?? 0)} />
           <StatMiniCard icon={<Trophy />} label="Conquistas" value={num(p.stats.achievements ?? 0)} />
+          <StatMiniCard icon={<Zap />} label="Diamantes" value={num(p.stats.items ?? 0)} />
+          <StatMiniCard icon={<Star />} label="Cosméticos" value={num(p.stats.cosmeticsOwned ?? 0)} />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h3 className="font-display text-lg font-black flex items-center gap-2 tracking-widest text-primary/80">
+          <Layout className="h-5 w-5" /> SEASON & LIGA
+        </h3>
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+           <StatMiniCard icon={<ShieldCheck />} label="Temporada" value={`Temp. ${p.stats.season ?? 1}`} />
+           <StatMiniCard icon={<Trophy />} label="Melhor Rank" value={num(p.stats.bestTrophies ?? 0)} />
+           <StatMiniCard icon={<Briefcase />} label="Itens" value={num(p.stats.items ?? 0)} />
         </div>
       </section>
 
@@ -330,7 +367,7 @@ function ProfileDetailedView({ profile: p }: { profile: PublicProfile }) {
                     Desafiar
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-xl px-8" onClick={() => toast.info("Sistema de amigos em breve!")}>
+                <Button variant="outline" size="lg" className="rounded-xl px-8" onClick={() => void addFriend(p.publicId)}>
                    + Adicionar Amigo
                 </Button>
               </div>
