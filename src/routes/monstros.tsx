@@ -98,14 +98,16 @@ function MyMonsters() {
 
       <div className="grid gap-3 lg:grid-cols-2">
         {owned.map((m) => (
-          <MonsterRow key={m.id} id={m.id} />
+          <MonsterRow key={m.id} id={m.id} onDetail={() => setSelected(m.id)} />
         ))}
       </div>
+
+      <MonsterDialog id={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }
 
-function MonsterRow({ id }: { id: string }) {
+function MonsterRow({ id, onDetail }: { id: string; onDetail: () => void }) {
   const state = useGame();
   const prog = monsterProgress(id, state);
   const [amount] = useState(20);
