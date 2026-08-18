@@ -429,9 +429,12 @@ function FighterView({
         ))}
       </div>
       <div className="w-full">
-        <p className="truncate font-display text-sm font-bold">
-          {fighter.name} <span className="text-muted-foreground">Nv {fighter.level}</span>
-        </p>
+        <div className="flex items-center gap-2">
+          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact showIcon />
+          <p className="truncate font-display text-sm font-bold">
+            {fighter.name} <span className="text-muted-foreground">Nv {fighter.level}</span>
+          </p>
+        </div>
         <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-muted">
           <div
             className={cn(
