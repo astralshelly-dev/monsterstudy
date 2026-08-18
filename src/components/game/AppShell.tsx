@@ -236,12 +236,17 @@ function AppShellContent({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/50 px-4 py-3 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-            <Link to="/" className="flex items-center gap-2 lg:hidden">
-              <span className="text-xl">🐲</span>
-              <span className="font-display text-sm font-bold">Monster Study</span>
-            </Link>
+        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/50 px-3 py-2.5 backdrop-blur-xl sm:px-4 sm:py-3">
+          <div className="mx-auto flex max-w-6xl min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-3">
+            <div className="flex min-w-0 items-center justify-between gap-2 lg:hidden">
+              <Link to="/" className="flex min-w-0 items-center gap-2">
+                <span className="text-lg">🐲</span>
+                <span className="truncate font-display text-sm font-bold">Monster Study</span>
+              </Link>
+              <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                {num(prog.xp)}/{num(prog.need)} XP
+              </span>
+            </div>
             <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
               <div className="h-2 w-40 overflow-hidden rounded-full bg-muted">
                 <div
@@ -253,20 +258,21 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 {num(prog.xp)} / {num(prog.need)} XP
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-0.5 text-sm no-scrollbar lg:mx-0 lg:overflow-visible lg:px-0">
               <Pill icon={<span className="text-gold">💰</span>} value={money(state.money)} />
               <Pill icon={<Flame className="h-3.5 w-3.5 text-ember" />} value={`${state.streak.current}d`} />
               <Pill icon={<span>⭐</span>} value={`Nv ${state.profile.level}`} />
-              <Pill icon={<BookMarked className="h-3.5 w-3.5 text-mana" />} value={`${state.shards}`} />
-              <Pill icon={<span>💎</span>} value={`${state.diamonds ?? 0}`} />
+              <Pill icon={<BookMarked className="h-3.5 w-3.5 text-mana" />} value={`${num(state.shards)}`} />
+              <Pill icon={<span>💎</span>} value={`${num(state.diamonds ?? 0)}`} />
             </div>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 lg:pb-10">{children}</main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-          <div className="grid grid-cols-5">
+        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 sm:pt-6 lg:pb-10">{children}</main>
+
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+          <div className="grid grid-cols-5 items-stretch">
             {flatNav
               .filter((n) => n.primary)
               .slice(0, 4)
@@ -278,12 +284,12 @@ function AppShellContent({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "flex flex-col items-center gap-1 py-2.5 text-[10px]",
+                      "flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-[10px] leading-tight",
                       active ? "text-primary" : "text-muted-foreground",
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
-                    {item.label}
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    <span className="w-full truncate text-center">{item.label}</span>
                   </Link>
                 );
               })}
@@ -344,7 +350,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
 function Pill({ icon, value }: { icon: ReactNode; value: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/70 px-2.5 py-1 text-xs font-semibold tabular-nums ring-1 ring-border/60">
+    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-secondary/70 px-2 py-1 text-[11px] font-semibold tabular-nums ring-1 ring-border/60 sm:gap-1.5 sm:px-2.5 sm:text-xs">
       {icon}
       {value}
     </span>

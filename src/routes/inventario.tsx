@@ -119,19 +119,23 @@ function Inventory() {
             const r = ITEM_RARITY_BY_ID[def.rarity];
             const owned = state.inventory?.[def.id] ?? 0;
             return (
-              <div key={def.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
-                <span className={cn("grid h-9 w-9 place-items-center rounded-lg text-lg", r.surface)}>
+              <div key={def.id} className="flex min-w-0 items-center gap-3 rounded-xl bg-secondary/40 p-3">
+                <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg text-lg", r.surface)}>
                   {def.icon}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{def.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{def.description}</p>
+                  <p className={cn("text-[10px] font-semibold uppercase sm:hidden", r.text)}>{r.name}</p>
                 </div>
-                <span className={cn("text-[11px] font-semibold uppercase", r.text)}>{r.name}</span>
-                <span className="w-8 text-right text-xs tabular-nums text-muted-foreground">
+                <span className={cn("hidden shrink-0 text-[11px] font-semibold uppercase sm:inline", r.text)}>
+                  {r.name}
+                </span>
+                <span className="w-8 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                   {owned > 0 ? `x${owned}` : "—"}
                 </span>
               </div>
+
             );
           })}
         </div>
