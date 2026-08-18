@@ -37,6 +37,7 @@ import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { WelcomeBack } from "@/components/game/WelcomeBack";
 import { SceneThemeProvider } from "@/components/game/SceneTheme";
+import { BumpOnChange, PageTransition, SmoothBar } from "@/components/game/motion";
 import { cn } from "@/lib/utils";
 
 
@@ -203,7 +204,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                   />
                 </button>
                 {expanded && (
-                  <div className="mb-1 ml-4 flex flex-col gap-0.5 border-l border-sidebar-border pl-2">
+                  <div className="anim-collapse mb-1 ml-4 flex flex-col gap-0.5 border-l border-sidebar-border pl-2">
                     {group.items.map((item) => {
                       const active = isActivePath(pathname, item.to);
                       return (
@@ -211,7 +212,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                           key={item.to}
                           to={item.to}
                           className={cn(
-                            "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
+                            "press flex items-center gap-3 rounded-xl px-3 py-2 text-sm",
                             active
                               ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
                               : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
@@ -248,12 +249,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
               </span>
             </div>
             <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
-              <div className="h-2 w-40 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${prog.pct}%` }}
-                />
-              </div>
+              <SmoothBar pct={prog.pct} className="w-40" />
               <span className="text-xs text-muted-foreground">
                 {num(prog.xp)} / {num(prog.need)} XP
               </span>
@@ -269,7 +265,9 @@ function AppShellContent({ children }: { children: ReactNode }) {
         </header>
 
 
-        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 sm:pt-6 lg:pb-10">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 sm:pt-6 lg:pb-10">
+          <PageTransition>{children}</PageTransition>
+        </main>
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5 items-stretch">
@@ -284,7 +282,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-[10px] leading-tight",
+                      "press flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-[10px] leading-tight",
                       active ? "text-primary" : "text-muted-foreground",
                     )}
                   >
@@ -332,7 +330,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                           />
                         </button>
                         {expanded && (
-                          <div className="mb-2 ml-4 grid grid-cols-1 gap-1 border-l border-border pl-2 pt-1">
+                          <div className="anim-collapse mb-2 ml-4 grid grid-cols-1 gap-1 border-l border-border pl-2 pt-1">
                             {group.items.map((item) => {
                               const active = isActivePath(pathname, item.to);
                               return (
@@ -341,7 +339,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                                   to={item.to}
                                   onClick={() => setMoreOpen(false)}
                                   className={cn(
-                                    "flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
+                                    "press flex items-center gap-2.5 rounded-xl px-3 py-3 text-sm",
                                     active
                                       ? "bg-primary/20 text-foreground ring-1 ring-primary/40"
                                       : "text-muted-foreground active:bg-secondary/60",
@@ -371,9 +369,9 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
 function Pill({ icon, value }: { icon: ReactNode; value: string }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-secondary/70 px-2 py-1 text-[11px] font-semibold tabular-nums ring-1 ring-border/60 sm:gap-1.5 sm:px-2.5 sm:text-xs">
+    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-secondary/70 px-2 py-1 text-[11px] font-semibold tabular-nums ring-1 ring-border/60 transition-colors sm:gap-1.5 sm:px-2.5 sm:text-xs">
       {icon}
-      {value}
+      <BumpOnChange dep={value}>{value}</BumpOnChange>
     </span>
   );
 }
