@@ -561,7 +561,7 @@ function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean
   return { monsterId: pick.id, duplicate };
 }
 
-function applyReward(s: GameState, reward: Reward) {
+function grantReward(s: GameState, reward: Reward) {
   const id = reward.monsterId;
   if (id) {
     const existing = s.monsters[id];
@@ -586,12 +586,16 @@ function applyReward(s: GameState, reward: Reward) {
       if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
       else s.incomeMonsterIds = list;
     }
+    bumpActivity(s, { monsters: 1 });
+    bumpQuest(s, "monsters_found");
   }
 
   s.money += reward.money;
   s.shards += reward.shards;
   addUserXp(s, reward.xp);
-  if (id) bumpActivity(s, { monsters: 1 });
+
+  bumpQuest(s, "money_earned", Math.round(reward.money));
+  if (reward.subject) bumpQuest(s, "study_sessions");
 }
 
 function addUserXp(s: GameState, amount: number) {
@@ -605,12 +609,13 @@ function addUserXp(s: GameState, amount: number) {
   if (amount > 0) bumpActivity(s, { xp: amount });
 }
 
-export function addMonsterXp(monsterId: string, amount: number): { levelsGained: number } {
+export function addMonsterXp(monsterId: string, amount: number, s_override?: GameState): { levelsGained: number } {
   let levelsGained = 0;
   const trainerMult =
     1 + (state.upgrades.monster_trainer ?? 0) * UPGRADES.monster_trainer.effectPerLevel;
   const boosted = Math.round(amount * trainerMult);
-  setState((s) => {
+  
+  const apply = (s: GameState) => {
     const owned = s.monsters[monsterId];
     if (!owned) return;
     const def = MONSTERS_BY_ID[monsterId];
@@ -626,7 +631,13 @@ export function addMonsterXp(monsterId: string, amount: number): { levelsGained:
     }
     if (level >= MONSTER_MAX_LEVEL) xp = 0;
     s.monsters = { ...s.monsters, [monsterId]: { ...owned, xp, level } };
-  });
+  };
+
+  if (s_override) {
+    apply(s_override);
+  } else {
+    setState(apply);
+  }
   return { levelsGained };
 }
 
@@ -772,7 +783,7 @@ export function saveStudySession(input: {
     bookId: input.timer.meta.bookId ?? previous?.bookId,
     learned: [previous?.learned, input.learned].filter(Boolean).join(" · ") || undefined,
     notes: [previous?.notes, input.notes].filter(Boolean).join(" · ") || undefined,
-    reward,
+    reward: { ...reward, subject: previous?.subject ?? input.timer.meta.subject ?? "Estudo" },
   };
   setState((s) => {
     s.sessions = previous
