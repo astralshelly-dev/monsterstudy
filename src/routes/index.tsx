@@ -76,11 +76,11 @@ function Dashboard() {
     
     // Últimos 3 monstros obtidos
     const monsterEntries = Object.entries(state.monsters)
-      .sort((a, b) => (b[1].createdAt || "").localeCompare(a[1].createdAt || ""))
+      .sort((a, b) => (b[1].discoveredAt || "").localeCompare(a[1].discoveredAt || ""))
       .slice(0, 2);
     for (const [id] of monsterEntries) {
       const m = MONSTERS_BY_ID[id];
-      if (m) list.push({ icon: "🐉", text: `Novo monstro: ${m.name}`, at: state.monsters[id]?.createdAt });
+      if (m) list.push({ icon: "🐉", text: `Novo: ${m.name}`, at: state.monsters[id]?.discoveredAt });
     }
 
     // Últimas 2 batalhas
