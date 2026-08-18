@@ -122,7 +122,12 @@ export function BattleArena({
 
   return (
     <div className="space-y-4">
-      <div className="panel aurora relative overflow-hidden p-4 sm:p-6">
+      <div
+        className={cn(
+          "panel aurora relative overflow-hidden p-4 sm:p-6",
+          fx.special && "fx-special-zoom",
+        )}
+      >
         <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground">
           <span>Turno {battle.turnNo}</span>
           <span
