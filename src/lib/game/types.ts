@@ -162,10 +162,13 @@ export type BattleData = {
   losses: number;
   /** equipe salva do jogador (ids de monstros) */
   team: string[];
+  /** feixe elemental escolhido pelo jogador (apenas 1 fica ativo) */
+  beam?: string | null | undefined;
   history: BattleRecord[];
   /** batalha ranqueada em andamento (abandono = derrota) */
   pending?: PendingBattle | null | undefined;
 };
+
 
 
 export type GameState = {
