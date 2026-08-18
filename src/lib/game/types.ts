@@ -212,6 +212,12 @@ export type GameState = {
     animations: boolean;
     notifications: boolean;
     compact: boolean;
+    /** trilha ambiente (tema Lua de Sangue) */
+    music?: boolean;
+    /** 0..1 */
+    musicVolume?: number;
+    /** 0..1 */
+    sfxVolume?: number;
   };
   timer: ActiveTimer | null;
   /** recompensa pendente aguardando revelação */
