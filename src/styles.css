@@ -306,6 +306,25 @@
   }
 }
 
+.anim-float {
+  animation: ms-float-subtle 8s ease-in-out infinite;
+}
+
+@keyframes ms-float-subtle {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  33% { transform: translateY(-15px) rotate(2deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
+}
+
+.fx-pulse-slow {
+  animation: ms-pulse-slow 4s ease-in-out infinite;
+}
+
+@keyframes ms-pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
 /* ------------------------------------------------------------
    Cores de nome por título (raridade do título)
 ------------------------------------------------------------ */

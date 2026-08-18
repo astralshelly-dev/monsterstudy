@@ -452,7 +452,7 @@ function FighterView({
         </p>
         <div className={cn("mt-1 flex flex-wrap items-center gap-1", side === "foe" && "justify-end")}>
           <RarityBadge rarity={fighter.rarity} />
-          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact />
+          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact showIcon />
           <RoleBadge role={fighter.role} compact />
           <span className="text-[10px] text-muted-foreground">
             {fighter.ability.icon} {Math.max(1, fighter.charge)}t

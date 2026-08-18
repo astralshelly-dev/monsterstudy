@@ -121,6 +121,29 @@ function ArtLayer({ theme }: { theme: SceneTheme }) {
   );
 }
 
+function SceneProps({ theme }: { theme: SceneTheme }) {
+  if (!theme.props?.length) return null;
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {theme.props.map((p, i) => (
+        <span
+          key={`${theme.id}-prop-${i}`}
+          className="absolute anim-float opacity-30 grayscale-[0.4] select-none"
+          style={{
+            top: `${p.top}%`,
+            left: `${p.left}%`,
+            fontSize: `${p.size}px`,
+            animationDelay: `${p.delay}s`,
+            filter: "blur(0.5px)",
+          }}
+        >
+          {p.icon}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // ------------------------------------------------------------
 // Partículas: três camadas (trajeto → oscilação → brilho)
 // para um movimento orgânico em vez de pontos duros subindo.
