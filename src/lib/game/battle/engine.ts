@@ -60,6 +60,9 @@ export type Side = {
   name: string;
   fighters: Fighter[];
   active: number;
+  /** feixe elemental ativo desta equipe (no máximo 1) */
+  beam?: BeamDef | null | undefined;
+
   behavior: AiBehavior;
 };
 
