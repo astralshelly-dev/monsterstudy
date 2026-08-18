@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
@@ -48,7 +49,7 @@ export const Route = createFileRoute("/configuracoes")({
 
 function Settings() {
   const state = useGame();
-  const { user, signOut } = useCloudSync();
+  const { user } = useCloudSync();
   const fileRef = useRef<HTMLInputElement>(null);
   const deleteAccount = useServerFn(deleteMyAccount);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -60,7 +61,7 @@ function Settings() {
       const res = await deleteAccount();
       if (res.ok) {
         toast.success("Sua conta foi excluída definitivamente.");
-        await signOut();
+        await supabase.auth.signOut();
         window.location.href = "/";
       }
     } catch (err: any) {
