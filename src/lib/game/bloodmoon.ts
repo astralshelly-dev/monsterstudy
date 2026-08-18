@@ -12,9 +12,10 @@ export const BLOOD_MOON = {
   icon: "🌕🔴",
   coinIcon: "🩸",
   coinName: "Moeda da Lua de Sangue",
-  /** janela do evento (UTC) */
+  /** janela do evento (UTC) — 45 dias */
   startsAt: "2026-08-18T00:00:00.000Z",
-  endsAt: "2026-09-01T00:00:00.000Z",
+  endsAt: "2026-10-02T00:00:00.000Z",
+  durationDays: 45,
   /** 1 moeda por minuto REAL de estudo/leitura registrado (≈60/hora) */
   coinSeconds: 60,
   description:

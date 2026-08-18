@@ -1,5 +1,7 @@
 import { ILLUSTRATED_AVATARS, illustratedAvatar } from "@/lib/game/avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { skinArt } from "@/lib/game/skin-art";
+import { equippedSkinFor } from "@/lib/game/state";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
@@ -28,7 +30,8 @@ export function ProfileAvatar({
 }) {
   const monster = monsterId ? MONSTERS_BY_ID[monsterId] : undefined;
   const art = illustratedAvatar(avatar);
-  const src = monster?.art ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
+  const skinSrc = monsterId ? skinArt(equippedSkinFor(monsterId)) : undefined;
+  const src = skinSrc ?? monster?.art ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
 
   const portrait = (
     <span

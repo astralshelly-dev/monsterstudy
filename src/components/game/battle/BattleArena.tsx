@@ -3,6 +3,7 @@ import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
 import { RoleBadge } from "@/components/game/RoleBadge";
 import { beamBonusLabel } from "@/lib/game/battle/beams";
+import { equippedSkinFor } from "@/lib/game/state";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -21,8 +22,9 @@ type Fx = {
   hit: SideId | null;
   effect: "super" | "weak" | null;
   banner: string | null;
+  special: SideId | null;
 };
-const NO_FX: Fx = { attacker: null, hit: null, effect: null, banner: null };
+const NO_FX: Fx = { attacker: null, hit: null, effect: null, banner: null, special: null };
 
 export function BattleArena({
   battle,
@@ -36,8 +38,15 @@ export function BattleArena({
   const [floats, setFloats] = useState<Float[]>([]);
   const [shake, setShake] = useState<SideId | null>(null);
   const [fx, setFx] = useState<Fx>(NO_FX);
+  const [intro, setIntro] = useState(true);
   const finished = useRef(false);
   const logRef = useRef<HTMLDivElement | null>(null);
+
+  // abertura cinematográfica da batalha
+  useEffect(() => {
+    const id = window.setTimeout(() => setIntro(false), 1500);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // o log fica em ordem cronológica e sempre mostra a última ação
   useEffect(() => {
@@ -58,9 +67,13 @@ export function BattleArena({
     let attacker: SideId | null = null;
     let effect: "super" | "weak" | null = null;
     let banner: string | null = null;
+    let special: SideId | null = null;
     for (const e of next.events) {
       if (e.kind === "attack" || e.kind === "ability") attacker = e.side;
-      if (e.kind === "ability") banner = e.text;
+      if (e.kind === "ability") {
+        banner = e.text;
+        special = e.side;
+      }
       if (e.kind === "damage" && e.target) {
         news.push({ id: e.id, side: e.target, text: `-${e.damage}`, effect: e.effect });
         if (e.effect === "super" || e.effect === "weak") effect = e.effect;
@@ -81,18 +94,18 @@ export function BattleArena({
       }, 1100);
     }
     if (attacker || hurt || banner) {
-      setFx({ attacker, hit: hurt?.side ?? null, effect, banner });
-      window.setTimeout(() => setFx(NO_FX), banner ? 1150 : 520);
+      setFx({ attacker, hit: hurt?.side ?? null, effect, banner, special });
+      window.setTimeout(() => setFx(NO_FX), banner ? 1400 : 520);
     }
     setBattle(next);
   }
 
   // turno da IA (e do deck adversário no PvP assíncrono) roda sozinho
   useEffect(() => {
-    if (battle.over || battle.awaitingSwitch || battle.turn !== "foe") return;
+    if (intro || battle.over || battle.awaitingSwitch || battle.turn !== "foe") return;
     const id = window.setTimeout(() => digest(takeTurn(battle)), 900);
     return () => window.clearTimeout(id);
-  }, [battle]);
+  }, [battle, intro]);
 
   useEffect(() => {
     if (battle.over && battle.winner && !finished.current) {
@@ -110,7 +123,12 @@ export function BattleArena({
 
   return (
     <div className="space-y-4">
-      <div className="panel aurora relative overflow-hidden p-4 sm:p-6">
+      <div
+        className={cn(
+          "panel aurora relative overflow-hidden p-4 sm:p-6",
+          fx.special && "fx-special-zoom",
+        )}
+      >
         <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground">
           <span>Turno {battle.turnNo}</span>
           <span
@@ -148,11 +166,27 @@ export function BattleArena({
             )}
           />
         )}
+        {fx.special && (
+          <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+            <span className="fx-special-flare absolute inset-0" />
+            <span className="fx-special-rays absolute inset-0" />
+          </div>
+        )}
         {fx.banner && (
           <div className="pointer-events-none absolute inset-x-0 top-1/3 z-20 grid place-items-center px-4">
-            <p className="anim-banner max-w-full truncate rounded-full bg-background/80 px-4 py-1.5 text-center font-display text-xs font-bold uppercase tracking-[0.18em] text-glow ring-1 ring-primary/40">
+            <p className="anim-banner max-w-full truncate rounded-full bg-background/85 px-4 py-1.5 text-center font-display text-xs font-bold uppercase tracking-[0.18em] text-glow ring-1 ring-primary/40">
               {fx.banner}
             </p>
+          </div>
+        )}
+        {intro && (
+          <div className="pointer-events-none absolute inset-0 z-30 grid place-items-center bg-background/70 backdrop-blur-sm">
+            <div className="fx-intro-vs text-center">
+              <p className="font-display text-3xl font-black tracking-[0.2em] text-glow sm:text-4xl">VS</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                {battle.foe.name}
+              </p>
+            </div>
           </div>
         )}
 
@@ -163,6 +197,8 @@ export function BattleArena({
             floats={floats.filter((f) => f.side === "player")}
             shake={shake === "player"}
             attacking={fx.attacker === "player"}
+            casting={fx.special === "player"}
+            entering={intro}
             label="Você"
             team={battle.player.fighters}
             activeIndex={battle.player.active}
@@ -173,6 +209,8 @@ export function BattleArena({
             floats={floats.filter((f) => f.side === "foe")}
             shake={shake === "foe"}
             attacking={fx.attacker === "foe"}
+            casting={fx.special === "foe"}
+            entering={intro}
             label={battle.foe.name}
             team={battle.foe.fighters}
             activeIndex={battle.foe.active}
@@ -294,6 +332,8 @@ function FighterView({
   floats,
   shake,
   attacking,
+  casting = false,
+  entering = false,
   label,
   team,
   activeIndex,
@@ -303,22 +343,39 @@ function FighterView({
   floats: Float[];
   shake: boolean;
   attacking: boolean;
+  casting?: boolean;
+  entering?: boolean;
   label: string;
   team: Fighter[];
   activeIndex: number;
 }) {
   const pct = Math.max(0, (fighter.hp / fighter.maxHp) * 100);
   return (
-    <div className={cn("relative flex flex-col gap-2", side === "foe" ? "items-end text-right" : "items-start")}>
+    <div
+      className={cn(
+        "relative flex flex-col gap-2",
+        side === "foe" ? "items-end text-right" : "items-start",
+        entering && (side === "foe" ? "fx-enter-right" : "fx-enter-left"),
+      )}
+    >
       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
       <div
         className={cn(
           "relative",
           attacking && (side === "player" ? "fx-attack-player" : "fx-attack-foe"),
+          casting && "fx-cast",
           shake && "fx-hit",
         )}
       >
-        <MonsterArt art={fighter.art} rarity={fighter.rarity} size="lg" />
+        <MonsterArt
+          art={fighter.art}
+          rarity={fighter.rarity}
+          size="lg"
+          skinId={side === "player" ? equippedSkinFor(fighter.monsterId) : null}
+        />
+        {casting && (
+          <span className="fx-cast-ring pointer-events-none absolute inset-0 rounded-full ring-4 ring-gold/70" />
+        )}
         {shake && (
           <span className="fx-burst pointer-events-none absolute inset-0 rounded-full ring-4 ring-ember/70" />
         )}

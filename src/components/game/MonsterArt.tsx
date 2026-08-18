@@ -1,6 +1,7 @@
 import { RARITIES, type RarityId } from "@/lib/game/config";
 import { cn } from "@/lib/utils";
 import { BLOOD_MOON_SKINS_BY_ID, skinFxClass } from "@/lib/game/bloodmoon";
+import { skinArt } from "@/lib/game/skin-art";
 
 const RARITY_SURFACE: Record<RarityId, string> = {
   comum: "rarity-comum",
@@ -76,6 +77,8 @@ export function MonsterArt({
   skinId?: string | null | undefined;
 }) {
   const skin = skinId ? BLOOD_MOON_SKINS_BY_ID[skinId] : undefined;
+  const skinImg = skinArt(skinId);
+  const shownArt = !silhouette && skinImg ? skinImg : art;
   const sizes = {
     sm: "h-14 w-14 text-2xl",
     md: "h-20 w-20 text-4xl",
@@ -102,9 +105,9 @@ export function MonsterArt({
           skin && !silhouette && skinFxClass(skin.fx),
         )}
       >
-        {art.startsWith("/") ? (
+        {shownArt.startsWith("/") ? (
           <img
-            src={art}
+            src={shownArt}
             alt=""
             loading="lazy"
             className={cn(
@@ -118,10 +121,10 @@ export function MonsterArt({
             className={cn("leading-none", animate && "animate-float", silhouette && "brightness-0 opacity-60")}
             aria-hidden
           >
-            {art}
+            {shownArt}
           </span>
         )}
-        {skin && !silhouette && (
+        {skin && !silhouette && !skinImg && (
           <span className="bm-accessory" aria-hidden>
             {skin.accessory}
           </span>
