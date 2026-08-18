@@ -37,6 +37,8 @@ export type SceneTheme = {
   ink: string;
   art: ArtId;
   particle: ParticleId;
+  /** detalhes vivos: elementos de cenário posicionados */
+  props: Array<{ icon: string; top: number; left: number; size: number; delay: number }>;
 };
 
 const T = (
@@ -46,7 +48,8 @@ const T = (
   ink: string,
   art: ArtId,
   particle: ParticleId,
-): SceneTheme => ({ id, name, bg, ink, art, particle });
+  props: SceneTheme["props"] = [],
+): SceneTheme => ({ id, name, bg, ink, art, particle, props });
 
 export const THEMES: Record<string, SceneTheme> = {
   // ---------- telas do app ----------
