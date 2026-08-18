@@ -331,6 +331,8 @@ function FighterView({
   floats,
   shake,
   attacking,
+  casting = false,
+  entering = false,
   label,
   team,
   activeIndex,
@@ -340,22 +342,39 @@ function FighterView({
   floats: Float[];
   shake: boolean;
   attacking: boolean;
+  casting?: boolean;
+  entering?: boolean;
   label: string;
   team: Fighter[];
   activeIndex: number;
 }) {
   const pct = Math.max(0, (fighter.hp / fighter.maxHp) * 100);
   return (
-    <div className={cn("relative flex flex-col gap-2", side === "foe" ? "items-end text-right" : "items-start")}>
+    <div
+      className={cn(
+        "relative flex flex-col gap-2",
+        side === "foe" ? "items-end text-right" : "items-start",
+        entering && (side === "foe" ? "fx-enter-right" : "fx-enter-left"),
+      )}
+    >
       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
       <div
         className={cn(
           "relative",
           attacking && (side === "player" ? "fx-attack-player" : "fx-attack-foe"),
+          casting && "fx-cast",
           shake && "fx-hit",
         )}
       >
-        <MonsterArt art={fighter.art} rarity={fighter.rarity} size="lg" />
+        <MonsterArt
+          art={fighter.art}
+          rarity={fighter.rarity}
+          size="lg"
+          skinId={side === "player" ? equippedSkinFor(fighter.monsterId) : null}
+        />
+        {casting && (
+          <span className="fx-cast-ring pointer-events-none absolute inset-0 rounded-full ring-4 ring-gold/70" />
+        )}
         {shake && (
           <span className="fx-burst pointer-events-none absolute inset-0 rounded-full ring-4 ring-ember/70" />
         )}
