@@ -1004,3 +1004,165 @@ a:focus-visible,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =========================================================
+ * 🌕🔴 Lua de Sangue — identidade visual do evento
+ * ========================================================= */
+
+.bm-scope {
+  --bm-blood: oklch(0.55 0.21 22);
+  --bm-deep: oklch(0.22 0.09 18);
+}
+
+@keyframes bm-moon-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bm-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bm-orbit {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes bm-drip {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+.bm-moon {
+  background: radial-gradient(circle at 35% 35%, oklch(0.62 0.22 22), oklch(0.32 0.14 20) 70%);
+  box-shadow:
+    0 0 40px color-mix(in oklab, oklch(0.55 0.21 22) 70%, transparent),
+    0 0 120px color-mix(in oklab, oklch(0.55 0.21 22) 35%, transparent);
+  animation: bm-moon-rise 600ms var(--ease-out-soft) both, bm-pulse 4.5s ease-in-out 600ms infinite;
+}
+
+.bm-panel {
+  border-color: color-mix(in oklab, oklch(0.55 0.21 22) 45%, transparent) !important;
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 6%, transparent) inset,
+    0 22px 60px -30px color-mix(in oklab, oklch(0.55 0.21 22) 60%, transparent);
+}
+
+.bm-drip {
+  animation: bm-drip 2.6s ease-in infinite;
+}
+
+/* ---- skins: camadas sobre a arte original, sem trocar o monstro ---- */
+.bm-skin {
+  position: relative;
+  isolation: isolate;
+}
+
+.bm-skin > * {
+  filter: drop-shadow(0 0 12px color-mix(in oklab, oklch(0.55 0.21 22) 70%, transparent));
+}
+
+.bm-skin::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, oklch(0.55 0.21 22) 55%, transparent) 0%,
+    transparent 68%
+  );
+  animation: bm-pulse 3.6s ease-in-out infinite;
+}
+
+.bm-skin-aura::after,
+.bm-skin-moon::after,
+.bm-skin-ember::after,
+.bm-skin-veil::after,
+.bm-skin-eclipse::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.bm-skin-aura::after {
+  inset: -12%;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in oklab, oklch(0.6 0.22 22) 70%, transparent);
+  animation: bm-orbit 9s linear infinite;
+}
+
+.bm-skin-moon::after {
+  top: -6%;
+  right: -6%;
+  height: 34%;
+  width: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, oklch(0.64 0.22 22), oklch(0.3 0.13 20));
+  box-shadow: 0 0 18px color-mix(in oklab, oklch(0.55 0.21 22) 80%, transparent);
+}
+
+.bm-skin-ember::after {
+  inset: 0;
+  border-radius: 40%;
+  background:
+    radial-gradient(circle at 20% 80%, color-mix(in oklab, oklch(0.62 0.24 30) 60%, transparent) 0 12%, transparent 13%),
+    radial-gradient(circle at 78% 22%, color-mix(in oklab, oklch(0.62 0.24 30) 55%, transparent) 0 9%, transparent 10%),
+    radial-gradient(circle at 62% 88%, color-mix(in oklab, oklch(0.62 0.24 30) 50%, transparent) 0 7%, transparent 8%);
+  animation: bm-pulse 2.2s ease-in-out infinite;
+}
+
+.bm-skin-veil::after {
+  inset: 8% -4% -10% -4%;
+  border-radius: 45% 45% 40% 40%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in oklab, oklch(0.5 0.2 22) 42%, transparent)
+  );
+  mix-blend-mode: screen;
+}
+
+.bm-skin-eclipse::after {
+  inset: -14%;
+  border-radius: 50%;
+  border-top: 3px solid color-mix(in oklab, oklch(0.66 0.23 22) 85%, transparent);
+  border-left: 3px solid color-mix(in oklab, oklch(0.4 0.16 20) 60%, transparent);
+  border-right: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  animation: bm-orbit 6s linear infinite;
+}
+
+.bm-accessory {
+  position: absolute;
+  top: -8%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 8px color-mix(in oklab, oklch(0.55 0.21 22) 80%, transparent));
+}
