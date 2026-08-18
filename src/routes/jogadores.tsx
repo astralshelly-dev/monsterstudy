@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Search, History, Users, ArrowRight, ShieldCheck, Trophy, Flame, Clock, BookOpen, Layers, Zap, Star, Layout, Briefcase, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useCloudSync } from "@/hooks/use-auth";
+import { sendFriendRequest } from "@/lib/friends.functions";
 import { findProfile, topProfiles, type PublicProfile } from "@/lib/game/cloud";
 import { EmptyState, PageHeader, StatCard } from "@/components/game/Primitives";
 import { ProfileAvatar } from "@/components/game/Avatar";
