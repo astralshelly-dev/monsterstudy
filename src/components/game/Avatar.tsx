@@ -1,5 +1,7 @@
 import { ILLUSTRATED_AVATARS, illustratedAvatar } from "@/lib/game/avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { skinArt } from "@/lib/game/skin-art";
+import { equippedSkinFor } from "@/lib/game/state";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
