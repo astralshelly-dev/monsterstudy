@@ -456,60 +456,103 @@ function BattlesPage() {
   if (phase === "result" && outcome) {
     const after = leagueProgress(outcome.trophiesAfter);
     const win = outcome.result === "win";
+    
+    // Calcula o MVP (monstro que causou mais dano ou mitigou mais)
+    // Para simplificar, pegamos o primeiro do time que ainda tem mais HP relativo
+    const bestFighter = win ? battle?.player.fighters.sort((a,b) => (b.hp/b.maxHp) - (a.hp/a.maxHp))[0] : null;
+    const bestMonster = bestFighter ? MONSTERS_BY_ID[bestFighter.monsterId] : null;
+
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div
           className={cn(
-            "panel aurora grid place-items-center gap-2 px-6 py-14 text-center",
-            win ? "ring-1 ring-gold/50" : "ring-1 ring-ember/40",
+            "panel overflow-hidden relative grid place-items-center gap-6 px-6 py-16 text-center",
+            win ? "border-gold/30 bg-gold/5" : "border-ember/30 bg-ember/5",
           )}
         >
-          <span className="text-6xl">{win ? "🏆" : "💀"}</span>
-          <p className="font-display text-4xl font-bold">{win ? "VITÓRIA" : "DERROTA"}</p>
-          <p className="text-sm text-muted-foreground">
-            {mode === "ranked"
-              ? "Partida ranqueada"
-              : mode === "friendly"
-                ? "Batalha amistosa (sem troféus)"
-                : "Batalha virtual (sem troféus)"}{" "}
-            contra{" "}
-            {outcome.record.opponentName}
-          </p>
-          {mode === "ranked" && (
-            <div className="mt-4 w-full max-w-md space-y-3">
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <StatCard label="Antes" value={`${num(outcome.trophiesBefore)} 🏆`} />
-                <StatCard
-                  label={win ? "Ganhos" : "Perdidos"}
-                  value={
-                    <span className={win ? "text-emerald-400" : "text-ember"}>
-                      {outcome.delta >= 0 ? "+" : ""}
-                      {outcome.delta}
-                    </span>
-                  }
-                />
-                <StatCard label="Depois" value={`${num(outcome.trophiesAfter)} 🏆`} />
-              </div>
-              <div className="panel p-4 text-left">
-                <p className="font-display text-sm font-semibold">
-                  {after.league.icon} Liga {after.league.name}
-                </p>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${after.pct}%` }}
-                  />
+          {/* Efeito de fundo decorativo */}
+          <div className={cn(
+            "absolute -top-24 -left-24 w-64 h-64 blur-[100px] opacity-20 rounded-full",
+            win ? "bg-gold" : "bg-ember"
+          )} />
+
+          <div className="relative z-10 space-y-2">
+            <span className="text-7xl block animate-bounce drop-shadow-glow">
+              {win ? "🏆" : "💀"}
+            </span>
+            <h2 className="font-display text-6xl font-black italic tracking-tighter uppercase leading-none">
+              {win ? "Vitória" : "Derrota"}
+            </h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+              {mode === "ranked" ? "Partida Ranqueada" : mode === "friendly" ? "Amistoso" : "Treino IA"}
+              {" "}· VS {outcome.record.opponentName}
+            </p>
+          </div>
+
+          <div className="grid w-full max-w-4xl grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
+            {/* Bloco de Troféus (se ranqueada) */}
+            {mode === "ranked" && (
+              <div className="panel p-6 space-y-4 bg-background/40 backdrop-blur-sm border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progresso de Liga</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl">{after.league.icon}</span>
+                  <div className="text-right">
+                    <p className="font-display font-black text-xl italic leading-none">{after.league.name}</p>
+                    <p className={cn("text-xs font-black", win ? "text-emerald-400" : "text-ember")}>
+                      {outcome.delta >= 0 ? "+" : ""}{outcome.delta} 🏆
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {after.next
-                    ? `Faltam ${num(after.missing)} troféus para ${after.next.name}`
-                    : "Você chegou à liga mais alta!"}
-                </p>
+                <div className="space-y-1.5">
+                  <div className="h-2 overflow-hidden rounded-full bg-muted/50">
+                    <div
+                      className={cn("h-full rounded-full transition-all duration-1000", win ? "bg-gold" : "bg-primary")}
+                      style={{ width: `${after.pct}%` }}
+                    />
+                  </div>
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase text-center">
+                    {after.next ? `${num(after.trophiesAfter)} / ${num(after.next.minTrophies)} para ${after.next.name}` : "Nível Máximo Atingido"}
+                  </p>
+                </div>
               </div>
+            )}
+
+            {/* Recompensas (simuladas por enquanto, as reais vem do state) */}
+            <div className="panel p-6 space-y-4 bg-background/40 backdrop-blur-sm border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recompensas</p>
+                <div className="grid grid-cols-2 gap-3">
+                   <div className="space-y-1">
+                      <p className="text-[9px] font-black text-muted-foreground uppercase">Moedas</p>
+                      <p className="font-display font-black text-lg italic leading-none text-gold">+{win ? "250" : "50"}</p>
+                   </div>
+                   <div className="space-y-1">
+                      <p className="text-[9px] font-black text-muted-foreground uppercase">XP Conta</p>
+                      <p className="font-display font-black text-lg italic leading-none text-primary">+{win ? "100" : "20"}</p>
+                   </div>
+                </div>
             </div>
-          )}
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
+
+            {/* MVP do time */}
+            {win && bestMonster && (
+              <div className="panel p-6 space-y-4 bg-background/40 backdrop-blur-sm border-white/5 relative group cursor-help">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Destaque da Equipe</p>
+                <div className="flex items-center gap-3">
+                   <div className="w-16 h-16 shrink-0">
+                      <MonsterArt art={bestMonster.art} rarity={bestMonster.rarity} size="sm" animate />
+                   </div>
+                   <div className="text-left min-w-0">
+                      <p className="font-display font-black text-lg italic tracking-tight truncate leading-none uppercase">{bestMonster.name}</p>
+                      <p className="text-[9px] font-black text-gold uppercase tracking-widest">MVP DA PARTIDA</p>
+                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-4 relative z-10 w-full">
             <Button
+              size="lg"
+              className="min-w-[200px] h-14 rounded-2xl font-black text-xs tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
               onClick={() => {
                 setOutcome(null);
                 setBattle(null);
@@ -517,10 +560,12 @@ function BattlesPage() {
                 setPhase("team");
               }}
             >
-              Jogar novamente
+              JOGAR NOVAMENTE
             </Button>
             <Button
               variant="outline"
+              size="lg"
+              className="min-w-[200px] h-14 rounded-2xl font-black text-xs tracking-[0.2em] border-2 hover:bg-secondary/50 transition-all"
               onClick={() => {
                 setOutcome(null);
                 setBattle(null);
@@ -528,7 +573,7 @@ function BattlesPage() {
                 setPhase("home");
               }}
             >
-              Voltar às batalhas
+              VOLTAR AO HUB
             </Button>
           </div>
         </div>

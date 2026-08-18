@@ -469,6 +469,40 @@ export function cancelTimer() {
 // ------------------------------------------------------------
 // Recompensas
 // ------------------------------------------------------------
+export function grantReward(reward: Reward) {
+  setState((s) => {
+    s.money += reward.money;
+    s.shards += reward.shards;
+    s.profile.xp += reward.xp;
+
+    if (reward.monsterId) {
+      const owned = s.monsters[reward.monsterId];
+      if (owned) {
+        owned.copies += 1;
+      } else {
+        s.monsters[reward.monsterId] = {
+          id: reward.monsterId,
+          copies: 1,
+          level: 1,
+          xp: 0,
+          discoveredAt: new Date().toISOString(),
+        };
+      }
+    }
+
+    // Atualiza missões diárias baseadas nos ganhos
+    const day = todayKey();
+    if (s.quests.day === day) {
+      for (const q of s.quests.list) {
+        const t = QUESTS_BY_ID[q.templateId];
+        if (!t) continue;
+        if (t.metric === "money_earned") q.progress += reward.money;
+        if (t.metric === "monsters_found" && reward.monsterId && !reward.duplicate) q.progress += 1;
+      }
+    }
+  });
+}
+
 export function timerConfig(minutes: number): TimerConfig {
   return TIMERS.find((t) => t.minutes === minutes) ?? TIMERS[0]!;
 }
