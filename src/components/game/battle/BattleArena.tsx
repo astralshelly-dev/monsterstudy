@@ -429,9 +429,12 @@ function FighterView({
         ))}
       </div>
       <div className="w-full">
-        <p className="truncate font-display text-sm font-bold">
-          {fighter.name} <span className="text-muted-foreground">Nv {fighter.level}</span>
-        </p>
+        <div className="flex items-center gap-2">
+          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact showIcon />
+          <p className="truncate font-display text-sm font-bold">
+            {fighter.name} <span className="text-muted-foreground">Nv {fighter.level}</span>
+          </p>
+        </div>
         <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-muted">
           <div
             className={cn(
@@ -452,7 +455,7 @@ function FighterView({
         </p>
         <div className={cn("mt-1 flex flex-wrap items-center gap-1", side === "foe" && "justify-end")}>
           <RarityBadge rarity={fighter.rarity} />
-          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact />
+          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact showIcon />
           <RoleBadge role={fighter.role} compact />
           <span className="text-[10px] text-muted-foreground">
             {fighter.ability.icon} {Math.max(1, fighter.charge)}t

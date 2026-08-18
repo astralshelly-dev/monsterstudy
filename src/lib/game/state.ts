@@ -208,7 +208,17 @@ export function isHydrated() {
 }
 
 export type OfflineEarnings = { amount: number; seconds: number } | null;
-let offlineEarnings: OfflineEarnings = null;
+let offlineEarnings: OfflineEarnings | null = null;
+
+export function getOfflineEarnings() { return offlineEarnings; }
+export function collectOfflineEarnings() {
+  if (offlineEarnings) {
+    state.money += offlineEarnings.amount;
+    offlineEarnings = null;
+    persist();
+    emit();
+  }
+}
 export function takeOfflineEarnings(): OfflineEarnings {
   const v = offlineEarnings;
   offlineEarnings = null;
@@ -247,7 +257,7 @@ export function hydrate() {
   if (elapsed >= 60 && rate > 0) {
     const capped = Math.min(elapsed, 60 * 60 * OFFLINE_INCOME_MAX_HOURS);
     offlineEarnings = { amount: rate * capped, seconds: capped };
-    state.money += rate * capped;
+    // A soma agora é manual via WelcomeBack
     state.lastModifiedAt = Date.now();
   }
   state.lastSeen = Date.now();

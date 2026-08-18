@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { MonsterDialog } from "./monsterdex";
 import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
 import {
   incomeMonsterIds,
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/monstros")({
 
 function MyMonsters() {
   const state = useGame();
+  const [selected, setSelected] = useState<string | null>(null);
   const owned = Object.values(state.monsters).sort((a, b) => {
     const da = MONSTERS_BY_ID[a.id]!;
     const db = MONSTERS_BY_ID[b.id]!;
@@ -96,14 +98,16 @@ function MyMonsters() {
 
       <div className="grid gap-3 lg:grid-cols-2">
         {owned.map((m) => (
-          <MonsterRow key={m.id} id={m.id} />
+          <MonsterRow key={m.id} id={m.id} onDetail={() => setSelected(m.id)} />
         ))}
       </div>
+
+      <MonsterDialog id={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }
 
-function MonsterRow({ id }: { id: string }) {
+function MonsterRow({ id, onDetail }: { id: string; onDetail: () => void }) {
   const state = useGame();
   const prog = monsterProgress(id, state);
   const [amount] = useState(20);
@@ -113,7 +117,7 @@ function MonsterRow({ id }: { id: string }) {
 
   return (
     <div className={cn("panel p-4", active && "ring-2 ring-primary", earning && "ring-1 ring-gold/60")}>
-      <div className="flex gap-4">
+      <div className="flex gap-4 cursor-pointer" onClick={onDetail}>
         <MonsterArt art={prog.def.art} rarity={prog.def.rarity} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">

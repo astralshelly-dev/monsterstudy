@@ -7,12 +7,14 @@ export function ElementBadge({
   monsterId,
   className,
   compact = false,
+  showIcon = false,
 }: {
   element?: ElementId | undefined;
   elements?: ElementId[] | undefined;
   monsterId?: string | undefined;
   className?: string;
   compact?: boolean;
+  showIcon?: boolean;
 }) {
   const defs: ElementDef[] = elements?.length
     ? elements.map((e) => ELEMENTS_BY_ID[e]!)
@@ -26,22 +28,24 @@ export function ElementBadge({
     return (
       <span className="inline-flex flex-wrap items-center gap-1">
         {defs.map((d) => (
-          <Pill key={d.id} def={d} className={className} compact={compact} />
+          <Pill key={d.id} def={d} className={className} compact={compact} showIcon={showIcon} />
         ))}
       </span>
     );
   }
-  return <Pill def={defs[0]!} className={className} compact={compact} />;
+  return <Pill def={defs[0]!} className={className} compact={compact} showIcon={showIcon} />;
 }
 
 function Pill({
   def,
   className,
   compact,
+  showIcon,
 }: {
   def: ElementDef;
   className?: string | undefined;
   compact: boolean;
+  showIcon?: boolean;
 }) {
 
   return (
@@ -55,7 +59,7 @@ function Pill({
       title={`Tipo ${def.name}`}
     >
       <span aria-hidden>{def.icon}</span>
-      {!compact && def.name}
+      {(!compact || showIcon) && def.name}
     </span>
   );
 }

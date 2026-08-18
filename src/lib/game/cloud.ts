@@ -403,15 +403,15 @@ export function mapProfile(row: Record<string, unknown>): PublicProfile {
   };
 }
 
-/** procura o perfil de outro jogador pelo ID público */
-export async function findProfile(publicId: string): Promise<PublicProfile | null> {
+/** procura o perfil de outro jogador pelo ID público ou nome (case-insensitive) */
+export async function findProfile(query: string): Promise<PublicProfile | null> {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("public_id", publicId.trim().toUpperCase())
-    .maybeSingle();
-  if (error || !data) return null;
-  return mapProfile(data as unknown as Record<string, unknown>);
+    .or(`public_id.eq.${query.trim().toUpperCase()},display_name.ilike.${query.trim()}`)
+    .limit(1);
+  if (error || !data || data.length === 0) return null;
+  return mapProfile(data[0] as unknown as Record<string, unknown>);
 }
 
 /** ranking simples: jogadores com maior nível (para descobrir amigos) */

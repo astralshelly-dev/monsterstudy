@@ -37,6 +37,8 @@ export type SceneTheme = {
   ink: string;
   art: ArtId;
   particle: ParticleId;
+  /** detalhes vivos: elementos de cenário posicionados */
+  props: Array<{ icon: string; top: number; left: number; size: number; delay: number }>;
 };
 
 const T = (
@@ -46,30 +48,92 @@ const T = (
   ink: string,
   art: ArtId,
   particle: ParticleId,
-): SceneTheme => ({ id, name, bg, ink, art, particle });
+  props: SceneTheme["props"] = [],
+): SceneTheme => ({ id, name, bg, ink, art, particle, props });
 
 export const THEMES: Record<string, SceneTheme> = {
   // ---------- telas do app ----------
-  home: T("home", "Torre Arcana", "oklch(0.17 0.03 285)", "oklch(0.78 0.09 292)", "runes", "dust"),
-  study: T("study", "Sala de Estudos", "oklch(0.17 0.028 250)", "oklch(0.8 0.08 248)", "books", "spark"),
-  read: T("read", "Ala da Leitura", "oklch(0.175 0.024 70)", "oklch(0.82 0.07 78)", "pages", "dust"),
-  free: T("free", "Campo de Treino", "oklch(0.17 0.03 195)", "oklch(0.82 0.08 198)", "bolts", "spark"),
-  battle: T("battle", "Arena", "oklch(0.165 0.035 22)", "oklch(0.78 0.11 30)", "swords", "ember"),
-  quests: T("quests", "Quadro de Missões", "oklch(0.175 0.03 95)", "oklch(0.84 0.09 92)", "targets", "spark"),
-  season: T("season", "Coliseu Sazonal", "oklch(0.17 0.035 320)", "oklch(0.8 0.1 322)", "crowns", "star"),
-  inventory: T("inventory", "Depósito", "oklch(0.18 0.014 260)", "oklch(0.8 0.045 260)", "flasks", "dust"),
-  dex: T("dex", "Bestiário", "oklch(0.165 0.03 155)", "oklch(0.8 0.09 158)", "paws", "leaf"),
-  library: T("library", "Biblioteca", "oklch(0.17 0.026 55)", "oklch(0.8 0.07 60)", "books", "dust"),
-  shop: T("shop", "Mercado", "oklch(0.175 0.032 85)", "oklch(0.86 0.1 85)", "coins", "spark"),
-  codes: T("codes", "Sala dos Presentes", "oklch(0.17 0.035 340)", "oklch(0.82 0.1 340)", "gifts", "spark"),
-  achievements: T("achievements", "Salão da Glória", "oklch(0.175 0.03 78)", "oklch(0.86 0.1 80)", "trophies", "star"),
-  stats: T("stats", "Observatório", "oklch(0.165 0.03 215)", "oklch(0.83 0.09 212)", "charts", "dust"),
-  history: T("history", "Arquivo", "oklch(0.18 0.012 275)", "oklch(0.78 0.04 275)", "scrolls", "dust"),
-  players: T("players", "Guilda", "oklch(0.17 0.028 175)", "oklch(0.82 0.08 178)", "stars", "bubble"),
-  account: T("account", "Portal", "oklch(0.17 0.03 265)", "oklch(0.8 0.09 268)", "runes", "spark"),
-  profile: T("profile", "Câmara Pessoal", "oklch(0.17 0.03 300)", "oklch(0.8 0.09 302)", "stars", "dust"),
-  settings: T("settings", "Oficina", "oklch(0.18 0.01 250)", "oklch(0.78 0.035 250)", "gears", "dust"),
-  admin: T("admin", "Torre de Controle", "oklch(0.155 0.03 10)", "oklch(0.78 0.1 18)", "gears", "ember"),
+  home: T("home", "Torre Arcana", "oklch(0.17 0.03 285)", "oklch(0.78 0.09 292)", "runes", "dust", [
+    { icon: "📜", top: 15, left: 10, size: 24, delay: 0 },
+    { icon: "✨", top: 80, left: 85, size: 20, delay: 2 },
+    { icon: "🕯️", top: 65, left: 5, size: 22, delay: 1 },
+  ]),
+  study: T("study", "Sala de Estudos", "oklch(0.17 0.028 250)", "oklch(0.8 0.08 248)", "books", "spark", [
+    { icon: "📚", top: 20, left: 80, size: 28, delay: 0 },
+    { icon: "📖", top: 75, left: 15, size: 22, delay: 3 },
+    { icon: "🖋️", top: 40, left: 5, size: 18, delay: 1.5 },
+  ]),
+  read: T("read", "Ala da Leitura", "oklch(0.175 0.024 70)", "oklch(0.82 0.07 78)", "pages", "dust", [
+    { icon: "📖", top: 10, left: 20, size: 24, delay: 0 },
+    { icon: "🕯️", top: 85, left: 75, size: 22, delay: 2.5 },
+  ]),
+  free: T("free", "Campo de Treino", "oklch(0.17 0.03 195)", "oklch(0.82 0.08 198)", "bolts", "spark", [
+    { icon: "⚡", top: 15, left: 70, size: 20, delay: 1 },
+    { icon: "🎯", top: 60, left: 10, size: 24, delay: 0 },
+  ]),
+  battle: T("battle", "Arena", "oklch(0.165 0.035 22)", "oklch(0.78 0.11 30)", "swords", "ember", [
+    { icon: "🪨", top: 80, left: 10, size: 32, delay: 0 },
+    { icon: "🔥", top: 20, left: 85, size: 24, delay: 2 },
+  ]),
+  quests: T("quests", "Quadro de Missões", "oklch(0.175 0.03 95)", "oklch(0.84 0.09 92)", "targets", "spark", [
+    { icon: "📌", top: 10, left: 5, size: 20, delay: 0 },
+    { icon: "🗺️", top: 85, left: 80, size: 24, delay: 1.2 },
+  ]),
+  season: T("season", "Coliseu Sazonal", "oklch(0.17 0.035 320)", "oklch(0.8 0.1 322)", "crowns", "star", [
+    { icon: "🏆", top: 15, left: 85, size: 30, delay: 0 },
+    { icon: "🚩", top: 70, left: 5, size: 22, delay: 1.5 },
+  ]),
+  inventory: T("inventory", "Depósito", "oklch(0.18 0.014 260)", "oklch(0.8 0.045 260)", "flasks", "dust", [
+    { icon: "📦", top: 80, left: 15, size: 24, delay: 0 },
+    { icon: "🧪", top: 25, left: 75, size: 20, delay: 2.2 },
+  ]),
+  dex: T("dex", "Bestiário", "oklch(0.165 0.03 155)", "oklch(0.8 0.09 158)", "paws", "leaf", [
+    { icon: "🦴", top: 15, left: 10, size: 18, delay: 0.5 },
+    { icon: "🌿", top: 80, left: 85, size: 22, delay: 0 },
+  ]),
+  library: T("library", "Biblioteca", "oklch(0.17 0.026 55)", "oklch(0.8 0.07 60)", "books", "dust", [
+    { icon: "📚", top: 20, left: 5, size: 28, delay: 0 },
+    { icon: "🪶", top: 70, left: 90, size: 20, delay: 3 },
+  ]),
+  shop: T("shop", "Mercado", "oklch(0.175 0.032 85)", "oklch(0.86 0.1 85)", "coins", "spark", [
+    { icon: "💰", top: 10, left: 80, size: 24, delay: 0 },
+    { icon: "💎", top: 85, left: 15, size: 20, delay: 1.5 },
+  ]),
+  codes: T("codes", "Sala dos Presentes", "oklch(0.17 0.035 340)", "oklch(0.82 0.1 340)", "gifts", "spark", [
+    { icon: "🎁", top: 20, left: 10, size: 26, delay: 0 },
+    { icon: "✨", top: 75, left: 85, size: 20, delay: 2.5 },
+  ]),
+  achievements: T("achievements", "Salão da Glória", "oklch(0.175 0.03 78)", "oklch(0.86 0.1 80)", "trophies", "star", [
+    { icon: "🏅", top: 15, left: 5, size: 22, delay: 0 },
+    { icon: "✨", top: 80, left: 90, size: 20, delay: 1.8 },
+  ]),
+  stats: T("stats", "Observatório", "oklch(0.165 0.03 215)", "oklch(0.83 0.09 212)", "charts", "dust", [
+    { icon: "🔭", top: 10, left: 15, size: 24, delay: 0 },
+    { icon: "🪐", top: 75, left: 80, size: 22, delay: 4 },
+  ]),
+  history: T("history", "Arquivo", "oklch(0.18 0.012 275)", "oklch(0.78 0.04 275)", "scrolls", "dust", [
+    { icon: "📜", top: 20, left: 85, size: 22, delay: 0 },
+    { icon: "🗃️", top: 80, left: 5, size: 24, delay: 2 },
+  ]),
+  players: T("players", "Guilda", "oklch(0.17 0.028 175)", "oklch(0.82 0.08 178)", "stars", "bubble", [
+    { icon: "👥", top: 15, left: 10, size: 24, delay: 0 },
+    { icon: "✨", top: 85, left: 80, size: 20, delay: 3.5 },
+  ]),
+  account: T("account", "Portal", "oklch(0.17 0.03 265)", "oklch(0.8 0.09 268)", "runes", "spark", [
+    { icon: "🌀", top: 45, left: 50, size: 40, delay: 0 },
+  ]),
+  profile: T("profile", "Câmara Pessoal", "oklch(0.17 0.03 300)", "oklch(0.8 0.09 302)", "stars", "dust", [
+    { icon: "🖼️", top: 20, left: 10, size: 22, delay: 0 },
+    { icon: "✨", top: 80, left: 90, size: 20, delay: 2 },
+  ]),
+  settings: T("settings", "Oficina", "oklch(0.18 0.01 250)", "oklch(0.78 0.035 250)", "gears", "dust", [
+    { icon: "🛠️", top: 15, left: 85, size: 22, delay: 0 },
+    { icon: "⚙️", top: 80, left: 5, size: 24, delay: 1.5 },
+  ]),
+  admin: T("admin", "Torre de Controle", "oklch(0.155 0.03 10)", "oklch(0.78 0.1 18)", "gears", "ember", [
+    { icon: "🛡️", top: 10, left: 10, size: 24, delay: 0 },
+    { icon: "💻", top: 85, left: 85, size: 22, delay: 2 },
+  ]),
 
   // ---------- temas de cosméticos (fundos de perfil) ----------
   bg_default: T("bg_default", "Noite Padrão", "oklch(0.17 0.03 285)", "oklch(0.78 0.08 290)", "stars", "dust"),

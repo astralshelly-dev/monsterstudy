@@ -91,6 +91,7 @@ export function SceneBackground({
       style={{ backgroundColor: theme.bg }}
     >
       <ArtLayer theme={theme} />
+      <SceneProps theme={theme} />
       <Particles theme={theme} />
       {/* leve toque metálico: brilho plano no topo, sem gradiente colorido */}
       <div className="absolute inset-x-0 top-0 h-px" style={{ backgroundColor: theme.ink, opacity: 0.25 }} />
@@ -117,6 +118,29 @@ function ArtLayer({ theme }: { theme: SceneTheme }) {
         opacity: 0.11,
       }}
     />
+  );
+}
+
+function SceneProps({ theme }: { theme: SceneTheme }) {
+  if (!theme.props?.length) return null;
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {theme.props.map((p, i) => (
+        <span
+          key={`${theme.id}-prop-${i}`}
+          className="absolute anim-float opacity-30 grayscale-[0.4] select-none"
+          style={{
+            top: `${p.top}%`,
+            left: `${p.left}%`,
+            fontSize: `${p.size}px`,
+            animationDelay: `${p.delay}s`,
+            filter: "blur(0.5px)",
+          }}
+        >
+          {p.icon}
+        </span>
+      ))}
+    </div>
   );
 }
 
