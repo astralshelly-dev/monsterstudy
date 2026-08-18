@@ -27,6 +27,13 @@ export function BattleArena({
   const [floats, setFloats] = useState<Float[]>([]);
   const [shake, setShake] = useState<SideId | null>(null);
   const finished = useRef(false);
+  const logRef = useRef<HTMLDivElement | null>(null);
+
+  // o log fica em ordem cronológica e sempre mostra a última ação
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [battle.log]);
 
   const player = battle.player.fighters[battle.player.active]!;
   const foe = battle.foe.fighters[battle.foe.active]!;
