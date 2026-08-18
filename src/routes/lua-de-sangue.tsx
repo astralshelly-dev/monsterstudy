@@ -46,7 +46,7 @@ export const Route = createFileRoute("/lua-de-sangue")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: BloodMoonPage;
+  component: BloodMoonPage,
 });
 
 function BloodMoonPage() {
