@@ -1,6 +1,7 @@
 import { RARITIES, type RarityId } from "@/lib/game/config";
 import { cn } from "@/lib/utils";
 import { BLOOD_MOON_SKINS_BY_ID, skinFxClass } from "@/lib/game/bloodmoon";
+import { skinArt } from "@/lib/game/skin-art";
 
 const RARITY_SURFACE: Record<RarityId, string> = {
   comum: "rarity-comum",
