@@ -66,6 +66,8 @@ export type Side = {
   beam?: BeamDef | null | undefined;
 
   behavior: AiBehavior;
+  /** turno em que esta equipe trocou de monstro pela última vez (evita trocas em cadeia) */
+  lastSwitchTurn?: number;
 };
 
 export type BattleEvent = {
