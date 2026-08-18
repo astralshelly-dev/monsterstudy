@@ -30,6 +30,8 @@ export const Route = createFileRoute("/jogadores")({
       { property: "og:description", content: "Área social para encontrar e comparar perfis de caçadores." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: "https://monsterstudy.lovable.app/favicon.png" },
+      { name: "twitter:image", content: "https://monsterstudy.lovable.app/favicon.png" },
     ],
   }),
   component: PlayersPage,

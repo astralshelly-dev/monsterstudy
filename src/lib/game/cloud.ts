@@ -408,8 +408,8 @@ export async function findProfile(publicId: string): Promise<PublicProfile | nul
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("public_id", publicId.trim().toUpperCase())
-    .maybeSingle();
+    .or(`public_id.eq.${publicId.trim().toUpperCase()},display_name.ilike.${publicId.trim()}`)
+    .limit(1)
   if (error || !data) return null;
   return mapProfile(data as unknown as Record<string, unknown>);
 }
