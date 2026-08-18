@@ -101,10 +101,10 @@ export function BattleArena({
 
   // turno da IA (e do deck adversário no PvP assíncrono) roda sozinho
   useEffect(() => {
-    if (battle.over || battle.awaitingSwitch || battle.turn !== "foe") return;
+    if (intro || battle.over || battle.awaitingSwitch || battle.turn !== "foe") return;
     const id = window.setTimeout(() => digest(takeTurn(battle)), 900);
     return () => window.clearTimeout(id);
-  }, [battle]);
+  }, [battle, intro]);
 
   useEffect(() => {
     if (battle.over && battle.winner && !finished.current) {
