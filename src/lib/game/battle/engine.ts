@@ -66,6 +66,8 @@ export type Side = {
   beam?: BeamDef | null | undefined;
 
   behavior: AiBehavior;
+  /** turno em que esta equipe trocou de monstro pela última vez (evita trocas em cadeia) */
+  lastSwitchTurn?: number;
 };
 
 export type BattleEvent = {
@@ -680,8 +682,8 @@ function finishTurn(b: Battle, actor: SideId) {
         side: foeSideId,
         text: `${defSide.name} envia ${defSide.fighters[defSide.active]!.name}`,
       });
-      // o novo monstro pode ser mais rápido e roubar a iniciativa
-      b.turn = firstMover(b.player, b.foe);
+      // o substituto entra, mas o turno passa normalmente para ele
+      b.turn = foeSideId;
       b.turnNo += 1;
       b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
       return;
@@ -718,7 +720,8 @@ function finishTurnAfterAiSwitch(b: Battle) {
     }
   }
   if (!b.over) {
-    b.turn = firstMover(b.player, b.foe);
+    // a troca consumiu o turno da IA: agora é sempre a vez do jogador
+    b.turn = "player";
     b.turnNo += 1;
   }
   b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
@@ -779,12 +782,15 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
   const aiAction =
     actor === "foe" ? decideAiAction(b, attacker.charge === 0 && aiWantsAbility(b, attacker)) : null;
 
-  if (aiAction?.kind === "switch") {
+  // a IA só pode trocar se não trocou nas últimas 3 rodadas (nada de trocas em cadeia)
+  const canAiSwitch = b.turnNo - (b.foe.lastSwitchTurn ?? -99) >= 3;
+  if (aiAction?.kind === "switch" && canAiSwitch) {
     const next = b.foe.fighters[aiAction.index];
-    if (next && next.hp > 0) {
+    if (next && next.hp > 0 && aiAction.index !== b.foe.active) {
       // trocar consome o turno, exatamente como para o jogador
       attacker.charge = Math.min(attacker.ability.cooldown, attacker.charge + 1);
       b.foe.active = aiAction.index;
+      b.foe.lastSwitchTurn = b.turnNo;
       next.guard = 1;
       b.events.push({
         id: eid(),

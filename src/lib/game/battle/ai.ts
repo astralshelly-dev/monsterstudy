@@ -261,7 +261,8 @@ export function decideAiAction(b: Battle, abilityReady: boolean): AiAction {
     for (let i = 0; i < mySide.fighters.length; i += 1) {
       if (i === mySide.active) continue;
       const score = switchValue(b, mySide, oppSide, i) * jitter(0.2);
-      if (score > best.score * 1.15) best = { score, action: { kind: "switch", index: i } };
+      // trocar precisa ser claramente melhor que agir: evita ficar trocando toda hora
+      if (score > best.score * 1.6) best = { score, action: { kind: "switch", index: i } };
     }
   }
 
