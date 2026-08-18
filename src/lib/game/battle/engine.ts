@@ -718,7 +718,8 @@ function finishTurnAfterAiSwitch(b: Battle) {
     }
   }
   if (!b.over) {
-    b.turn = firstMover(b.player, b.foe);
+    // a troca consumiu o turno da IA: agora é sempre a vez do jogador
+    b.turn = "player";
     b.turnNo += 1;
   }
   b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
