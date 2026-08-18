@@ -151,7 +151,7 @@ function Shop() {
       <section className="space-y-3">
         <h2 className="font-display text-xl font-semibold">🧺 Bazar de itens</h2>
         <p className="text-sm text-muted-foreground">
-          Troque diamantes por itens direto na loja — diamantes são ganhos estudando e lendo (≈6 por
+          Troque diamantes por itens direto na loja — diamantes são ganhos estudando e lendo (≈30 por
           hora) e os itens vão direto para o seu inventário.
         </p>
         {ITEM_RARITIES.map((r) => {

@@ -592,3 +592,109 @@
     height: 0;
   }
 }
+
+/* ============================================================
+   Molduras de perfil — desenhos reais (bordas duplas, cantos e brilho)
+   ============================================================ */
+.mframe {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: 6px;
+  border-radius: 1.25rem;
+  --mf-a: var(--primary);
+  --mf-b: var(--arcane);
+}
+.mframe > * {
+  position: relative;
+  z-index: 1;
+}
+/* anel externo desenhado */
+.mframe::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    var(--mf-a),
+    var(--mf-b),
+    var(--mf-a),
+    var(--mf-b),
+    var(--mf-a)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+/* anel interno + cantos */
+.mframe::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in oklab, var(--mf-b) 55%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--mf-a) 35%, transparent) inset,
+    -3px -3px 0 -1px color-mix(in oklab, var(--mf-a) 85%, transparent),
+    3px 3px 0 -1px color-mix(in oklab, var(--mf-b) 85%, transparent);
+}
+
+.mframe-bronze {
+  --mf-a: oklch(0.62 0.11 55);
+  --mf-b: oklch(0.78 0.09 70);
+}
+.mframe-arcane {
+  --mf-a: var(--arcane);
+  --mf-b: var(--primary);
+  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--arcane) 55%, transparent));
+}
+.mframe-gold {
+  --mf-a: var(--gold);
+  --mf-b: oklch(0.95 0.06 95);
+  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--gold) 50%, transparent));
+}
+.mframe-scholar {
+  --mf-a: var(--r-mitico);
+  --mf-b: oklch(0.9 0.05 300);
+}
+.mframe-champion {
+  --mf-a: var(--r-divino);
+  --mf-b: var(--gold);
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--r-divino) 60%, transparent));
+}
+.mframe-champion::before {
+  animation: mframe-spin 6s linear infinite;
+}
+.mframe-ember {
+  --mf-a: var(--ember);
+  --mf-b: var(--gold);
+}
+.mframe-frost {
+  --mf-a: oklch(0.85 0.09 220);
+  --mf-b: oklch(0.72 0.13 250);
+}
+.mframe-nature {
+  --mf-a: oklch(0.75 0.15 145);
+  --mf-b: oklch(0.88 0.11 130);
+}
+.mframe-pro {
+  --mf-a: oklch(0.8 0.19 85);
+  --mf-b: var(--arcane);
+  filter: drop-shadow(0 0 14px color-mix(in oklab, var(--arcane) 55%, transparent));
+}
+.mframe-pro::before {
+  animation: mframe-spin 4s linear infinite;
+}
+
+@keyframes mframe-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}

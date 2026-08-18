@@ -35,11 +35,16 @@ export type CosmeticDef = {
 const BASE_COSMETICS: CosmeticDef[] = [
   // ---------- Molduras ----------
   { id: "frame_none", kind: "frame", name: "Sem moldura", icon: "⬜", description: "Visual limpo.", unlock: { type: "free" }, className: "" },
-  { id: "frame_bronze", kind: "frame", name: "Moldura Bronze", icon: "🥉", description: "Para quem começou a jornada.", unlock: { type: "level", n: 5 }, className: "ring-4 ring-rarity-comum/70" },
-  { id: "frame_arcane", kind: "frame", name: "Moldura Arcana", icon: "🔮", description: "Brilho arcano ao redor do retrato.", unlock: { type: "level", n: 15 }, className: "ring-4 ring-arcane/70 shadow-[0_0_24px_hsl(var(--arcane)/0.45)]" },
-  { id: "frame_gold", kind: "frame", name: "Moldura Dourada", icon: "🏆", description: "Conquistada nas ligas altas.", unlock: { type: "trophies", n: 1500 }, className: "ring-4 ring-gold/80 shadow-[0_0_24px_hsl(var(--gold)/0.5)]" },
-  { id: "frame_champion", kind: "frame", name: "Moldura de Campeão", icon: "👑", description: "Exclusiva do topo do ranking.", unlock: { type: "season" }, className: "ring-4 ring-rarity-divino shadow-[0_0_32px_hsl(var(--rarity-divino)/0.6)]" },
-  { id: "frame_scholar", kind: "frame", name: "Moldura do Erudito", icon: "🎓", description: "100 horas de estudo acumuladas.", unlock: { type: "studyHours", n: 100 }, className: "ring-4 ring-rarity-mitico/70" },
+  { id: "frame_bronze", kind: "frame", name: "Moldura Bronze", icon: "🥉", description: "Para quem começou a jornada.", unlock: { type: "level", n: 5 }, className: "mframe mframe-bronze" },
+  { id: "frame_arcane", kind: "frame", name: "Moldura Arcana", icon: "🔮", description: "Brilho arcano ao redor do retrato.", unlock: { type: "level", n: 15 }, className: "mframe mframe-arcane" },
+  { id: "frame_gold", kind: "frame", name: "Moldura Dourada", icon: "🏆", description: "Conquistada nas ligas altas.", unlock: { type: "trophies", n: 1500 }, className: "mframe mframe-gold" },
+  { id: "frame_champion", kind: "frame", name: "Moldura de Campeão", icon: "👑", description: "Exclusiva do topo do ranking.", unlock: { type: "season" }, className: "mframe mframe-champion" },
+  { id: "frame_scholar", kind: "frame", name: "Moldura do Erudito", icon: "🎓", description: "100 horas de estudo acumuladas.", unlock: { type: "studyHours", n: 100 }, className: "mframe mframe-scholar" },
+
+  { id: "frame_ember", kind: "frame", name: "Moldura Flamejante", icon: "🔥", description: "Sequência de 15 dias.", unlock: { type: "streak", n: 15 }, className: "mframe mframe-ember" },
+  { id: "frame_frost", kind: "frame", name: "Moldura Glacial", icon: "❄️", description: "Leia 3.000 páginas.", unlock: { type: "pages", n: 3000 }, className: "mframe mframe-frost" },
+  { id: "frame_nature", kind: "frame", name: "Moldura Silvestre", icon: "🌿", description: "Capture 25 monstros.", unlock: { type: "monsters", n: 25 }, className: "mframe mframe-nature" },
+  { id: "frame_pro", kind: "frame", name: "Moldura PRO", icon: "⚡", description: "Alcance a liga PRO.", unlock: { type: "trophies", n: 5200 }, className: "mframe mframe-pro" },
 
   // ---------- Títulos ----------
   { id: "title_cacador", kind: "title", name: "Caçador de Monstros", icon: "🐾", description: "Capture 10 monstros.", unlock: { type: "monsters", n: 10 } },

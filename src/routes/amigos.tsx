@@ -274,6 +274,7 @@ function FriendsPage() {
 export function FriendIdentity({ profile }: { profile: PublicProfile | null }) {
   if (!profile) return <span className="text-sm text-muted-foreground">Jogador removido</span>;
   const title = profile.stats.title ? COSMETICS_BY_ID[profile.stats.title] : undefined;
+  const frame = profile.stats.cosmetics?.frame ? COSMETICS_BY_ID[profile.stats.cosmetics.frame] : undefined;
   const league = leagueOf(profile.stats.trophies ?? 0);
   return (
     <div className="flex min-w-0 items-center gap-3">
@@ -281,6 +282,7 @@ export function FriendIdentity({ profile }: { profile: PublicProfile | null }) {
         avatar={profile.avatar}
         monsterId={profile.avatarMonsterId}
         size="sm"
+        frameClassName={frame?.className}
       />
       <div className="min-w-0">
         <p className={cn("truncate font-display text-sm font-bold", titleNameClass(title?.id))}>

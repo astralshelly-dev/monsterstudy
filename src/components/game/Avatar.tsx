@@ -17,17 +17,20 @@ export function ProfileAvatar({
   monsterId,
   size = "md",
   className,
+  frameClassName,
 }: {
   avatar: string;
   monsterId?: string | null | undefined;
   size?: keyof typeof SIZES;
   className?: string;
+  /** classes da moldura equipada (ex.: "mframe mframe-gold") */
+  frameClassName?: string | null | undefined;
 }) {
   const monster = monsterId ? MONSTERS_BY_ID[monsterId] : undefined;
   const art = illustratedAvatar(avatar);
   const src = monster?.art ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
 
-  return (
+  const portrait = (
     <span
       className={cn(
         "grid shrink-0 place-items-center overflow-hidden rounded-2xl bg-secondary/70 ring-1 ring-primary/40",
@@ -42,4 +45,7 @@ export function ProfileAvatar({
       )}
     </span>
   );
+
+  if (!frameClassName) return portrait;
+  return <span className={cn("shrink-0", frameClassName)}>{portrait}</span>;
 }

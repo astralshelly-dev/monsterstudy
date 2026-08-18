@@ -9,7 +9,7 @@ import {
   totals,
   userProgress,
 } from "@/lib/game/state";
-import { dailyQuests } from "@/lib/game/state";
+import { dailyQuests, equippedCosmetic } from "@/lib/game/state";
 import { QUESTS_BY_ID } from "@/lib/game/quests";
 import { duration, money, num } from "@/lib/format";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
@@ -68,6 +68,7 @@ function Dashboard() {
               avatar={state.profile.avatar}
               monsterId={state.profile.avatarMonsterId}
               size="md"
+              frameClassName={equippedCosmetic("frame", state)?.className}
             />
             <div>
               <p className="font-display text-2xl font-bold">{state.profile.name}</p>

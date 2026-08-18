@@ -72,11 +72,12 @@ function Profile() {
 
       <div className={cn("panel p-6", bg?.className)}>
         <div className="flex flex-wrap items-center gap-5">
-          <div className={cn("rounded-2xl", frame?.className, fx?.className)}>
+          <div className={cn(fx?.className)}>
             <ProfileAvatar
               avatar={state.profile.avatar}
               monsterId={state.profile.avatarMonsterId}
               size="lg"
+              frameClassName={frame?.className}
             />
           </div>
           <div className="min-w-56 flex-1">
