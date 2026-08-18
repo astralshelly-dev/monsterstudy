@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
+import { MonsterArt } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
 import { RoleBadge } from "@/components/game/RoleBadge";
 import { beamBonusLabel } from "@/lib/game/battle/beams";
@@ -253,7 +253,10 @@ export function BattleArena({
               >
                 <MonsterArt art={f.art} rarity={f.rarity} size="sm" animate={false} />
                 <span>
-                  <span className="block font-medium">{f.name}</span>
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <ElementBadge elements={f.elements ?? [f.element]} compact showIcon />
+                    {f.name}
+                  </span>
                   <span className="block text-xs text-muted-foreground">
                     Nv {f.level} · {f.hp}/{f.maxHp} PV
                   </span>
@@ -315,7 +318,10 @@ export function BattleArena({
                     >
                       <MonsterArt art={f.art} rarity={f.rarity} size="sm" animate={false} />
                       <span>
-                        <span className="block font-medium">{f.name}</span>
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <ElementBadge elements={f.elements ?? [f.element]} compact showIcon />
+                          {f.name}
+                        </span>
                         <span className="block text-xs text-muted-foreground">
                           Nv {f.level} · {f.hp}/{f.maxHp} PV
                         </span>
@@ -430,7 +436,6 @@ function FighterView({
       </div>
       <div className="w-full">
         <div className="flex items-center gap-2">
-          <ElementBadge elements={fighter.elements ?? [fighter.element]} compact showIcon />
           <p className="truncate font-display text-sm font-bold">
             {fighter.name} <span className="text-muted-foreground">Nv {fighter.level}</span>
           </p>
@@ -454,7 +459,6 @@ function FighterView({
           {fighter.poison && ` · ☠️ ${fighter.poison.turns}t`}
         </p>
         <div className={cn("mt-1 flex flex-wrap items-center gap-1", side === "foe" && "justify-end")}>
-          <RarityBadge rarity={fighter.rarity} />
           <ElementBadge elements={fighter.elements ?? [fighter.element]} compact showIcon />
           <RoleBadge role={fighter.role} compact />
           <span className="text-[10px] text-muted-foreground">
