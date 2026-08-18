@@ -86,11 +86,29 @@ function Settings() {
               <p className="text-xs text-muted-foreground">{t.hint}</p>
             </div>
             <Switch
-              checked={state.settings[t.id]}
+              checked={state.settings[t.id] !== false}
               onCheckedChange={(v) => updateSettings({ [t.id]: v })}
             />
           </div>
         ))}
+        <div className="space-y-4 p-4">
+          <VolumeRow
+            label="Volume da música"
+            value={state.settings.musicVolume ?? 0.35}
+            disabled={state.settings.music === false}
+            onChange={(v) => updateSettings({ musicVolume: v })}
+          />
+          <VolumeRow
+            label="Volume dos efeitos"
+            value={state.settings.sfxVolume ?? 0.7}
+            disabled={state.settings.sounds === false}
+            onChange={(v) => updateSettings({ sfxVolume: v })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Durante uma sessão de estudo ou leitura o som é silenciado por completo, voltando
+            quando a sessão termina.
+          </p>
+        </div>
       </section>
 
       <section className="panel space-y-3 p-5">
