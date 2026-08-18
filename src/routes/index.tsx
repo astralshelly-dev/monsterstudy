@@ -68,6 +68,7 @@ function Dashboard() {
               avatar={state.profile.avatar}
               monsterId={state.profile.avatarMonsterId}
               size="md"
+              frameClassName={equippedCosmetic("frame", state)?.className}
             />
             <div>
               <p className="font-display text-2xl font-bold">{state.profile.name}</p>

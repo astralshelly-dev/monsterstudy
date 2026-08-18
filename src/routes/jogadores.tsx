@@ -176,8 +176,13 @@ function ProfileView({ profile: p }: { profile: PublicProfile }) {
   return (
     <div className="space-y-5">
       <div className={cn("panel aurora flex flex-wrap items-center gap-5 p-6", bg?.className)}>
-        <div className={cn("rounded-2xl", frame?.className, fx?.className)}>
-          <ProfileAvatar avatar={p.avatar} monsterId={p.avatarMonsterId} size="lg" />
+        <div className={cn(fx?.className)}>
+          <ProfileAvatar
+            avatar={p.avatar}
+            monsterId={p.avatarMonsterId}
+            size="lg"
+            frameClassName={frame?.className}
+          />
         </div>
         <div className="min-w-0">
           <p className="font-display text-2xl font-bold">
