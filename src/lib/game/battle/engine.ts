@@ -680,8 +680,8 @@ function finishTurn(b: Battle, actor: SideId) {
         side: foeSideId,
         text: `${defSide.name} envia ${defSide.fighters[defSide.active]!.name}`,
       });
-      // o novo monstro pode ser mais rápido e roubar a iniciativa
-      b.turn = firstMover(b.player, b.foe);
+      // o substituto entra, mas o turno passa normalmente para ele
+      b.turn = foeSideId;
       b.turnNo += 1;
       b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
       return;
