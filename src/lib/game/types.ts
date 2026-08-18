@@ -34,6 +34,7 @@ export type Reward = {
   xp: number;
   money: number;
   shards: number;
+  subject?: string | null;
 };
 
 export type StudySession = {
