@@ -76,6 +76,8 @@ export function MonsterArt({
   skinId?: string | null | undefined;
 }) {
   const skin = skinId ? BLOOD_MOON_SKINS_BY_ID[skinId] : undefined;
+  const skinImg = skinArt(skinId);
+  const shownArt = !silhouette && skinImg ? skinImg : art;
   const sizes = {
     sm: "h-14 w-14 text-2xl",
     md: "h-20 w-20 text-4xl",
