@@ -21,8 +21,9 @@ type Fx = {
   hit: SideId | null;
   effect: "super" | "weak" | null;
   banner: string | null;
+  special: SideId | null;
 };
-const NO_FX: Fx = { attacker: null, hit: null, effect: null, banner: null };
+const NO_FX: Fx = { attacker: null, hit: null, effect: null, banner: null, special: null };
 
 export function BattleArena({
   battle,
