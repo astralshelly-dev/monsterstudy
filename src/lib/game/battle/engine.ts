@@ -671,8 +671,9 @@ function finishTurn(b: Battle, actor: SideId) {
     } else if (foeSideId === "player") {
       b.awaitingSwitch = true;
     } else {
-      defSide.active = pickAiSwitch(defSide);
+      defSide.active = pickAiReplacement(defSide, actor === "player" ? b.player : b.foe);
       defSide.fighters[defSide.active]!.guard = 1;
+
       b.events.push({
         id: eid(),
         kind: "switch",
