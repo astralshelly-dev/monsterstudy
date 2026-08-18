@@ -208,7 +208,17 @@ export function isHydrated() {
 }
 
 export type OfflineEarnings = { amount: number; seconds: number } | null;
-let offlineEarnings: OfflineEarnings = null;
+let offlineEarnings: OfflineEarnings | null = null;
+
+export function getOfflineEarnings() { return offlineEarnings; }
+export function collectOfflineEarnings() {
+  if (offlineEarnings) {
+    state.money += offlineEarnings.amount;
+    offlineEarnings = null;
+    persist();
+    emit();
+  }
+}
 export function takeOfflineEarnings(): OfflineEarnings {
   const v = offlineEarnings;
   offlineEarnings = null;
