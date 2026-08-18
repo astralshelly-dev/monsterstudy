@@ -59,9 +59,13 @@ export function BattleArena({
     let attacker: SideId | null = null;
     let effect: "super" | "weak" | null = null;
     let banner: string | null = null;
+    let special: SideId | null = null;
     for (const e of next.events) {
       if (e.kind === "attack" || e.kind === "ability") attacker = e.side;
-      if (e.kind === "ability") banner = e.text;
+      if (e.kind === "ability") {
+        banner = e.text;
+        special = e.side;
+      }
       if (e.kind === "damage" && e.target) {
         news.push({ id: e.id, side: e.target, text: `-${e.damage}`, effect: e.effect });
         if (e.effect === "super" || e.effect === "weak") effect = e.effect;
