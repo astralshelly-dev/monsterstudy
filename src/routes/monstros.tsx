@@ -43,6 +43,7 @@ export const Route = createFileRoute("/monstros")({
 
 function MyMonsters() {
   const state = useGame();
+  const [selected, setSelected] = useState<string | null>(null);
   const owned = Object.values(state.monsters).sort((a, b) => {
     const da = MONSTERS_BY_ID[a.id]!;
     const db = MONSTERS_BY_ID[b.id]!;
