@@ -117,7 +117,7 @@ function MonsterRow({ id, onDetail }: { id: string; onDetail: () => void }) {
 
   return (
     <div className={cn("panel p-4", active && "ring-2 ring-primary", earning && "ring-1 ring-gold/60")}>
-      <div className="flex gap-4">
+      <div className="flex gap-4 cursor-pointer" onClick={onDetail}>
         <MonsterArt art={prog.def.art} rarity={prog.def.rarity} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
