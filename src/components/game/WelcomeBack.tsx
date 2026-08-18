@@ -1,7 +1,7 @@
 import { money as fmtMoney, duration } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { OfflineEarnings } from "@/lib/game/state";
+import { collectOfflineEarnings, type OfflineEarnings } from "@/lib/game/state";
 
 /** Tela de "bem-vindo de volta" com o que os monstros renderam offline. */
 export function WelcomeBack({
