@@ -15,7 +15,14 @@ import {
   type SideId,
 } from "@/lib/game/battle/engine";
 
-type Float = { id: string; side: SideId; text: string; heal?: boolean };
+type Float = { id: string; side: SideId; text: string; heal?: boolean; effect?: "super" | "weak" | "normal" };
+type Fx = {
+  attacker: SideId | null;
+  hit: SideId | null;
+  effect: "super" | "weak" | null;
+  banner: string | null;
+};
+const NO_FX: Fx = { attacker: null, hit: null, effect: null, banner: null };
 
 export function BattleArena({
   battle,
@@ -28,6 +35,7 @@ export function BattleArena({
 }) {
   const [floats, setFloats] = useState<Float[]>([]);
   const [shake, setShake] = useState<SideId | null>(null);
+  const [fx, setFx] = useState<Fx>(NO_FX);
   const finished = useRef(false);
   const logRef = useRef<HTMLDivElement | null>(null);
 
@@ -47,24 +55,34 @@ export function BattleArena({
 
   function digest(next: Battle) {
     const news: Float[] = [];
+    let attacker: SideId | null = null;
+    let effect: "super" | "weak" | null = null;
+    let banner: string | null = null;
     for (const e of next.events) {
+      if (e.kind === "attack" || e.kind === "ability") attacker = e.side;
+      if (e.kind === "ability") banner = e.text;
       if (e.kind === "damage" && e.target) {
-        news.push({ id: e.id, side: e.target, text: `-${e.damage}` });
+        news.push({ id: e.id, side: e.target, text: `-${e.damage}`, effect: e.effect });
+        if (e.effect === "super" || e.effect === "weak") effect = e.effect;
       }
       if (e.kind === "heal" && e.heal) {
         news.push({ id: e.id, side: e.side, text: `+${e.heal}`, heal: true });
       }
     }
+    const hurt = news.find((n) => !n.heal);
     if (news.length > 0) {
       setFloats((f) => [...f, ...news]);
-      const hurt = news.find((n) => !n.heal);
       if (hurt) {
         setShake(hurt.side);
-        window.setTimeout(() => setShake(null), 320);
+        window.setTimeout(() => setShake(null), 380);
       }
       window.setTimeout(() => {
         setFloats((f) => f.filter((x) => !news.some((n) => n.id === x.id)));
       }, 1100);
+    }
+    if (attacker || hurt || banner) {
+      setFx({ attacker, hit: hurt?.side ?? null, effect, banner });
+      window.setTimeout(() => setFx(NO_FX), banner ? 1150 : 520);
     }
     setBattle(next);
   }
@@ -106,7 +124,7 @@ export function BattleArena({
         </div>
 
         {(battle.player.beam || battle.foe.beam) && (
-          <div className="mb-3 grid grid-cols-2 gap-2 text-[11px]">
+          <div className="anim-up mb-3 grid grid-cols-2 gap-2 text-[11px]">
             <span className={cn("truncate font-semibold", battle.player.beam?.text)}>
               {battle.player.beam
                 ? `${battle.player.beam.icon} ${battle.player.beam.name} · ${beamBonusLabel(battle.player.beam)}`
@@ -120,12 +138,31 @@ export function BattleArena({
           </div>
         )}
 
+        {fx.effect && (
+          <div
+            className={cn(
+              "fx-flash pointer-events-none absolute inset-0 z-10",
+              fx.effect === "super"
+                ? "bg-gradient-to-b from-gold/25 to-transparent"
+                : "bg-gradient-to-b from-mana/20 to-transparent",
+            )}
+          />
+        )}
+        {fx.banner && (
+          <div className="pointer-events-none absolute inset-x-0 top-1/3 z-20 grid place-items-center px-4">
+            <p className="anim-banner max-w-full truncate rounded-full bg-background/80 px-4 py-1.5 text-center font-display text-xs font-bold uppercase tracking-[0.18em] text-glow ring-1 ring-primary/40">
+              {fx.banner}
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 items-end gap-3 sm:gap-6">
           <FighterView
             fighter={player}
             side="player"
             floats={floats.filter((f) => f.side === "player")}
             shake={shake === "player"}
+            attacking={fx.attacker === "player"}
             label="Você"
             team={battle.player.fighters}
             activeIndex={battle.player.active}
@@ -135,6 +172,7 @@ export function BattleArena({
             side="foe"
             floats={floats.filter((f) => f.side === "foe")}
             shake={shake === "foe"}
+            attacking={fx.attacker === "foe"}
             label={battle.foe.name}
             team={battle.foe.fighters}
             activeIndex={battle.foe.active}
@@ -153,7 +191,7 @@ export function BattleArena({
                 key={f.key}
                 type="button"
                 onClick={() => digest(switchPlayerFighter(battle, i))}
-                className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-left text-sm ring-1 ring-border/60 hover:bg-secondary"
+                className="press flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-left text-sm ring-1 ring-border/60 hover:bg-secondary hover:ring-primary/40"
               >
                 <MonsterArt art={f.art} rarity={f.rarity} size="sm" animate={false} />
                 <span>
@@ -215,7 +253,7 @@ export function BattleArena({
                       type="button"
                       disabled={battle.turn !== "player"}
                       onClick={() => digest(voluntarySwitch(battle, i))}
-                      className="flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-left text-sm ring-1 ring-border/60 transition hover:bg-secondary disabled:opacity-50"
+                      className="press flex items-center gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-left text-sm ring-1 ring-border/60 hover:bg-secondary hover:ring-primary/40 disabled:opacity-50"
                     >
                       <MonsterArt art={f.art} rarity={f.rarity} size="sm" animate={false} />
                       <span>
@@ -239,7 +277,9 @@ export function BattleArena({
         ) : (
           <ul className="space-y-1">
             {battle.log.slice(-40).map((l, i) => (
-              <li key={`${i}-${l}`}>{l}</li>
+              <li key={`${i}-${l}`} className="anim-up">
+                {l}
+              </li>
             ))}
           </ul>
         )}
@@ -253,6 +293,7 @@ function FighterView({
   side,
   floats,
   shake,
+  attacking,
   label,
   team,
   activeIndex,
@@ -261,6 +302,7 @@ function FighterView({
   side: SideId;
   floats: Float[];
   shake: boolean;
+  attacking: boolean;
   label: string;
   team: Fighter[];
   activeIndex: number;
@@ -269,22 +311,37 @@ function FighterView({
   return (
     <div className={cn("relative flex flex-col gap-2", side === "foe" ? "items-end text-right" : "items-start")}>
       <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <div className={cn("relative", shake && "animate-pulse")}>
-        <MonsterArt
-          art={fighter.art}
-          rarity={fighter.rarity}
-          size="lg"
-          className={cn(shake && "translate-x-1 scale-95 transition-transform")}
-        />
+      <div
+        className={cn(
+          "relative",
+          attacking && (side === "player" ? "fx-attack-player" : "fx-attack-foe"),
+          shake && "fx-hit",
+        )}
+      >
+        <MonsterArt art={fighter.art} rarity={fighter.rarity} size="lg" />
+        {shake && (
+          <span className="fx-burst pointer-events-none absolute inset-0 rounded-full ring-4 ring-ember/70" />
+        )}
+        {fighter.mark && (
+          <span
+            className="anim-mark pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 rounded-full bg-background/80 px-1.5 text-xs ring-1 ring-gold/60"
+            title="Marca do Eclipse ativa"
+          >
+            ⚖️
+          </span>
+        )}
         {floats.map((f) => (
           <span
             key={f.id}
             className={cn(
-              "pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 animate-float font-display text-2xl font-bold drop-shadow",
-              f.heal ? "text-emerald-400" : "text-ember",
+              "pointer-events-none absolute left-1/2 top-0 font-display font-bold drop-shadow",
+              "animate-[ms-dmg-float_1.1s_var(--ease-out-soft)_both]",
+              f.heal ? "text-emerald-400" : f.effect === "super" ? "text-gold" : "text-ember",
+              f.effect === "super" ? "text-3xl" : "text-2xl",
             )}
           >
             {f.text}
+            {f.effect === "super" && <span className="ml-0.5 text-sm">✦</span>}
           </span>
         ))}
       </div>
@@ -295,7 +352,7 @@ function FighterView({
         <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-muted">
           <div
             className={cn(
-              "h-full rounded-full transition-all duration-500",
+              "h-full rounded-full transition-[width,background-color] duration-700 ease-out",
               pct > 50 ? "bg-emerald-500" : pct > 20 ? "bg-gold" : "bg-ember",
             )}
             style={{ width: `${pct}%` }}
