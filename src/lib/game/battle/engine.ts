@@ -8,6 +8,8 @@ import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
 import { elementIdsOf, elementOf, typeEffectMulti, type ElementId } from "../elements";
 import { beamBonusOf, resolveBeam, type BeamDef } from "./beams";
 import { roleIdOf, type RoleId } from "./roles";
+import { decideAiAction, pickAiReplacement } from "./ai";
+
 
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
