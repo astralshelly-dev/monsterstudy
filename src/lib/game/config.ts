@@ -466,7 +466,7 @@ export const ITEM_SHOP_PRICES: Record<string, number> = {
 };
 
 /** segundos de estudo/leitura necessários para ganhar 1 diamante (≈6 por hora) */
-export const DIAMOND_PER_SECONDS = 600;
+export const DIAMOND_PER_SECONDS = 120;
 
 
 
