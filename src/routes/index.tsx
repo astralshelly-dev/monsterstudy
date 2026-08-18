@@ -4,18 +4,15 @@ import {
   BookOpen,
   Brain,
   GraduationCap,
-  Trophy,
   Flame,
   Zap,
   Target,
   Clock,
-  Layers,
   ChevronRight,
-  TrendingUp,
   History as HistoryIcon,
   Swords,
   Gift,
-  ArrowRight,
+  Moon,
 } from "lucide-react";
 import { useGame } from "@/hooks/use-game";
 import {
@@ -63,7 +60,16 @@ function Dashboard() {
   const t = totals(state);
   const prog = userProgress(state);
   const rate = moneyPerSecond(state);
-  const today = state.activity[todayKey()] ?? { studySec: 0, readSec: 0, pages: 0, sessions: 0, xp: 0, diamonds: 0 };
+  const todayRaw = state.activity[todayKey()];
+  const today = {
+    studySec: todayRaw?.studySec ?? 0,
+    readSec: todayRaw?.readSec ?? 0,
+    pages: todayRaw?.pages ?? 0,
+    sessions: todayRaw?.sessions ?? 0,
+    xp: todayRaw?.xp ?? 0,
+  };
+  const todayDiamonds = 0; 
+
   const slots = incomeSlots(state);
   const showcase = incomeMonsterIds(state).filter((id) => MONSTERS_BY_ID[id]);
   const league = leagueOf(state.battle?.trophies ?? 0);
@@ -219,7 +225,7 @@ function Dashboard() {
               <TodayStat label="Páginas" value={num(today.pages)} sub="Lidas" />
               <TodayStat label="Sessões" value={num(today.sessions)} sub="Foco" />
               <TodayStat label="XP ganho" value={`+${num(today.xp || 0)}`} sub="Total" />
-              <TodayStat label="Diamantes" value={`+${num(today.diamonds || 0)}`} sub="Ganhos" />
+              <TodayStat label="Diamantes" value={`+${num(todayDiamonds)}`} sub="Ganhos" />
             </div>
           </section>
 
@@ -417,8 +423,8 @@ function FeaturedMonster({ id, state }: { id: string, state: any }) {
            <div className="bg-primary/20 text-primary px-2 py-0.5 rounded-md text-[9px] font-black tracking-tighter uppercase">
              NV {owned.level}
            </div>
-           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-             {def.role === 'attacker' ? 'Atacante' : def.role === 'tank' ? 'Tanque' : def.role === 'support' ? 'Suporte' : 'Controle'}
+           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest capitalize">
+             {def.rarity.replace('_', ' ')}
            </p>
         </div>
       </div>
