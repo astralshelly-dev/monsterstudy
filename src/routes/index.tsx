@@ -187,26 +187,23 @@ function Dashboard() {
           
           {/* AÇÃO RÁPIDA */}
           <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <QuickActionButton 
-              to="/estudar" 
-              icon={<GraduationCap className="h-6 w-6" />} 
-              label="ESTUDAR" 
+            <QuickActionButton
+              to="/estudar"
+              icon={<GraduationCap className="h-6 w-6" />}
+              label="ESTUDAR"
               desc="Temporizador de foco"
-              variant="default"
             />
-            <QuickActionButton 
-              to="/ler" 
-              icon={<BookOpen className="h-6 w-6" />} 
-              label="LER" 
+            <QuickActionButton
+              to="/ler"
+              icon={<BookOpen className="h-6 w-6" />}
+              label="LER"
               desc="Contador de páginas"
-              variant="secondary"
             />
-            <QuickActionButton 
-              to="/batalhas" 
-              icon={<Swords className="h-6 w-6" />} 
-              label="BATALHAR" 
+            <QuickActionButton
+              to="/batalhas"
+              icon={<Swords className="h-6 w-6" />}
+              label="BATALHAR"
               desc="Ranked e Treino"
-              variant="secondary"
             />
           </section>
 
@@ -293,15 +290,15 @@ function Dashboard() {
   );
 }
 
-function QuickActionButton({ to, icon, label, desc, variant }: { to: string, icon: React.ReactNode, label: string, desc: string, variant: "default" | "secondary" }) {
+function QuickActionButton({ to, icon, label, desc }: { to: string, icon: React.ReactNode, label: string, desc: string }) {
   return (
-    <Button asChild variant={variant} className="h-auto p-0 rounded-2xl overflow-hidden shadow-lg group press border-0">
-      <Link to={to} className="flex flex-col items-center gap-1 w-full py-5 relative">
+    <Button asChild variant="secondary" className="h-28 w-full rounded-2xl overflow-hidden shadow-lg group press border-0 p-0">
+      <Link to={to} className="flex flex-col items-center justify-center gap-2 h-full w-full relative">
         <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
         <div className="relative z-10 text-primary drop-shadow-sm group-hover:scale-110 transition-transform">
           {icon}
         </div>
-        <div className="relative z-10 mt-1">
+        <div className="relative z-10 text-center">
           <p className="font-display text-sm font-black tracking-widest leading-none">{label}</p>
           <p className="text-[9px] font-bold text-muted-foreground uppercase opacity-70 tracking-tighter mt-0.5">{desc}</p>
         </div>
