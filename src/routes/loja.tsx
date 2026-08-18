@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { playSfx } from "@/lib/game/audio";
 import { useGame } from "@/hooks/use-game";
 import {
   ITEM_SHOP_PRICES,
@@ -81,7 +82,10 @@ function Shop() {
                     className="mt-4"
                     disabled={state.money < t.price}
                     onClick={() => {
-                      if (buyTimer(t.minutes)) toast.success(`Cronômetro de ${t.label} desbloqueado!`);
+                      if (buyTimer(t.minutes)) {
+                        playSfx("purchase");
+                        toast.success(`Cronômetro de ${t.label} desbloqueado!`);
+                      }
                     }}
                   >
                     Desbloquear
@@ -137,7 +141,10 @@ function Shop() {
                   className="mt-4"
                   disabled={maxed || state.money < price}
                   onClick={() => {
-                    if (buyUpgrade(id)) toast.success(`${u.name} melhorado para o nível ${level + 1}!`);
+                    if (buyUpgrade(id)) {
+                      playSfx("purchase");
+                      toast.success(`${u.name} melhorado para o nível ${level + 1}!`);
+                    }
                   }}
                 >
                   {maxed ? "Nível máximo" : `Melhorar — ${money(price)}`}
@@ -185,8 +192,13 @@ function Shop() {
                         disabled={(state.diamonds ?? 0) < price}
                         onClick={() => {
                           const res = buyItem(item.id);
-                          if (res.ok) toast.success(res.message);
-                          else toast.error(res.message);
+                          if (res.ok) {
+                            playSfx("purchase");
+                            toast.success(res.message);
+                          } else {
+                            playSfx("error");
+                            toast.error(res.message);
+                          }
                         }}
                       >
                         Comprar — {num(price)} 💎
