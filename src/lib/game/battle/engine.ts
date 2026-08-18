@@ -53,6 +53,8 @@ export type Fighter = {
   role: RoleId;
   /** bônus de dano do feixe elemental ativo da equipe (0 quando não há feixe) */
   dmgBonus: number;
+  /** dano total causado por este monstro na partida (estatísticas) */
+  dealt: number;
 };
 
 
@@ -139,6 +141,7 @@ export function makeFighter(
     mark: null,
     role: roleIdOf(monsterId),
     dmgBonus: bonus.dmg,
+    dealt: 0,
   };
 }
 
@@ -321,6 +324,7 @@ function applyDamage(
     }
   }
   fighter.hp = Math.max(0, fighter.hp - dmg);
+  if (src?.attacker && dmg > 0) src.attacker.dealt = (src.attacker.dealt ?? 0) + dmg;
 
   // a marca do veredito alimenta quem ferir o alvo marcado
   const healer = src?.attacker;
@@ -674,7 +678,6 @@ function finishTurn(b: Battle, actor: SideId) {
       b.awaitingSwitch = true;
     } else {
       defSide.active = pickAiReplacement(defSide, actor === "player" ? b.player : b.foe);
-      defSide.fighters[defSide.active]!.guard = 1;
 
       b.events.push({
         id: eid(),
@@ -710,7 +713,6 @@ function finishTurnAfterAiSwitch(b: Battle) {
       b.events.push({ id: eid(), kind: "end", side: "player", text: "Você venceu a batalha!" });
     } else {
       b.foe.active = pickAiReplacement(b.foe, b.player);
-      b.foe.fighters[b.foe.active]!.guard = 1;
       b.events.push({
         id: eid(),
         kind: "switch",
@@ -843,7 +845,6 @@ export function switchPlayerFighter(prev: Battle, index: number): Battle {
   const f = b.player.fighters[index];
   if (!f || f.hp <= 0) return prev;
   b.player.active = index;
-  f.guard = 1;
   b.awaitingSwitch = false;
   b.events = [{ id: eid(), kind: "switch", side: "player", text: `Você envia ${f.name}` }];
   b.log = [...b.log, `Você envia ${f.name}`].slice(-60);

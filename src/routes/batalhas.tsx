@@ -449,6 +449,26 @@ function BattlesPage() {
           }
         />
         <BattleArena battle={battle} setBattle={setBattle} onFinish={finish} />
+        {!battle.over && (
+          <div className="panel flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">
+              {mode === "ranked"
+                ? "Desistir encerra a partida como derrota e você perde troféus."
+                : "Desistir encerra a partida como derrota."}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-ember/50 text-ember hover:bg-ember/10"
+              onClick={() => {
+                if (!window.confirm("Desistir da batalha? Ela será registrada como derrota.")) return;
+                finish("foe", battle.turnNo);
+              }}
+            >
+              🏳️ Desistir
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
@@ -457,10 +477,17 @@ function BattlesPage() {
     const after = leagueProgress(outcome.trophiesAfter);
     const win = outcome.result === "win";
     
-    // Calcula o MVP (monstro que causou mais dano ou mitigou mais)
-    // Para simplificar, pegamos o primeiro do time que ainda tem mais HP relativo
-    const bestFighter = win ? battle?.player.fighters.sort((a,b) => (b.hp/b.maxHp) - (a.hp/a.maxHp))[0] : null;
+    // Destaque da partida: o monstro que causou mais dano
+    const myDamage = [...(battle?.player.fighters ?? [])]
+      .map((f) => ({ f, dmg: f.dealt ?? 0 }))
+      .sort((a, b) => b.dmg - a.dmg);
+    const foeDamage = [...(battle?.foe.fighters ?? [])]
+      .map((f) => ({ f, dmg: f.dealt ?? 0 }))
+      .sort((a, b) => b.dmg - a.dmg);
+    const bestFighter = myDamage[0] && myDamage[0].dmg > 0 ? myDamage[0].f : null;
     const bestMonster = bestFighter ? MONSTERS_BY_ID[bestFighter.monsterId] : null;
+    const myTotal = myDamage.reduce((a, x) => a + x.dmg, 0);
+    const foeTotal = foeDamage.reduce((a, x) => a + x.dmg, 0);
 
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -533,7 +560,7 @@ function BattlesPage() {
             </div>
 
             {/* MVP do time */}
-            {win && bestMonster && (
+            {bestMonster && (
               <div className="panel p-6 space-y-4 bg-background/40 backdrop-blur-sm border-white/5 relative group cursor-help">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Destaque da Equipe</p>
                 <div className="flex items-center gap-3">
@@ -542,11 +569,23 @@ function BattlesPage() {
                    </div>
                    <div className="text-left min-w-0">
                       <p className="font-display font-black text-lg italic tracking-tight truncate leading-none uppercase">{bestMonster.name}</p>
-                      <p className="text-[9px] font-black text-gold uppercase tracking-widest">MVP DA PARTIDA</p>
+                      <p className="text-[9px] font-black text-gold uppercase tracking-widest">
+                        MAIOR DANO · {num(bestFighter?.dealt ?? 0)}
+                      </p>
                    </div>
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="relative z-10 grid w-full max-w-4xl gap-4 md:grid-cols-2">
+            <DamageTable title={`Sua equipe · ${num(myTotal)} de dano`} rows={myDamage} total={myTotal} tone="primary" />
+            <DamageTable
+              title={`${outcome.record.opponentName} · ${num(foeTotal)} de dano`}
+              rows={foeDamage}
+              total={foeTotal}
+              tone="ember"
+            />
           </div>
 
           <div className="mt-4 flex flex-wrap justify-center gap-4 relative z-10 w-full">
@@ -779,6 +818,44 @@ function FighterPreview({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+
+/** estatísticas de dano por monstro no fim da partida */
+function DamageTable({
+  title,
+  rows,
+  total,
+  tone,
+}: {
+  title: string;
+  rows: { f: { key: string; name: string; dealt?: number; hp: number }; dmg: number }[];
+  total: number;
+  tone: "primary" | "ember";
+}) {
+  return (
+    <div className="panel space-y-3 border-white/5 bg-background/40 p-6 text-left backdrop-blur-sm">
+      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
+      <ul className="space-y-2">
+        {rows.map(({ f, dmg }) => (
+          <li key={f.key} className="space-y-1">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className={cn("truncate font-semibold", f.hp <= 0 && "text-muted-foreground line-through")}>
+                {f.name}
+              </span>
+              <span className="tabular-nums font-black">{num(dmg)}</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted/50">
+              <div
+                className={cn("h-full rounded-full", tone === "primary" ? "bg-primary" : "bg-ember")}
+                style={{ width: `${total > 0 ? Math.round((dmg / total) * 100) : 0}%` }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
