@@ -779,10 +779,7 @@ export function saveStudySession(input: {
       ? [session, ...s.sessions.filter((x) => x.id !== previous.id)]
       : [session, ...s.sessions];
     markActivity(s, "study", input.durationSec, 0, session.subject);
-    bumpQuest(s, "study_sessions", 1);
-    bumpQuest(s, "money_earned", Math.round(reward.money));
-    if (reward.monsterId) bumpQuest(s, "monsters_found", 1);
-    applyReward(s, reward);
+    grantReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
     s.lastSessionId = session.id;
@@ -847,9 +844,7 @@ export function saveReadingSession(input: {
         : b,
     );
     markActivity(s, "read", input.durationSec, pagesRead);
-    bumpQuest(s, "money_earned", Math.round(reward.money));
-    if (reward.monsterId) bumpQuest(s, "monsters_found", 1);
-    applyReward(s, reward);
+    grantReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
     s.lastSessionId = session.id;
