@@ -37,6 +37,7 @@ import { bloodMoonActive, bloodMoonRemaining, bloodMoonState } from "@/lib/game/
 import { BumpOnChange, SmoothBar, Stagger, AnimatedNumber } from "@/components/game/motion";
 import { cn } from "@/lib/utils";
 import { leagueOf } from "@/lib/game/battle/config";
+import { MonsterArt } from "@/components/game/MonsterArt";
 import { MonsterDialog } from "./monsterdex";
 
 export const Route = createFileRoute("/")({
