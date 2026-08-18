@@ -828,7 +828,7 @@ export function saveReadingSession(input: {
     startPage: previous?.startPage ?? startPage,
     endPage: input.endPage,
     pagesRead: totalPages,
-    minPerPage: totalPages > 0 ? Math.round((totalDuration / 60 / totalPages) * 100) / 100 : 0,
+    minPerPage: totalPages > 0 ? totalDuration / 60 / totalPages : 0,
     notes: [previous?.notes, input.notes].filter(Boolean).join(" · ") || undefined,
     reward,
   };
