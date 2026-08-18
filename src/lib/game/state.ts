@@ -469,38 +469,9 @@ export function cancelTimer() {
 // ------------------------------------------------------------
 // Recompensas
 // ------------------------------------------------------------
-export function grantReward(reward: Reward) {
-  setState((s) => {
-    s.money += reward.money;
-    s.shards += reward.shards;
-    s.profile.xp += reward.xp;
-
-    if (reward.monsterId) {
-      const owned = s.monsters[reward.monsterId];
-      if (owned) {
-        owned.copies += 1;
-      } else {
-        s.monsters[reward.monsterId] = {
-          id: reward.monsterId,
-          copies: 1,
-          level: 1,
-          xp: 0,
-          discoveredAt: new Date().toISOString(),
-        };
-      }
-    }
-
-    // Atualiza missões diárias baseadas nos ganhos
-    const day = todayKey();
-    if (s.quests.day === day) {
-      for (const q of s.quests.list) {
-        const t = QUESTS_BY_ID[q.templateId];
-        if (!t) continue;
-        if (t.metric === "money_earned") q.progress += reward.money;
-        if (t.metric === "monsters_found" && reward.monsterId && !reward.duplicate) q.progress += 1;
-      }
-    }
-  });
+// Replaced by internal grantReward for state transitions and exported version for generic use
+export function grantRewardUI(reward: Reward) {
+  setState((s) => grantReward(s, reward));
 }
 
 export function timerConfig(minutes: number): TimerConfig {
@@ -1074,7 +1045,7 @@ export function claimSignupReward(): { ok: boolean; monsterName: string | null }
   setState((s) => {
     if (s.redeemedCodes.includes(SIGNUP_FLAG)) return;
     s.redeemedCodes = [...s.redeemedCodes, SIGNUP_FLAG];
-    applyReward(s, {
+    grantReward(s, {
       monsterId: def?.id ?? null,
       rarity: SIGNUP_REWARD.rarity,
       duplicate: false,
@@ -1603,7 +1574,7 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
         const pool = MONSTERS_BY_RARITY[rarity] ?? [];
         const picked = pool[Math.floor(Math.random() * pool.length)];
         if (picked) {
-          applyReward(s, {
+          grantReward(s, {
             monsterId: picked.id,
             rarity,
             duplicate: Boolean(s.monsters[picked.id]),
@@ -1620,7 +1591,7 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
         const pool = MONSTERS_BY_RARITY[e.rarity] ?? [];
         const picked = pool[Math.floor(Math.random() * pool.length)];
         if (picked) {
-          applyReward(s, {
+          grantReward(s, {
             monsterId: picked.id,
             rarity: e.rarity,
             duplicate: Boolean(s.monsters[picked.id]),
