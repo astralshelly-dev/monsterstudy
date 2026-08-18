@@ -1,5 +1,7 @@
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
+import { RoleBadge } from "@/components/game/RoleBadge";
+
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { battleStats, abilityFor, TEAM_SIZE } from "@/lib/game/battle/config";
 import { cn } from "@/lib/utils";
