@@ -48,6 +48,12 @@ type NavGroup = { id: string; label: string; emoji: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
+    id: "evento",
+    label: "Lua de Sangue",
+    emoji: "🌕",
+    items: [{ to: "/lua-de-sangue", label: "🌕 Lua de Sangue", icon: Moon, primary: true }],
+  },
+  {
     id: "principal",
     label: "Principal",
     emoji: "🏠",
