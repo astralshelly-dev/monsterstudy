@@ -1405,7 +1405,7 @@ function accumulateItemProgress(s: GameState, seconds: number) {
   s.itemProgressSec = acc;
 }
 
-/** diamantes ganhos com tempo real de estudo/leitura (≈6 por hora) */
+/** diamantes ganhos com tempo real de estudo/leitura (≈30 por hora) */
 function accumulateDiamonds(s: GameState, seconds: number) {
   if (seconds <= 0) return;
   let acc = (s.diamondProgressSec ?? 0) + seconds;
