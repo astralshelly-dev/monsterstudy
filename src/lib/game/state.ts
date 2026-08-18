@@ -470,6 +470,51 @@ export function cancelTimer() {
 // Recompensas
 // ------------------------------------------------------------
 // Replaced by internal grantReward for state transitions and exported version for generic use
+function grantReward(s: GameState, reward: Reward) {
+  const id = reward.monsterId;
+  if (id) {
+    const existing = s.monsters[id];
+    if (existing) {
+      s.monsters = {
+        ...s.monsters,
+        [id]: { ...existing, copies: existing.copies + 1 },
+      };
+    } else {
+      s.monsters = {
+        ...s.monsters,
+        [id]: {
+          id,
+          copies: 1,
+          level: 1,
+          xp: 0,
+          discoveredAt: new Date().toISOString(),
+        },
+      };
+      if (!s.activeMonsterId) s.activeMonsterId = id;
+      const list = (s.incomeMonsterIds ?? []).filter((x) => s.monsters[x]);
+      if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
+      else s.incomeMonsterIds = list;
+    }
+    bumpActivity(s, { monsters: 1 });
+  }
+
+  s.money += reward.money;
+  s.shards += reward.shards;
+  addUserXp(s, reward.xp);
+
+  // Atualiza missões diárias baseadas nos ganhos
+  const day = todayKey();
+  if (s.quests.day === day) {
+    for (const q of s.quests.list) {
+      const t = QUESTS_BY_ID[q.templateId];
+      if (!t) continue;
+      if (t.metric === "money_earned") q.progress += reward.money;
+      if (t.metric === "monsters_found" && reward.monsterId && !reward.duplicate) q.progress += 1;
+      if (t.metric === "study_sessions" && reward.subject) q.progress += 1;
+    }
+  }
+}
+
 export function grantRewardUI(reward: Reward) {
   setState((s) => grantReward(s, reward));
 }
@@ -1582,7 +1627,6 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
             money: 0,
             shards: 0,
           });
-          bumpQuest(s, "monsters_found", 1);
           message = `${picked.name} (${RARITIES[rarity].name}) apareceu!`;
         }
         break;
@@ -1599,7 +1643,7 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
             money: 0,
             shards: 0,
           });
-          bumpQuest(s, "monsters_found", 1);
+          
           message = `${picked.name} apareceu!`;
         }
         break;

@@ -523,11 +523,11 @@ function BattlesPage() {
                 <div className="grid grid-cols-2 gap-3">
                    <div className="space-y-1">
                       <p className="text-[9px] font-black text-muted-foreground uppercase">Moedas</p>
-                      <p className="font-display font-black text-lg italic leading-none text-gold">+{win ? "250" : "50"}</p>
+                      <p className="font-display font-black text-lg italic leading-none text-gold">+{outcome.money}</p>
                    </div>
                    <div className="space-y-1">
                       <p className="text-[9px] font-black text-muted-foreground uppercase">XP Conta</p>
-                      <p className="font-display font-black text-lg italic leading-none text-primary">+{win ? "100" : "20"}</p>
+                      <p className="font-display font-black text-lg italic leading-none text-primary">+{outcome.xp}</p>
                    </div>
                 </div>
             </div>
