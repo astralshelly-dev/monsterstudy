@@ -697,6 +697,34 @@ function finishTurn(b: Battle, actor: SideId) {
   b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
 }
 
+/** fecha o turno quando a IA gastou a rodada trocando de monstro */
+function finishTurnAfterAiSwitch(b: Battle) {
+  const f = b.foe.fighters[b.foe.active]!;
+  if (f.hp <= 0) {
+    b.events.push({ id: eid(), kind: "ko", side: "foe", text: `${f.name} foi derrotado!` });
+    if (alive(b.foe).length === 0) {
+      b.over = true;
+      b.winner = "player";
+      b.events.push({ id: eid(), kind: "end", side: "player", text: "Você venceu a batalha!" });
+    } else {
+      b.foe.active = pickAiReplacement(b.foe, b.player);
+      b.foe.fighters[b.foe.active]!.guard = 1;
+      b.events.push({
+        id: eid(),
+        kind: "switch",
+        side: "foe",
+        text: `${b.foe.name} envia ${b.foe.fighters[b.foe.active]!.name}`,
+      });
+    }
+  }
+  if (!b.over) {
+    b.turn = firstMover(b.player, b.foe);
+    b.turnNo += 1;
+  }
+  b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
+}
+
+
 /**
  * A IA decide quando soltar a habilidade conforme o estilo:
  * ofensivo dispara sempre; defensivo guarda para habilidades de proteção ou
