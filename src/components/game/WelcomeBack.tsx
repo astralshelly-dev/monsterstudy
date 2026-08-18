@@ -38,7 +38,10 @@ export function WelcomeBack({
           <p className="text-xs text-muted-foreground">
             A renda offline acumula por até 24 horas. Bora estudar?
           </p>
-          <Button size="lg" className="w-full" onClick={onClose}>
+          <Button size="lg" className="w-full" onClick={() => {
+            collectOfflineEarnings();
+            onClose();
+          }}>
             Coletar e continuar
           </Button>
         </div>
