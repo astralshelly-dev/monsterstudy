@@ -1355,6 +1355,8 @@ export type BattleOutcome = {
   trophiesBefore: number;
   trophiesAfter: number;
   delta: number;
+  money: number;
+  xp: number;
 };
 
 /** grava o resultado da batalha e atualiza troféus/estatísticas do jogador */
@@ -1373,6 +1375,11 @@ export function recordBattle(input: {
   const before = battleData().trophies;
   const delta = input.mode === "ranked" ? rollTrophyDelta(input.result, before) : 0;
   const after = Math.max(0, before + delta);
+  
+  const win = input.result === "win";
+  const moneyReward = win ? 250 : 50;
+  const xpReward = win ? 100 : 20;
+
   const record: BattleRecord = {
     id: uid(),
     at: new Date().toISOString(),

@@ -210,10 +210,9 @@ function ReadingRunning({ timer }: { timer: any }) {
       </div>
 
       <TimerDial
-        remainingSec={remaining}
-        totalSec={timer.durationSec ?? 0}
+        remaining={remaining}
+        total={timer.durationSec ?? 0}
         isPaused={isPaused}
-        kind="read"
       />
 
       <div className="flex gap-4">
@@ -328,7 +327,7 @@ function ReadingCompletion({ timer }: { timer: any }) {
         </div>
       </div>
 
-      <ContinueSessionPanel />
+      <ContinueSessionPanel kind="read" />
     </div>
   );
 }
