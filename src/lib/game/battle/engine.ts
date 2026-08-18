@@ -93,10 +93,17 @@ export type Battle = {
 let seq = 0;
 const eid = () => `e${(seq += 1)}`;
 
-export function makeFighter(monsterId: string, level: number, keySuffix = ""): Fighter | null {
+export function makeFighter(
+  monsterId: string,
+  level: number,
+  keySuffix = "",
+  beam?: BeamDef | null,
+): Fighter | null {
   const def = MONSTERS_BY_ID[monsterId];
   if (!def) return null;
   const s = battleStats(def.rarity, level, monsterId);
+  const bonus = beamBonusOf(beam ?? null);
+  const maxHp = Math.round(s.maxHp * (1 + bonus.hp));
   return {
     key: `${monsterId}${keySuffix}`,
     monsterId,
@@ -104,10 +111,10 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     art: def.art,
     rarity: def.rarity,
     level,
-    maxHp: s.maxHp,
-    hp: s.maxHp,
+    maxHp,
+    hp: maxHp,
     atk: s.atk,
-    def: s.def,
+    def: Math.round(s.def * (1 + bonus.def)),
     spd: s.spd,
     ability: abilityFor(monsterId),
     element: elementOf(monsterId).id,
@@ -123,6 +130,8 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     spdBuff: 0,
     echo: null,
     mark: null,
+    role: roleIdOf(monsterId),
+    dmgBonus: bonus.dmg,
   };
 }
 
@@ -134,22 +143,36 @@ export function createBattle(input: {
   foeName: string;
   foeTeam: { monsterId: string; level: number }[];
   foeBehavior?: AiBehavior;
+  /** feixe elemental escolhido pelo jogador (só 1 fica ativo) */
+  playerBeamId?: string | null | undefined;
+  /** feixe do adversário (a IA usa o melhor da composição dela) */
+  foeBeamId?: string | null | undefined;
 }): Battle {
+  const playerBeam = resolveBeam(
+    input.playerTeam.map((m) => m.monsterId),
+    input.playerBeamId ?? null,
+  );
+  const foeBeam = resolveBeam(
+    input.foeTeam.map((m) => m.monsterId),
+    input.foeBeamId ?? null,
+  );
   const player: Side = {
     name: input.playerName,
     fighters: input.playerTeam
-      .map((m, i) => makeFighter(m.monsterId, m.level, `-p${i}`))
+      .map((m, i) => makeFighter(m.monsterId, m.level, `-p${i}`, playerBeam))
       .filter((f): f is Fighter => !!f),
     active: 0,
     behavior: "equilibrado",
+    beam: playerBeam,
   };
   const foe: Side = {
     name: input.foeName,
     fighters: input.foeTeam
-      .map((m, i) => makeFighter(m.monsterId, m.level, `-f${i}`))
+      .map((m, i) => makeFighter(m.monsterId, m.level, `-f${i}`, foeBeam))
       .filter((f): f is Fighter => !!f),
     active: 0,
     behavior: input.foeBehavior ?? "equilibrado",
+    beam: foeBeam,
   };
   return {
     mode: input.mode,
@@ -163,6 +186,7 @@ export function createBattle(input: {
     winner: null,
     awaitingSwitch: false,
   };
+
 }
 
 /** velocidade efetiva: comportamento da IA muda um pouco a iniciativa */
