@@ -271,7 +271,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 sm:pt-6 lg:pb-10">{children}</main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-5 items-stretch">
             {flatNav
               .filter((n) => n.primary)
