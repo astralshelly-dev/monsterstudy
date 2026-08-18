@@ -6,6 +6,9 @@ import { MONSTERS_BY_ID } from "../monsters";
 import type { RarityId } from "../config";
 import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
 import { elementIdsOf, elementOf, typeEffectMulti, type ElementId } from "../elements";
+import { beamBonusOf, resolveBeam, type BeamDef } from "./beams";
+import { roleIdOf, type RoleId } from "./roles";
+
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
 
