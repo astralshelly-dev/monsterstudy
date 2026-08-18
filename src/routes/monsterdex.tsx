@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/game/Primitives";
 import { MonsterCard } from "@/components/game/MonsterCard";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
+import { RoleBadge } from "@/components/game/RoleBadge";
 import { ElementTable } from "@/components/game/ElementTable";
 import { ELEMENTS_BY_ID, combinedMatchups, elementIdsOf } from "@/lib/game/elements";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -161,6 +162,7 @@ export function MonsterDialog({ id, onClose }: { id: string | null; onClose: () 
               <div className="mt-2 flex items-center justify-center gap-2">
                 <RarityBadge rarity={def.rarity} />
                 <ElementBadge monsterId={def.id} />
+                <RoleBadge monsterId={def.id} />
                 <span className="text-xs text-muted-foreground">
                   {HABITATS[def.habitat].icon} {HABITATS[def.habitat].name}
                 </span>

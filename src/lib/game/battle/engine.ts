@@ -6,6 +6,11 @@ import { MONSTERS_BY_ID } from "../monsters";
 import type { RarityId } from "../config";
 import { abilityFor, abilityScale, battleStats, type Ability } from "./config";
 import { elementIdsOf, elementOf, typeEffectMulti, type ElementId } from "../elements";
+import { beamBonusOf, resolveBeam, type BeamDef } from "./beams";
+import { roleIdOf, type RoleId } from "./roles";
+import { decideAiAction, pickAiReplacement } from "./ai";
+
+
 
 export type AiBehavior = "ofensivo" | "defensivo" | "equilibrado";
 
@@ -44,9 +49,12 @@ export type Fighter = {
   echo: { turns: number; dmg: number } | null;
   /** marcado pelo veredito (permanente): dano ampliado + dreno para quem o ferir */
   mark: { pct: number; lifestealPct: number; abilityLifestealPct: number } | null;
-
-
+  /** função estratégica do monstro (só identidade: não muda atributos) */
+  role: RoleId;
+  /** bônus de dano do feixe elemental ativo da equipe (0 quando não há feixe) */
+  dmgBonus: number;
 };
+
 
 export type SideId = "player" | "foe";
 
@@ -54,6 +62,9 @@ export type Side = {
   name: string;
   fighters: Fighter[];
   active: number;
+  /** feixe elemental ativo desta equipe (no máximo 1) */
+  beam?: BeamDef | null | undefined;
+
   behavior: AiBehavior;
 };
 
@@ -87,10 +98,17 @@ export type Battle = {
 let seq = 0;
 const eid = () => `e${(seq += 1)}`;
 
-export function makeFighter(monsterId: string, level: number, keySuffix = ""): Fighter | null {
+export function makeFighter(
+  monsterId: string,
+  level: number,
+  keySuffix = "",
+  beam?: BeamDef | null,
+): Fighter | null {
   const def = MONSTERS_BY_ID[monsterId];
   if (!def) return null;
   const s = battleStats(def.rarity, level, monsterId);
+  const bonus = beamBonusOf(beam ?? null);
+  const maxHp = Math.round(s.maxHp * (1 + bonus.hp));
   return {
     key: `${monsterId}${keySuffix}`,
     monsterId,
@@ -98,10 +116,10 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     art: def.art,
     rarity: def.rarity,
     level,
-    maxHp: s.maxHp,
-    hp: s.maxHp,
+    maxHp,
+    hp: maxHp,
     atk: s.atk,
-    def: s.def,
+    def: Math.round(s.def * (1 + bonus.def)),
     spd: s.spd,
     ability: abilityFor(monsterId),
     element: elementOf(monsterId).id,
@@ -117,6 +135,8 @@ export function makeFighter(monsterId: string, level: number, keySuffix = ""): F
     spdBuff: 0,
     echo: null,
     mark: null,
+    role: roleIdOf(monsterId),
+    dmgBonus: bonus.dmg,
   };
 }
 
@@ -128,22 +148,36 @@ export function createBattle(input: {
   foeName: string;
   foeTeam: { monsterId: string; level: number }[];
   foeBehavior?: AiBehavior;
+  /** feixe elemental escolhido pelo jogador (só 1 fica ativo) */
+  playerBeamId?: string | null | undefined;
+  /** feixe do adversário (a IA usa o melhor da composição dela) */
+  foeBeamId?: string | null | undefined;
 }): Battle {
+  const playerBeam = resolveBeam(
+    input.playerTeam.map((m) => m.monsterId),
+    input.playerBeamId ?? null,
+  );
+  const foeBeam = resolveBeam(
+    input.foeTeam.map((m) => m.monsterId),
+    input.foeBeamId ?? null,
+  );
   const player: Side = {
     name: input.playerName,
     fighters: input.playerTeam
-      .map((m, i) => makeFighter(m.monsterId, m.level, `-p${i}`))
+      .map((m, i) => makeFighter(m.monsterId, m.level, `-p${i}`, playerBeam))
       .filter((f): f is Fighter => !!f),
     active: 0,
     behavior: "equilibrado",
+    beam: playerBeam,
   };
   const foe: Side = {
     name: input.foeName,
     fighters: input.foeTeam
-      .map((m, i) => makeFighter(m.monsterId, m.level, `-f${i}`))
+      .map((m, i) => makeFighter(m.monsterId, m.level, `-f${i}`, foeBeam))
       .filter((f): f is Fighter => !!f),
     active: 0,
     behavior: input.foeBehavior ?? "equilibrado",
+    beam: foeBeam,
   };
   return {
     mode: input.mode,
@@ -157,6 +191,7 @@ export function createBattle(input: {
     winner: null,
     awaitingSwitch: false,
   };
+
 }
 
 /** velocidade efetiva: comportamento da IA muda um pouco a iniciativa */
@@ -191,8 +226,10 @@ function alive(side: Side): Fighter[] {
 
 function effAtk(f: Fighter, behavior: AiBehavior): number {
   const bias = behavior === "ofensivo" ? 1.12 : behavior === "defensivo" ? 0.92 : 1;
-  return f.atk * (1 + f.atkBuff) * bias;
+  // o feixe elemental da equipe soma um bônus pequeno de dano
+  return f.atk * (1 + f.atkBuff) * bias * (1 + (f.dmgBonus ?? 0));
 }
+
 
 function effDef(f: Fighter, behavior: AiBehavior): number {
   const bias = behavior === "defensivo" ? 1.15 : behavior === "ofensivo" ? 0.92 : 1;
@@ -634,8 +671,9 @@ function finishTurn(b: Battle, actor: SideId) {
     } else if (foeSideId === "player") {
       b.awaitingSwitch = true;
     } else {
-      defSide.active = pickAiSwitch(defSide);
+      defSide.active = pickAiReplacement(defSide, actor === "player" ? b.player : b.foe);
       defSide.fighters[defSide.active]!.guard = 1;
+
       b.events.push({
         id: eid(),
         kind: "switch",
@@ -658,6 +696,34 @@ function finishTurn(b: Battle, actor: SideId) {
   }
   b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
 }
+
+/** fecha o turno quando a IA gastou a rodada trocando de monstro */
+function finishTurnAfterAiSwitch(b: Battle) {
+  const f = b.foe.fighters[b.foe.active]!;
+  if (f.hp <= 0) {
+    b.events.push({ id: eid(), kind: "ko", side: "foe", text: `${f.name} foi derrotado!` });
+    if (alive(b.foe).length === 0) {
+      b.over = true;
+      b.winner = "player";
+      b.events.push({ id: eid(), kind: "end", side: "player", text: "Você venceu a batalha!" });
+    } else {
+      b.foe.active = pickAiReplacement(b.foe, b.player);
+      b.foe.fighters[b.foe.active]!.guard = 1;
+      b.events.push({
+        id: eid(),
+        kind: "switch",
+        side: "foe",
+        text: `${b.foe.name} envia ${b.foe.fighters[b.foe.active]!.name}`,
+      });
+    }
+  }
+  if (!b.over) {
+    b.turn = firstMover(b.player, b.foe);
+    b.turnNo += 1;
+  }
+  b.log = [...b.log, ...b.events.map((e) => e.text)].slice(-60);
+}
+
 
 /**
  * A IA decide quando soltar a habilidade conforme o estilo:
@@ -709,15 +775,39 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
   // a proteção da troca vale apenas até o monstro agir
   attacker.guard = 0;
 
+  // ---- decisão da IA (mesmas regras do jogador) ----
+  const aiAction =
+    actor === "foe" ? decideAiAction(b, attacker.charge === 0 && aiWantsAbility(b, attacker)) : null;
+
+  if (aiAction?.kind === "switch") {
+    const next = b.foe.fighters[aiAction.index];
+    if (next && next.hp > 0) {
+      // trocar consome o turno, exatamente como para o jogador
+      attacker.charge = Math.min(attacker.ability.cooldown, attacker.charge + 1);
+      b.foe.active = aiAction.index;
+      next.guard = 1;
+      b.events.push({
+        id: eid(),
+        kind: "switch",
+        side: "foe",
+        text: `${b.foe.name} troca para ${next.name} (gastou o turno)`,
+      });
+      tickBurn(b, "foe");
+      finishTurnAfterAiSwitch(b);
+      return b;
+    }
+  }
+
   if (wantsSpecial) {
     basicAttack(b, actor, attacker, defSide, defSideId, 0.5);
     if (defSide.fighters[defSide.active]!.hp > 0) useAbility(b, actor, attacker, defSide, defSideId);
     else attacker.charge = attacker.ability.cooldown;
-  } else if (actor === "foe" && attacker.charge === 0 && aiWantsAbility(b, attacker)) {
+  } else if (actor === "foe" && aiAction?.kind === "ability" && attacker.charge === 0) {
     useAbility(b, actor, attacker, defSide, defSideId);
   } else {
     basicAttack(b, actor, attacker, defSide, defSideId);
   }
+
 
 
   if (defSide.fighters[defSide.active]!.hp > 0) tickBurn(b, defSideId);

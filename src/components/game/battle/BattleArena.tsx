@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
+import { RoleBadge } from "@/components/game/RoleBadge";
+import { beamBonusLabel } from "@/lib/game/battle/beams";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -102,6 +104,21 @@ export function BattleArena({
             {battle.over ? "Fim" : battle.turn === "player" ? "Sua vez" : `Vez de ${battle.foe.name}`}
           </span>
         </div>
+
+        {(battle.player.beam || battle.foe.beam) && (
+          <div className="mb-3 grid grid-cols-2 gap-2 text-[11px]">
+            <span className={cn("truncate font-semibold", battle.player.beam?.text)}>
+              {battle.player.beam
+                ? `${battle.player.beam.icon} ${battle.player.beam.name} · ${beamBonusLabel(battle.player.beam)}`
+                : ""}
+            </span>
+            <span className={cn("truncate text-right font-semibold", battle.foe.beam?.text)}>
+              {battle.foe.beam
+                ? `${battle.foe.beam.icon} ${battle.foe.beam.name} · ${beamBonusLabel(battle.foe.beam)}`
+                : ""}
+            </span>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 items-end gap-3 sm:gap-6">
           <FighterView
@@ -293,9 +310,10 @@ function FighterView({
           {fighter.burn && ` · 🔥 ${fighter.burn.turns}t`}
           {fighter.poison && ` · ☠️ ${fighter.poison.turns}t`}
         </p>
-        <div className={cn("mt-1 flex items-center gap-1", side === "foe" && "justify-end")}>
+        <div className={cn("mt-1 flex flex-wrap items-center gap-1", side === "foe" && "justify-end")}>
           <RarityBadge rarity={fighter.rarity} />
           <ElementBadge elements={fighter.elements ?? [fighter.element]} compact />
+          <RoleBadge role={fighter.role} compact />
           <span className="text-[10px] text-muted-foreground">
             {fighter.ability.icon} {Math.max(1, fighter.charge)}t
           </span>

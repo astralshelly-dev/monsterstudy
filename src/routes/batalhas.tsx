@@ -8,11 +8,13 @@ import { useGame } from "@/hooks/use-game";
 import { useCloudSync } from "@/hooks/use-auth";
 import {
   battleData,
+  battleBeamId,
   battleTeamIds,
   clearPendingBattle,
   forfeitPendingBattle,
   pendingBattle,
   recordBattle,
+  setBattleBeam,
   setBattleTeam,
   startPendingBattle,
   type BattleOutcome,
@@ -29,6 +31,8 @@ import { findProfile } from "@/lib/game/cloud";
 import { RARITY_ORDER } from "@/lib/game/config";
 import { BattleArena } from "@/components/game/battle/BattleArena";
 import { TeamPicker } from "@/components/game/battle/TeamPicker";
+import { BeamPicker, BeamSummary } from "@/components/game/battle/BeamPicker";
+import { resolveBeam } from "@/lib/game/battle/beams";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { ElementTable } from "@/components/game/ElementTable";
 import { ProfileAvatar } from "@/components/game/Avatar";
@@ -78,6 +82,7 @@ function BattlesPage() {
   const [phase, setPhase] = useState<Phase>("home");
   const [mode, setMode] = useState<Mode>("ranked");
   const [team, setTeam] = useState<string[]>(() => battleTeamIds(state));
+  const [beam, setBeam] = useState<string | null>(() => battleBeamId(state));
   const [opponent, setOpponent] = useState<Opponent | null>(null);
   const [battle, setBattle] = useState<Battle | null>(null);
   const [outcome, setOutcome] = useState<(BattleOutcome & { result: "win" | "loss" }) | null>(null);
@@ -210,6 +215,7 @@ function BattlesPage() {
       return;
     }
     setBattleTeam(team);
+    setBattleBeam(beam);
     if (mode === "friendly") {
       if (!friendly) {
         toast.error("Adversário da amistosa indisponível.");
@@ -251,6 +257,7 @@ function BattlesPage() {
         foeName: opponent.name,
         foeTeam: opponent.team,
         foeBehavior: opponent.behavior,
+        playerBeamId: beam,
       }),
     );
     setPhase("battle");
@@ -322,6 +329,14 @@ function BattlesPage() {
             </p>
           </div>
         )}
+        <BeamPicker
+          team={team}
+          chosen={beam}
+          onChoose={(id) => {
+            setBeam(id);
+            setBattleBeam(id);
+          }}
+        />
         <TeamPicker state={state} selected={team} onToggle={toggle} />
         <Button size="lg" onClick={() => void confirmTeam()} disabled={team.length === 0}>
           {mode === "ranked"

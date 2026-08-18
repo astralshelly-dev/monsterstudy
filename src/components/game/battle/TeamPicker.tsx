@@ -1,5 +1,7 @@
 import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
+import { RoleBadge } from "@/components/game/RoleBadge";
+
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { battleStats, abilityFor, TEAM_SIZE } from "@/lib/game/battle/config";
 import { cn } from "@/lib/utils";
@@ -63,11 +65,13 @@ export function TeamPicker({
                   <p className="truncate font-display text-sm font-bold">{def!.name}</p>
                   {on && <span className="text-xs text-primary">✓</span>}
                 </div>
-                <div className="mt-0.5 flex items-center gap-1.5">
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                   <RarityBadge rarity={def!.rarity} />
                   <ElementBadge monsterId={m.id} compact />
+                  <RoleBadge monsterId={m.id} compact />
                   <span className="text-[11px] text-muted-foreground">Nv {m.level}</span>
                 </div>
+
                 <p className="mt-1 text-[11px] tabular-nums text-muted-foreground">
                   ❤️ {s.maxHp} · ⚔️ {s.atk} · 🛡️ {s.def}
                 </p>
