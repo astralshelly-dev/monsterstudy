@@ -165,11 +165,27 @@ export function BattleArena({
             )}
           />
         )}
+        {fx.special && (
+          <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+            <span className="fx-special-flare absolute inset-0" />
+            <span className="fx-special-rays absolute inset-0" />
+          </div>
+        )}
         {fx.banner && (
           <div className="pointer-events-none absolute inset-x-0 top-1/3 z-20 grid place-items-center px-4">
-            <p className="anim-banner max-w-full truncate rounded-full bg-background/80 px-4 py-1.5 text-center font-display text-xs font-bold uppercase tracking-[0.18em] text-glow ring-1 ring-primary/40">
+            <p className="anim-banner max-w-full truncate rounded-full bg-background/85 px-4 py-1.5 text-center font-display text-xs font-bold uppercase tracking-[0.18em] text-glow ring-1 ring-primary/40">
               {fx.banner}
             </p>
+          </div>
+        )}
+        {intro && (
+          <div className="pointer-events-none absolute inset-0 z-30 grid place-items-center bg-background/70 backdrop-blur-sm">
+            <div className="fx-intro-vs text-center">
+              <p className="font-display text-3xl font-black tracking-[0.2em] text-glow sm:text-4xl">VS</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                {battle.foe.name}
+              </p>
+            </div>
           </div>
         )}
 
@@ -180,6 +196,8 @@ export function BattleArena({
             floats={floats.filter((f) => f.side === "player")}
             shake={shake === "player"}
             attacking={fx.attacker === "player"}
+            casting={fx.special === "player"}
+            entering={intro}
             label="Você"
             team={battle.player.fighters}
             activeIndex={battle.player.active}
@@ -190,6 +208,8 @@ export function BattleArena({
             floats={floats.filter((f) => f.side === "foe")}
             shake={shake === "foe"}
             attacking={fx.attacker === "foe"}
+            casting={fx.special === "foe"}
+            entering={intro}
             label={battle.foe.name}
             team={battle.foe.fighters}
             activeIndex={battle.foe.active}
