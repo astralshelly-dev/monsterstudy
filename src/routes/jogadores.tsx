@@ -166,7 +166,7 @@ function PlayersPage() {
           </div>
           <PlayerCardSummary profile={found} />
           <div className="mt-10">
-            <ProfileDetailedView profile={found} />
+            <ProfileDetailedView profile={found} addFriend={addFriend} />
           </div>
         </div>
       ) : (
@@ -274,7 +274,7 @@ function PlayerCardSummary({ profile: p }: { profile: PublicProfile }) {
   );
 }
 
-function ProfileDetailedView({ profile: p }: { profile: PublicProfile }) {
+function ProfileDetailedView({ profile: p, addFriend }: { profile: PublicProfile; addFriend: (id: string) => Promise<void> }) {
   const cos = p.stats.cosmetics ?? {};
   const bg = cos.background ? COSMETICS_BY_ID[cos.background] : undefined;
   
