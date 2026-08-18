@@ -75,7 +75,7 @@ function Stats() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <StatCard label="Tempo estudando" value={duration(t.studySec)} />
-        <StatCard label="Páginas lidas" value={`${num(t.pages)} · ${duration(t.readSec)}`} />
+        <StatCard label="Páginas lidas" value={`${num(t.pages)}`} hint={`Tempo total de leitura: ${duration(t.readSec)}`} />
         <StatCard label="Renda passiva" value={`${money(moneyPerSecond(state))}/s`} />
       </div>
 
