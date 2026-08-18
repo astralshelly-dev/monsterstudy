@@ -37,8 +37,15 @@ export function BattleArena({
   const [floats, setFloats] = useState<Float[]>([]);
   const [shake, setShake] = useState<SideId | null>(null);
   const [fx, setFx] = useState<Fx>(NO_FX);
+  const [intro, setIntro] = useState(true);
   const finished = useRef(false);
   const logRef = useRef<HTMLDivElement | null>(null);
+
+  // abertura cinematográfica da batalha
+  useEffect(() => {
+    const id = window.setTimeout(() => setIntro(false), 1500);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // o log fica em ordem cronológica e sempre mostra a última ação
   useEffect(() => {
