@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useGame } from "@/hooks/use-game";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
+import { MonsterDialog } from "./monsterdex";
 import { RARITIES, RARITY_ORDER } from "@/lib/game/config";
 import {
   incomeMonsterIds,
