@@ -20,7 +20,7 @@ import {
 } from "@/lib/game/bloodmoon";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { COSMETICS_BY_ID } from "@/lib/game/cosmetics";
-import { RARITIES } from "@/lib/game/config";
+
 import { MonsterArt, RarityBadge, rarityText } from "@/components/game/MonsterArt";
 import { PageHeader, StatCard } from "@/components/game/Primitives";
 import { AnimatedNumber, SmoothBar, Stagger } from "@/components/game/motion";
