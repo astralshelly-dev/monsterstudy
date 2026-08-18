@@ -16,7 +16,7 @@ import {
 import { PageHeader } from "@/components/game/Primitives";
 import { TimerDial } from "@/components/game/TimerDial";
 import { TimerPicker, useTick } from "@/components/game/TimerPicker";
-import { RewardReveal } from "@/components/game/RewardReveal";
+import { RewardModal } from "@/components/game/RewardModal";
 import { ContinueSessionPanel } from "@/components/game/ContinueSession";
 import { playTimerEndSfx } from "@/lib/game/sfx";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,11 @@ function StudyPage() {
 
   if (state.pendingReward) {
     return (
-      <RewardReveal reward={state.pendingReward} kind="study" onClose={() => clearPendingReward()} />
+      <RewardModal
+        reward={state.pendingReward}
+        title="SEU ESTUDO TERMINOU!"
+        onClose={() => clearPendingReward()}
+      />
     );
   }
 

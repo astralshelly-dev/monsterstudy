@@ -1,8 +1,12 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useGame } from "@/hooks/use-game";
+import { useCloudSync } from "@/hooks/use-auth";
 import { resetProgress, updateSettings } from "@/lib/game/state";
+import { deleteMyAccount } from "@/lib/account.functions";
 import { PageHeader } from "@/components/game/Primitives";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -45,7 +49,26 @@ export const Route = createFileRoute("/configuracoes")({
 
 function Settings() {
   const state = useGame();
+  const { user } = useCloudSync();
   const fileRef = useRef<HTMLInputElement>(null);
+  const deleteAccount = useServerFn(deleteMyAccount);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  async function handleDeleteAccount() {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const res = await deleteAccount();
+      if (res.ok) {
+        toast.success("Sua conta foi excluída definitivamente.");
+        await supabase.auth.signOut();
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao excluir conta");
+      setIsDeleting(false);
+    }
+  }
 
   function exportData() {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -163,6 +186,40 @@ function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </section>
+
+      {user && (
+        <section className="panel space-y-3 border-destructive p-5">
+          <h2 className="font-display text-lg font-semibold text-destructive">Excluir Conta</h2>
+          <p className="text-sm text-muted-foreground">
+            Apaga definitivamente seu cadastro, perfil e todos os dados salvos na nuvem. Esta ação é irreversível.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="text-destructive hover:bg-destructive hover:text-white border-destructive">
+                Excluir minha conta
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="font-display">Excluir conta definitivamente?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Isso apagará seu login, perfil e todo o progresso na nuvem. Você perderá seus monstros e diamantes para sempre.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Voltar</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={isDeleting}
+                  onClick={handleDeleteAccount}
+                >
+                  {isDeleting ? "Excluindo..." : "Confirmar Exclusão"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </section>
+      )}
     </div>
   );
 }

@@ -469,6 +469,56 @@ export function cancelTimer() {
 // ------------------------------------------------------------
 // Recompensas
 // ------------------------------------------------------------
+// Replaced by internal grantReward for state transitions and exported version for generic use
+function grantReward(s: GameState, reward: Reward) {
+  const id = reward.monsterId;
+  if (id) {
+    const existing = s.monsters[id];
+    if (existing) {
+      s.monsters = {
+        ...s.monsters,
+        [id]: { ...existing, copies: existing.copies + 1 },
+      };
+    } else {
+      s.monsters = {
+        ...s.monsters,
+        [id]: {
+          id,
+          copies: 1,
+          level: 1,
+          xp: 0,
+          discoveredAt: new Date().toISOString(),
+        },
+      };
+      if (!s.activeMonsterId) s.activeMonsterId = id;
+      const list = (s.incomeMonsterIds ?? []).filter((x) => s.monsters[x]);
+      if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
+      else s.incomeMonsterIds = list;
+    }
+    bumpActivity(s, { monsters: 1 });
+  }
+
+  s.money += reward.money;
+  s.shards += reward.shards;
+  addUserXp(s, reward.xp);
+
+  // Atualiza missões diárias baseadas nos ganhos
+  const day = todayKey();
+  if (s.quests.day === day) {
+    for (const q of s.quests.list) {
+      const t = QUESTS_BY_ID[q.templateId];
+      if (!t) continue;
+      if (t.metric === "money_earned") q.progress += reward.money;
+      if (t.metric === "monsters_found" && reward.monsterId && !reward.duplicate) q.progress += 1;
+      if (t.metric === "study_sessions" && reward.subject) q.progress += 1;
+    }
+  }
+}
+
+export function grantRewardUI(reward: Reward) {
+  setState((s) => grantReward(s, reward));
+}
+
 export function timerConfig(minutes: number): TimerConfig {
   return TIMERS.find((t) => t.minutes === minutes) ?? TIMERS[0]!;
 }
@@ -527,38 +577,7 @@ function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean
   return { monsterId: pick.id, duplicate };
 }
 
-function applyReward(s: GameState, reward: Reward) {
-  const id = reward.monsterId;
-  if (id) {
-    const existing = s.monsters[id];
-    if (existing) {
-      s.monsters = {
-        ...s.monsters,
-        [id]: { ...existing, copies: existing.copies + 1 },
-      };
-    } else {
-      s.monsters = {
-        ...s.monsters,
-        [id]: {
-          id,
-          copies: 1,
-          level: 1,
-          xp: 0,
-          discoveredAt: new Date().toISOString(),
-        },
-      };
-      if (!s.activeMonsterId) s.activeMonsterId = id;
-      const list = (s.incomeMonsterIds ?? []).filter((x) => s.monsters[x]);
-      if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
-      else s.incomeMonsterIds = list;
-    }
-  }
-
-  s.money += reward.money;
-  s.shards += reward.shards;
-  addUserXp(s, reward.xp);
-  if (id) bumpActivity(s, { monsters: 1 });
-}
+// Internal grantReward already defined at line 473
 
 function addUserXp(s: GameState, amount: number) {
   let xp = s.profile.xp + amount;
@@ -571,12 +590,13 @@ function addUserXp(s: GameState, amount: number) {
   if (amount > 0) bumpActivity(s, { xp: amount });
 }
 
-export function addMonsterXp(monsterId: string, amount: number): { levelsGained: number } {
+export function addMonsterXp(monsterId: string, amount: number, s_override?: GameState): { levelsGained: number } {
   let levelsGained = 0;
   const trainerMult =
-    1 + (state.upgrades.monster_trainer ?? 0) * UPGRADES.monster_trainer.effectPerLevel;
+    1 + (s_override?.upgrades?.monster_trainer ?? state.upgrades.monster_trainer ?? 0) * UPGRADES.monster_trainer.effectPerLevel;
   const boosted = Math.round(amount * trainerMult);
-  setState((s) => {
+  
+  const apply = (s: GameState) => {
     const owned = s.monsters[monsterId];
     if (!owned) return;
     const def = MONSTERS_BY_ID[monsterId];
@@ -592,7 +612,13 @@ export function addMonsterXp(monsterId: string, amount: number): { levelsGained:
     }
     if (level >= MONSTER_MAX_LEVEL) xp = 0;
     s.monsters = { ...s.monsters, [monsterId]: { ...owned, xp, level } };
-  });
+  };
+
+  if (s_override) {
+    apply(s_override);
+  } else {
+    setState(apply);
+  }
   return { levelsGained };
 }
 
@@ -738,17 +764,14 @@ export function saveStudySession(input: {
     bookId: input.timer.meta.bookId ?? previous?.bookId,
     learned: [previous?.learned, input.learned].filter(Boolean).join(" · ") || undefined,
     notes: [previous?.notes, input.notes].filter(Boolean).join(" · ") || undefined,
-    reward,
+    reward: { ...reward, subject: previous?.subject ?? input.timer.meta.subject ?? "Estudo" },
   };
   setState((s) => {
     s.sessions = previous
       ? [session, ...s.sessions.filter((x) => x.id !== previous.id)]
       : [session, ...s.sessions];
     markActivity(s, "study", input.durationSec, 0, session.subject);
-    bumpQuest(s, "study_sessions", 1);
-    bumpQuest(s, "money_earned", Math.round(reward.money));
-    if (reward.monsterId) bumpQuest(s, "monsters_found", 1);
-    applyReward(s, reward);
+    grantReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
     s.lastSessionId = session.id;
@@ -794,7 +817,7 @@ export function saveReadingSession(input: {
     startPage: previous?.startPage ?? startPage,
     endPage: input.endPage,
     pagesRead: totalPages,
-    minPerPage: totalPages > 0 ? Math.round((totalDuration / 60 / totalPages) * 100) / 100 : 0,
+    minPerPage: totalPages > 0 ? totalDuration / 60 / totalPages : 0,
     notes: [previous?.notes, input.notes].filter(Boolean).join(" · ") || undefined,
     reward,
   };
@@ -813,9 +836,7 @@ export function saveReadingSession(input: {
         : b,
     );
     markActivity(s, "read", input.durationSec, pagesRead);
-    bumpQuest(s, "money_earned", Math.round(reward.money));
-    if (reward.monsterId) bumpQuest(s, "monsters_found", 1);
-    applyReward(s, reward);
+    grantReward(s, reward);
     s.timer = null;
     s.pendingReward = reward;
     s.lastSessionId = session.id;
@@ -1034,7 +1055,7 @@ export function claimSignupReward(): { ok: boolean; monsterName: string | null }
   setState((s) => {
     if (s.redeemedCodes.includes(SIGNUP_FLAG)) return;
     s.redeemedCodes = [...s.redeemedCodes, SIGNUP_FLAG];
-    applyReward(s, {
+    grantReward(s, {
       monsterId: def?.id ?? null,
       rarity: SIGNUP_REWARD.rarity,
       duplicate: false,
@@ -1299,6 +1320,8 @@ export type BattleOutcome = {
   trophiesBefore: number;
   trophiesAfter: number;
   delta: number;
+  money: number;
+  xp: number;
 };
 
 /** grava o resultado da batalha e atualiza troféus/estatísticas do jogador */
@@ -1317,6 +1340,11 @@ export function recordBattle(input: {
   const before = battleData().trophies;
   const delta = input.mode === "ranked" ? rollTrophyDelta(input.result, before) : 0;
   const after = Math.max(0, before + delta);
+  
+  const win = input.result === "win";
+  const moneyReward = win ? 250 : 50;
+  const xpReward = win ? 100 : 20;
+
   const record: BattleRecord = {
     id: uid(),
     at: new Date().toISOString(),
@@ -1365,7 +1393,14 @@ export function recordBattle(input: {
       bumpQuest(s, "battles_won", 1);
     }
   });
-  return { record, trophiesBefore: before, trophiesAfter: after, delta };
+  return { 
+    record, 
+    trophiesBefore: before, 
+    trophiesAfter: after, 
+    delta,
+    money: moneyReward,
+    xp: xpReward
+  };
 }
 
 export const BATTLE_LEAGUES = LEAGUES;
@@ -1563,7 +1598,7 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
         const pool = MONSTERS_BY_RARITY[rarity] ?? [];
         const picked = pool[Math.floor(Math.random() * pool.length)];
         if (picked) {
-          applyReward(s, {
+          grantReward(s, {
             monsterId: picked.id,
             rarity,
             duplicate: Boolean(s.monsters[picked.id]),
@@ -1571,7 +1606,6 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
             money: 0,
             shards: 0,
           });
-          bumpQuest(s, "monsters_found", 1);
           message = `${picked.name} (${RARITIES[rarity].name}) apareceu!`;
         }
         break;
@@ -1580,7 +1614,7 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
         const pool = MONSTERS_BY_RARITY[e.rarity] ?? [];
         const picked = pool[Math.floor(Math.random() * pool.length)];
         if (picked) {
-          applyReward(s, {
+          grantReward(s, {
             monsterId: picked.id,
             rarity: e.rarity,
             duplicate: Boolean(s.monsters[picked.id]),
@@ -1588,7 +1622,7 @@ export function useItem(itemId: string): { ok: boolean; message: string } {
             money: 0,
             shards: 0,
           });
-          bumpQuest(s, "monsters_found", 1);
+          
           message = `${picked.name} apareceu!`;
         }
         break;

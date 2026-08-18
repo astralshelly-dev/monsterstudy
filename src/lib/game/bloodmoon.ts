@@ -193,3 +193,8 @@ export function bloodMoonRemaining(now = Date.now()) {
 export function skinFxClass(fx: BloodMoonSkin["fx"]): string {
   return `bm-skin bm-skin-${fx}`;
 }
+
+/** Retorna o estado do evento Lua de Sangue do GameState */
+export function bloodMoonState(s: any): any {
+  return s.bloodMoon || { coins: 0, earned: 0, progressSec: 0, skins: [], equipped: {}, cosmetics: [] };
+}

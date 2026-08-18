@@ -16,308 +16,317 @@ import {
 import { EmptyState, PageHeader } from "@/components/game/Primitives";
 import { TimerDial } from "@/components/game/TimerDial";
 import { TimerPicker, useTick } from "@/components/game/TimerPicker";
-import { RewardReveal } from "@/components/game/RewardReveal";
+import { RewardModal } from "@/components/game/RewardModal";
 import { ContinueSessionPanel } from "@/components/game/ContinueSession";
 import { playTimerEndSfx } from "@/lib/game/sfx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { duration, num, minSec } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import { BookCover } from "@/components/game/BookCover";
+import { duration, minSec } from "@/lib/format";
 
 export const Route = createFileRoute("/ler")({
   head: () => ({
     meta: [
-      { title: "Ler — Monster Study" },
+      { title: "Leitura — Monster Study" },
       {
         name: "description",
-        content:
-          "Escolha um livro da sua biblioteca, cronometre a leitura e registre páginas, velocidade e recompensas.",
+        content: "Mergulhe em seus livros e ganhe recompensas pelo tempo dedicado à leitura.",
       },
-      { property: "og:title", content: "Ler — Monster Study" },
-      {
-        property: "og:description",
-        content: "Leitura cronometrada com estatísticas de páginas e monstros de recompensa.",
-      },
+      { property: "og:title", content: "Leitura — Monster Study" },
+      { property: "og:description", content: "Transforme sua leitura em progresso no jogo." },
     ],
   }),
-  component: ReadPage,
+  component: ReadingPage,
 });
 
-function ReadPage() {
+function ReadingPage() {
   const state = useGame();
-  const timer = state.timer?.kind === "read" ? state.timer : null;
-  useTick(Boolean(timer));
 
   if (state.pendingReward) {
     return (
-      <RewardReveal reward={state.pendingReward} kind="read" onClose={() => clearPendingReward()} />
+      <RewardModal
+        reward={state.pendingReward}
+        title="SUA LEITURA TERMINOU!"
+        onClose={() => clearPendingReward()}
+      />
     );
   }
-  if (timer) {
-    return timerRemainingSec(timer) <= 0 ? <ReadCompletion /> : <ReadRunning />;
+
+  const active = state.timer && state.timer.kind === "read" ? state.timer : null;
+
+  if (active) {
+    return <ReadingRunning timer={active} />;
   }
-  return <ReadSetup />;
+
+  return <ReadingSetup />;
 }
 
-function ReadSetup() {
+function ReadingSetup() {
   const state = useGame();
-  const [bookId, setBookId] = useState<string | null>(null);
-  const [minutes, setMinutes] = useState<number | null>(30);
-  const readable = state.books.filter((b) => b.shelf !== "concluido");
-  const book = state.books.find((b) => b.id === bookId);
+  const [bookId, setBookId] = useState("");
+  const [startPage, setStartPage] = useState<number>(0);
+  const [minutes, setMinutes] = useState(30);
 
-  if (state.books.length === 0) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Ler" icon="📖" />
+  const selectedBook = state.books.find((b) => b.id === bookId);
+
+  useEffect(() => {
+    if (selectedBook) {
+      setStartPage(selectedBook.currentPage);
+    }
+  }, [selectedBook]);
+
+  function start() {
+    if (!bookId) return;
+    startTimer({
+      kind: "read",
+      durationSec: minutes * 60,
+      meta: { bookId, startPage },
+    });
+  }
+
+  const lendo = state.books.filter((b) => b.shelf === "lendo");
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Leitura" icon="📕" subtitle="Escolha um livro para começar a jornada." />
+
+      {lendo.length === 0 ? (
         <EmptyState
           icon="📚"
-          title="Sua biblioteca está vazia"
-          description="Adicione um livro para começar a registrar suas leituras."
+          title="Nenhum livro sendo lido"
+          description="Adicione livros à sua estante para começar a ganhar recompensas por leitura."
           action={
-            <Button asChild>
-              <Link to="/biblioteca">Ir para a Biblioteca</Link>
-            </Button>
+            <Link to="/biblioteca">
+              <Button>Ir para Biblioteca</Button>
+            </Link>
           }
         />
-      </div>
-    );
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="panel space-y-6 p-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Livro que vai ler</Label>
+                <select
+                  value={bookId}
+                  onChange={(e) => setBookId(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Selecione um livro...</option>
+                  {lendo.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.title} ({b.currentPage}/{b.totalPages})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedBook && (
+                <div className="space-y-2">
+                  <Label>Página atual (onde vai começar)</Label>
+                  <Input
+                    type="number"
+                    value={startPage}
+                    onChange={(e) => setStartPage(Number(e.target.value))}
+                    min={0}
+                    max={selectedBook.totalPages}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Quanto tempo pretende ler?</Label>
+                <TimerPicker value={minutes} onChange={setMinutes} />
+              </div>
+            </div>
+
+            <Button size="lg" className="w-full" disabled={!bookId} onClick={start}>
+              <Play className="mr-2 h-4 w-4" /> Começar Leitura
+            </Button>
+          </div>
+
+          <div className="hidden lg:block">
+            {selectedBook ? (
+              <div className="panel flex h-full flex-col items-center justify-center p-8 text-center">
+                {selectedBook.cover ? (
+                  <img
+                    src={selectedBook.cover}
+                    alt={selectedBook.title}
+                    className="mb-4 h-64 w-44 rounded-lg object-cover shadow-2xl"
+                  />
+                ) : (
+                  <div className="mb-4 grid h-64 w-44 place-items-center rounded-lg bg-secondary text-4xl">
+                    📕
+                  </div>
+                )}
+                <h3 className="font-display text-xl font-bold">{selectedBook.title}</h3>
+                <p className="text-sm text-muted-foreground">{selectedBook.author}</p>
+                <div className="mt-4 w-full max-w-xs space-y-1">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>Progresso</span>
+                    <span>{Math.round((selectedBook.currentPage / selectedBook.totalPages) * 100)}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{
+                        width: `${(selectedBook.currentPage / selectedBook.totalPages) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="panel flex h-full flex-col items-center justify-center p-8 text-center text-muted-foreground">
+                <div className="mb-4 text-6xl">📖</div>
+                <p>Selecione um livro para ver os detalhes aqui.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ReadingRunning({ timer }: { timer: any }) {
+  const state = useGame();
+  const elapsed = useTick();
+  const remaining = timerRemainingSec(timer);
+  const isPaused = timer.pausedAt !== null;
+
+  const book = state.books.find((b) => b.id === timer.meta.bookId);
+
+  if (remaining <= 0 && !isPaused) {
+    return <ReadingCompletion timer={timer} />;
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Ler"
-        icon="📖"
-        subtitle="Selecione um livro da sua biblioteca e escolha o cronômetro."
+    <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-8 py-10">
+      <div className="text-center">
+        <h2 className="font-display text-2xl font-bold">Lendo: {book?.title}</h2>
+        <p className="text-muted-foreground">Mantenha o foco até o fim!</p>
+      </div>
+
+      <TimerDial
+        remaining={remaining}
+        total={timer.durationSec ?? 0}
       />
 
-      <ContinueSessionPanel kind="read" />
-
-      <div className="space-y-3">
-        <h2 className="font-display text-lg font-semibold">Escolha o livro</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {readable.map((b) => {
-            const pct = Math.round((b.currentPage / b.totalPages) * 100);
-            return (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setBookId(b.id)}
-                className={cn(
-                  "panel panel-hover flex gap-3 p-3 text-left",
-                  bookId === b.id && "ring-2 ring-primary",
-                )}
-              >
-                <BookCover book={b} className="h-20 w-14" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">📖 {b.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">{b.author}</p>
-                  <p className="mt-1 text-xs">
-                    {b.currentPage} / {b.totalPages} páginas
-                  </p>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{pct}% concluído</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <h2 className="font-display text-lg font-semibold">Escolha o cronômetro</h2>
-        <TimerPicker value={minutes} onChange={setMinutes} />
-      </div>
-
-      {book && (
-        <div className="panel p-4 text-sm">
-          Página inicial: <span className="font-semibold">{book.currentPage}</span> — a página final
-          será preenchida ao terminar.
-        </div>
-      )}
-
-      <Button
-        size="lg"
-        className="w-full"
-        disabled={!bookId || !minutes || state.timer !== null}
-        onClick={() =>
-          book &&
-          minutes &&
-          startTimer({
-            kind: "read",
-            durationSec: minutes * 60,
-            meta: { bookId: book.id, startPage: book.currentPage },
-          })
-        }
-      >
-        Iniciar leitura
-      </Button>
-    </div>
-  );
-}
-
-function ReadRunning() {
-  const state = useGame();
-  const timer = state.timer!;
-  useTick();
-  const book = state.books.find((b) => b.id === timer.meta.bookId);
-  const remaining = timerRemainingSec(timer);
-  const elapsed = timerElapsedSec(timer);
-  const paused = Boolean(timer.pausedAt);
-  const [livePage, setLivePage] = useState<number | "">("");
-  const pages = typeof livePage === "number" ? Math.max(0, livePage - (timer.meta.startPage ?? 0)) : 0;
-  const minPerPage = pages > 0 ? elapsed / 60 / pages : 0;
-
-  return (
-    <div className="space-y-8">
-      <PageHeader title="Leitura em andamento" icon="📖" subtitle={book?.title} />
-      <div className="panel aurora grid place-items-center gap-6 p-8">
-        <TimerDial
-          remaining={remaining}
-          total={timer.durationSec ?? 0}
-          label={`📖 ${book?.title ?? "Livro"}`}
-          sublabel={`Página inicial: ${timer.meta.startPage}`}
-        />
-
-        <div className="w-full max-w-sm space-y-2">
-          <Label>Em que página você está agora? (opcional)</Label>
-          <Input
-            type="number"
-            inputMode="numeric"
-            value={livePage}
-            onChange={(e) => setLivePage(e.target.value === "" ? "" : Number(e.target.value))}
-            placeholder={String(timer.meta.startPage)}
-          />
-          {pages > 0 && (
-            <div className="grid grid-cols-2 gap-2 text-center text-sm">
-              <div className="rounded-xl bg-secondary/60 px-3 py-2">
-                <p className="text-[10px] uppercase text-muted-foreground">Páginas lidas</p>
-                <p className="font-semibold tabular-nums">{pages}</p>
-              </div>
-              <div className="rounded-xl bg-secondary/60 px-3 py-2">
-                <p className="text-[10px] uppercase text-muted-foreground">Ritmo</p>
-                <p className="font-semibold tabular-nums">{minSec(minPerPage)} min/pág</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          {paused ? (
-            <Button onClick={resumeTimer} size="lg">
-              <Play className="h-4 w-4" /> Retomar
-            </Button>
-          ) : (
-            <Button onClick={pauseTimer} size="lg" variant="secondary">
-              <Pause className="h-4 w-4" /> Pausar
-            </Button>
-          )}
-          <Button onClick={endTimerEarly} size="lg" variant="outline">
-            <Square className="h-4 w-4" /> Encerrar
+      <div className="flex gap-4">
+        {isPaused ? (
+          <Button size="lg" variant="outline" onClick={() => resumeTimer()}>
+            <Play className="mr-2 h-4 w-4" /> Continuar
           </Button>
-          <Button onClick={cancelTimer} size="lg" variant="ghost">
-            <X className="h-4 w-4" /> Cancelar sessão
+        ) : (
+          <Button size="lg" variant="outline" onClick={() => pauseTimer()}>
+            <Pause className="mr-2 h-4 w-4" /> Pausar
           </Button>
-        </div>
-        <p className="text-center text-xs text-muted-foreground">
-          Encerrar antes do tempo reduz as chances de raridade — e abaixo de 50% do tempo você não ganha
-          monstro nenhum. Cancelar descarta a sessão.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function ReadCompletion() {
-  const state = useGame();
-  const timer = state.timer!;
-  const book = state.books.find((b) => b.id === timer.meta.bookId);
-  const startPage = timer.meta.startPage ?? 0;
-  const durationSec = Math.min(timerElapsedSec(timer), timer.durationSec ?? 0);
-  const [endPage, setEndPage] = useState<number | "">("");
-  const [notes, setNotes] = useState("");
-  const pages = typeof endPage === "number" ? Math.max(0, endPage - startPage) : 0;
-  const minPerPage = pages > 0 ? durationSec / 60 / pages : 0;
-  const pct = book ? ((typeof endPage === "number" ? endPage : startPage) / book.totalPages) * 100 : 0;
-  const earlyEnd = Boolean(timer.meta.earlyEnd);
-  useEffect(() => {
-    if (!earlyEnd) playTimerEndSfx();
-  }, [earlyEnd]);
-
-  return (
-    <div className="space-y-6">
-      <PageHeader title="Leitura concluída!" icon="📄" subtitle={book?.title} />
-
-      <div className="panel grid gap-3 p-6 sm:grid-cols-3">
-        <Info label="📖 Livro" value={book?.title ?? "—"} />
-        <Info label="⏱️ Tempo" value={duration(durationSec)} />
-        <Info label="Página inicial" value={String(startPage)} />
-      </div>
-
-      <div className="panel space-y-4 p-6">
-        <div className="space-y-2">
-          <Label>Em qual página você parou?</Label>
-          <Input
-            type="number"
-            inputMode="numeric"
-            value={endPage}
-            onChange={(e) => setEndPage(e.target.value === "" ? "" : Number(e.target.value))}
-            placeholder={String(startPage)}
-          />
-        </div>
-
-        {pages >= 0 && typeof endPage === "number" && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Info label="Páginas lidas" value={`${pages}`} />
-            <Info label="Ritmo" value={`${minSec(minPerPage)} min/pág`} />
-            <Info label="Tempo total" value={duration(durationSec)} />
-            <Info label="Do livro" value={`${num(pct, 1)}%`} />
-          </div>
         )}
 
-        <div className="space-y-2">
-          <Label>Anotações (opcional)</Label>
-          <Textarea
-            rows={3}
-            placeholder="Ex: A história começou a ficar mais interessante nessa parte."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
-
-        <Button
-          size="lg"
-          className="w-full"
-          disabled={typeof endPage !== "number"}
-          onClick={() =>
-            typeof endPage === "number" &&
-            saveReadingSession({
-              timer,
-              durationSec,
-              earlyEnd,
-              endPage,
-              notes: notes || undefined,
-            })
-          }
-        >
-          Salvar leitura
+        <Button size="lg" variant="destructive" onClick={() => endTimerEarly()}>
+          <Square className="mr-2 h-4 w-4" /> Encerrar
         </Button>
       </div>
     </div>
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function ReadingCompletion({ timer }: { timer: any }) {
+  const state = useGame();
+  const [endPage, setEndPage] = useState<number>(timer.meta.startPage ?? 0);
+  const [notes, setNotes] = useState("");
+
+  const book = state.books.find((b) => b.id === timer.meta.bookId);
+  const durationSec = Math.min(timerElapsedSec(timer), timer.durationSec ?? 0);
+  const earlyEnd = Boolean(timer.meta.earlyEnd);
+
+  useEffect(() => {
+    if (!earlyEnd) playTimerEndSfx();
+  }, [earlyEnd]);
+
+  function save() {
+    saveReadingSession({
+      timer,
+      durationSec,
+      earlyEnd,
+      endPage,
+      notes: notes || undefined,
+    });
+  }
+
+  const pagesRead = Math.max(0, endPage - (timer.meta.startPage ?? 0));
+
   return (
-    <div className="rounded-xl bg-secondary/50 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="truncate font-display text-lg font-semibold">{value}</p>
+    <div className="space-y-6">
+      <PageHeader
+        title="Leitura concluída!"
+        icon="✅"
+        subtitle="Registre seu progresso e o que aprendeu."
+      />
+
+      <div className="panel grid gap-3 p-6 sm:grid-cols-3">
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">⏱️ Tempo lido</p>
+          <p className="font-display text-xl font-bold italic">{duration(durationSec)}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">📕 Livro</p>
+          <p className="font-display text-xl font-bold italic truncate">{book?.title ?? "—"}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">📄 Páginas lidas</p>
+          <p className="font-display text-xl font-bold italic">{pagesRead}</p>
+        </div>
+      </div>
+
+      {earlyEnd && (
+        <div className="panel p-4 text-sm text-ember border-ember/20 bg-ember/5">
+          Você encerrou antes do tempo — as recompensas foram calculadas proporcionalmente.
+        </div>
+      )}
+
+      <div className="panel space-y-6 p-6">
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Em qual página você parou?</Label>
+            <Input
+              type="number"
+              value={endPage}
+              onChange={(e) => setEndPage(Number(e.target.value))}
+              min={timer.meta.startPage ?? 0}
+              max={book?.totalPages}
+            />
+            {book && (
+              <p className="text-xs text-muted-foreground">
+                Total do livro: {book.totalPages} páginas.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Anotações (opcional)</Label>
+            <Textarea
+              placeholder="O que aconteceu nesse capítulo? Alguma citação legal?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={() => cancelTimer()}>
+            Descartar Sessão
+          </Button>
+          <Button className="flex-1" onClick={save}>
+            Salvar e Coletar Recompensas
+          </Button>
+        </div>
+      </div>
+
+      <ContinueSessionPanel kind="read" />
     </div>
   );
 }
