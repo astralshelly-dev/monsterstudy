@@ -577,42 +577,7 @@ function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean
   return { monsterId: pick.id, duplicate };
 }
 
-function grantReward(s: GameState, reward: Reward) {
-  const id = reward.monsterId;
-  if (id) {
-    const existing = s.monsters[id];
-    if (existing) {
-      s.monsters = {
-        ...s.monsters,
-        [id]: { ...existing, copies: existing.copies + 1 },
-      };
-    } else {
-      s.monsters = {
-        ...s.monsters,
-        [id]: {
-          id,
-          copies: 1,
-          level: 1,
-          xp: 0,
-          discoveredAt: new Date().toISOString(),
-        },
-      };
-      if (!s.activeMonsterId) s.activeMonsterId = id;
-      const list = (s.incomeMonsterIds ?? []).filter((x) => s.monsters[x]);
-      if (list.length < incomeSlots(s)) s.incomeMonsterIds = [...list, id];
-      else s.incomeMonsterIds = list;
-    }
-    bumpActivity(s, { monsters: 1 });
-    bumpQuest(s, "monsters_found");
-  }
-
-  s.money += reward.money;
-  s.shards += reward.shards;
-  addUserXp(s, reward.xp);
-
-  bumpQuest(s, "money_earned", Math.round(reward.money));
-  if (reward.subject) bumpQuest(s, "study_sessions");
-}
+// Internal grantReward already defined at line 473
 
 function addUserXp(s: GameState, amount: number) {
   let xp = s.profile.xp + amount;
@@ -628,7 +593,7 @@ function addUserXp(s: GameState, amount: number) {
 export function addMonsterXp(monsterId: string, amount: number, s_override?: GameState): { levelsGained: number } {
   let levelsGained = 0;
   const trainerMult =
-    1 + (state.upgrades.monster_trainer ?? 0) * UPGRADES.monster_trainer.effectPerLevel;
+    1 + (s_override?.upgrades?.monster_trainer ?? state.upgrades.monster_trainer ?? 0) * UPGRADES.monster_trainer.effectPerLevel;
   const boosted = Math.round(amount * trainerMult);
   
   const apply = (s: GameState) => {
@@ -1428,7 +1393,14 @@ export function recordBattle(input: {
       bumpQuest(s, "battles_won", 1);
     }
   });
-  return { record, trophiesBefore: before, trophiesAfter: after, delta };
+  return { 
+    record, 
+    trophiesBefore: before, 
+    trophiesAfter: after, 
+    delta,
+    money: moneyReward,
+    xp: xpReward
+  };
 }
 
 export const BATTLE_LEAGUES = LEAGUES;

@@ -212,7 +212,6 @@ function ReadingRunning({ timer }: { timer: any }) {
       <TimerDial
         remaining={remaining}
         total={timer.durationSec ?? 0}
-        isPaused={isPaused}
       />
 
       <div className="flex gap-4">
