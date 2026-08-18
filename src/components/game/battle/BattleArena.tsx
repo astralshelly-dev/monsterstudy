@@ -3,6 +3,7 @@ import { MonsterArt, RarityBadge } from "@/components/game/MonsterArt";
 import { ElementBadge } from "@/components/game/ElementBadge";
 import { RoleBadge } from "@/components/game/RoleBadge";
 import { beamBonusLabel } from "@/lib/game/battle/beams";
+import { equippedSkinFor } from "@/lib/game/state";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
