@@ -13,6 +13,7 @@ import {
   Library,
   LineChart,
   Menu,
+  Moon,
   PawPrint,
   ScrollText,
   Search,
@@ -110,6 +111,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/loja", label: "Loja", icon: ShoppingBag },
       { to: "/codigos", label: "Códigos", icon: Gift },
       { to: "/inventario", label: "Inventário", icon: Backpack },
+      { to: "/lua-de-sangue", label: "🌕 Lua de Sangue", icon: Moon },
     ],
   },
   {

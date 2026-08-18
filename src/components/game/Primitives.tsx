@@ -13,7 +13,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="aurora mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="aurora anim-up mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="font-display text-3xl font-bold">
           {icon && <span className="mr-2">{icon}</span>}
@@ -40,7 +40,7 @@ export function StatCard({
   className?: string;
 }) {
   return (
-    <div className={cn("panel p-4", className)}>
+    <div className={cn("panel anim-up p-4", className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
         {icon}

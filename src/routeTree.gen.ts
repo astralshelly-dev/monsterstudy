@@ -25,6 +25,7 @@ import { Route as JogadoresRouteImport } from './routes/jogadores'
 import { Route as LerRouteImport } from './routes/ler'
 import { Route as LivreRouteImport } from './routes/livre'
 import { Route as LojaRouteImport } from './routes/loja'
+import { Route as LuaDeSangueRouteImport } from './routes/lua-de-sangue'
 import { Route as MissoesRouteImport } from './routes/missoes'
 import { Route as MonsterdexRouteImport } from './routes/monsterdex'
 import { Route as MonstrosRouteImport } from './routes/monstros'
@@ -114,6 +115,11 @@ const LojaRoute = LojaRouteImport.update({
   path: '/loja',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LuaDeSangueRoute = LuaDeSangueRouteImport.update({
+  id: '/lua-de-sangue',
+  path: '/lua-de-sangue',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MissoesRoute = MissoesRouteImport.update({
   id: '/missoes',
   path: '/missoes',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/lua-de-sangue': typeof LuaDeSangueRoute
   '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/lua-de-sangue': typeof LuaDeSangueRoute
   '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/ler': typeof LerRoute
   '/livre': typeof LivreRoute
   '/loja': typeof LojaRoute
+  '/lua-de-sangue': typeof LuaDeSangueRoute
   '/missoes': typeof MissoesRoute
   '/monsterdex': typeof MonsterdexRoute
   '/monstros': typeof MonstrosRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/lua-de-sangue'
     | '/missoes'
     | '/monsterdex'
     | '/monstros'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/lua-de-sangue'
     | '/missoes'
     | '/monsterdex'
     | '/monstros'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/ler'
     | '/livre'
     | '/loja'
+    | '/lua-de-sangue'
     | '/missoes'
     | '/monsterdex'
     | '/monstros'
@@ -332,6 +344,7 @@ export interface RootRouteChildren {
   LerRoute: typeof LerRoute
   LivreRoute: typeof LivreRoute
   LojaRoute: typeof LojaRoute
+  LuaDeSangueRoute: typeof LuaDeSangueRoute
   MissoesRoute: typeof MissoesRoute
   MonsterdexRoute: typeof MonsterdexRoute
   MonstrosRoute: typeof MonstrosRoute
@@ -456,6 +469,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LojaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lua-de-sangue': {
+      id: '/lua-de-sangue'
+      path: '/lua-de-sangue'
+      fullPath: '/lua-de-sangue'
+      preLoaderRoute: typeof LuaDeSangueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/missoes': {
       id: '/missoes'
       path: '/missoes'
@@ -532,6 +552,7 @@ const rootRouteChildren: RootRouteChildren = {
   LerRoute: LerRoute,
   LivreRoute: LivreRoute,
   LojaRoute: LojaRoute,
+  LuaDeSangueRoute: LuaDeSangueRoute,
   MissoesRoute: MissoesRoute,
   MonsterdexRoute: MonsterdexRoute,
   MonstrosRoute: MonstrosRoute,
