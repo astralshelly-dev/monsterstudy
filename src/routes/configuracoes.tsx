@@ -6,6 +6,7 @@ import { resetProgress, updateSettings } from "@/lib/game/state";
 import { PageHeader } from "@/components/game/Primitives";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
@@ -162,6 +163,37 @@ function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </section>
+    </div>
+  );
+}
+
+function VolumeRow({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  disabled?: boolean;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className={disabled ? "opacity-50" : undefined}>
+      <div className="mb-2 flex items-center justify-between">
+        <Label className="text-sm">{label}</Label>
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {Math.round(value * 100)}%
+        </span>
+      </div>
+      <Slider
+        value={[Math.round(value * 100)]}
+        min={0}
+        max={100}
+        step={5}
+        disabled={disabled}
+        onValueChange={([v]) => onChange((v ?? 0) / 100)}
+      />
     </div>
   );
 }
