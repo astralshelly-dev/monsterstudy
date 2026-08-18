@@ -68,21 +68,40 @@ export function BattleArena({
     let effect: "super" | "weak" | null = null;
     let banner: string | null = null;
     let special: SideId | null = null;
+    let usedAbility = false;
+    let healed = false;
+    let switched = false;
     for (const e of next.events) {
       if (e.kind === "attack" || e.kind === "ability") attacker = e.side;
       if (e.kind === "ability") {
         banner = e.text;
         special = e.side;
+        usedAbility = true;
       }
+      if (e.kind === "switch") switched = true;
       if (e.kind === "damage" && e.target) {
         news.push({ id: e.id, side: e.target, text: `-${e.damage}`, effect: e.effect });
         if (e.effect === "super" || e.effect === "weak") effect = e.effect;
       }
       if (e.kind === "heal" && e.heal) {
         news.push({ id: e.id, side: e.side, text: `+${e.heal}`, heal: true });
+        healed = true;
       }
     }
     const hurt = news.find((n) => !n.heal);
+    // trilha sonora do combate
+    if (usedAbility) playSfx("ability");
+    if (switched && !usedAbility) playSfx("switch");
+    if (hurt) {
+      const delay = usedAbility ? 260 : 0;
+      const sound =
+        hurt.effect === "super" ? "damageSuper" : hurt.effect === "weak" ? "damageWeak" : "damage";
+      window.setTimeout(() => playSfx(sound), delay);
+    }
+    if (healed) playSfx("heal");
+    if (next.over && next.winner) {
+      window.setTimeout(() => playSfx(next.winner === "player" ? "victory" : "defeat"), 700);
+    }
     if (news.length > 0) {
       setFloats((f) => [...f, ...news]);
       if (hurt) {
