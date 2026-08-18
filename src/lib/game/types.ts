@@ -238,6 +238,24 @@ export type GameState = {
   seasons: SeasonState;
   /** cosméticos desbloqueados e selecionados */
   cosmetics: CosmeticState;
+  /** evento temporário 🌕🔴 Lua de Sangue (camada separada da economia normal) */
+  bloodMoon?: BloodMoonEventState | undefined;
+};
+
+/** progresso do evento Lua de Sangue — persistido junto com o save */
+export type BloodMoonEventState = {
+  /** moeda do evento disponível */
+  coins: number;
+  /** total de moedas já ganhas no evento (histórico) */
+  earned: number;
+  /** segundos reais acumulados rumo à próxima moeda */
+  progressSec: number;
+  /** skins compradas (permanentes) */
+  skins: string[];
+  /** skin equipada por monstro: monsterId -> skinId */
+  equipped: Record<string, string>;
+  /** cosméticos de perfil comprados na loja do evento */
+  cosmetics: string[];
 };
 
 /** resumo de um dia — base das comparações por período */
