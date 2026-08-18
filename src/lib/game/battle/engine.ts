@@ -224,8 +224,10 @@ function alive(side: Side): Fighter[] {
 
 function effAtk(f: Fighter, behavior: AiBehavior): number {
   const bias = behavior === "ofensivo" ? 1.12 : behavior === "defensivo" ? 0.92 : 1;
-  return f.atk * (1 + f.atkBuff) * bias;
+  // o feixe elemental da equipe soma um bônus pequeno de dano
+  return f.atk * (1 + f.atkBuff) * bias * (1 + (f.dmgBonus ?? 0));
 }
+
 
 function effDef(f: Fighter, behavior: AiBehavior): number {
   const bias = behavior === "defensivo" ? 1.15 : behavior === "ofensivo" ? 0.92 : 1;
