@@ -3,6 +3,8 @@ import {
   beamBonusLabel,
   beamElementLabel,
   resolveBeam,
+  teamElements,
+  BEAMS,
   type BeamDef,
 } from "@/lib/game/battle/beams";
 import { ELEMENTS_BY_ID } from "@/lib/game/elements";
@@ -10,8 +12,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * ⚡ Feixe Elemental — sinergia da equipe.
- * Só UM feixe fica ativo por batalha: quando a composição libera vários,
- * o jogador escolhe qual usar aqui.
+ * Todos os feixes aparecem; os que a equipe não desbloqueou ficam cinza
+ * e não podem ser selecionados. Só UM feixe fica ativo por batalha.
  */
 export function BeamPicker({
   team,
@@ -23,56 +25,70 @@ export function BeamPicker({
   onChoose: (beamId: string | null) => void;
 }) {
   const options = availableBeams(team);
+  const unlocked = new Set(options.map((b) => b.id));
   const active = resolveBeam(team, chosen);
-
-  if (options.length === 0) {
-    return (
-      <div className="panel space-y-1 p-4">
-        <p className="font-display text-sm font-semibold">⚡ Feixe Elemental</p>
-        <p className="text-xs text-muted-foreground">
-          Nenhum feixe ativo. Combine elementos diferentes na equipe para liberar uma sinergia
-          (ex.: 🔥 + 🌊 + 🪨 + 🌪️ ativa o Feixe Primordial).
-        </p>
-      </div>
-    );
-  }
+  const els = teamElements(team);
 
   return (
     <div className="panel space-y-3 p-4">
       <div>
         <p className="font-display text-sm font-semibold">⚡ Feixe Elemental</p>
         <p className="text-xs text-muted-foreground">
-          Apenas 1 feixe fica ativo por batalha — os bônus nunca se somam.
+          Apenas 1 feixe fica ativo por batalha — os bônus nunca se somam. Feixes em cinza pedem
+          elementos que sua equipe ainda não reúne.
         </p>
       </div>
-      {active && <BeamSummary beam={active} />}
-      {options.length > 1 && (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {options.map((b) => {
-            const on = active?.id === b.id;
-            return (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => onChoose(b.id)}
+      {active ? (
+        <BeamSummary beam={active} />
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Nenhum feixe ativo. Combine elementos diferentes na equipe (ex.: 🔥 + 🌊 + 🪨 + 🌪️ ativa o
+          Feixe Primordial).
+        </p>
+      )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        {BEAMS.map((b) => {
+          const on = active?.id === b.id;
+          const open = unlocked.has(b.id);
+          const missing = b.elements.filter((e) => !els.includes(e));
+          return (
+            <button
+              key={b.id}
+              type="button"
+              disabled={!open}
+              onClick={() => open && onChoose(b.id)}
+              className={cn(
+                "panel p-3 text-left transition-all",
+                open
+                  ? on
+                    ? "ring-2 ring-primary"
+                    : "hover:ring-1 hover:ring-border"
+                  : "cursor-not-allowed opacity-45 grayscale",
+              )}
+            >
+              <p
                 className={cn(
-                  "panel p-3 text-left transition-all",
-                  on ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-border",
+                  "font-display text-sm font-bold",
+                  open ? b.text : "text-muted-foreground",
                 )}
               >
-                <p className={cn("font-display text-sm font-bold", b.text)}>
-                  {b.icon} {b.name}
+                {open ? b.icon : "🔒"} {b.name}
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">{beamElementLabel(b)}</p>
+              <p className="mt-1 text-[11px] font-semibold">{beamBonusLabel(b)}</p>
+              {!open && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Falta: {missing.map((e) => `${ELEMENTS_BY_ID[e].icon} ${ELEMENTS_BY_ID[e].name}`).join(", ")}
                 </p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">{beamElementLabel(b)}</p>
-                <p className="mt-1 text-[11px] font-semibold">{beamBonusLabel(b)}</p>
-              </button>
-            );
-          })}
-        </div>
-      )}
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
+
 
 export function BeamSummary({ beam }: { beam: BeamDef }) {
   return (
