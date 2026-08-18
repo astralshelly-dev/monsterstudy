@@ -698,3 +698,486 @@
     transform: rotate(1turn);
   }
 }
+
+/* =========================================================
+ * Sistema de movimento — Monster Study
+ * Animações rápidas (150–400ms), consistentes e leves.
+ * ========================================================= */
+
+:root {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-fast: 160ms;
+  --dur: 240ms;
+  --dur-slow: 380ms;
+}
+
+@keyframes ms-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ms-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ms-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ms-collapse-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    max-height: 40rem;
+  }
+}
+
+@keyframes ms-bump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ms-lunge-right {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  35% {
+    transform: translateX(14%) scale(1.06) rotate(2deg);
+  }
+}
+
+@keyframes ms-lunge-left {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  35% {
+    transform: translateX(-14%) scale(1.06) rotate(-2deg);
+  }
+}
+
+@keyframes ms-hit {
+  0% {
+    transform: translateX(0);
+    filter: none;
+  }
+  20% {
+    transform: translateX(-7px) scale(0.96);
+    filter: brightness(1.9) saturate(0.4);
+  }
+  45% {
+    transform: translateX(6px);
+    filter: none;
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes ms-dmg-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -6px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -46px) scale(0.95);
+  }
+}
+
+@keyframes ms-ring-burst {
+  from {
+    opacity: 0.75;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+@keyframes ms-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes ms-banner {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes ms-mark {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes ms-skeleton {
+  from {
+    background-position: -160% 0;
+  }
+  to {
+    background-position: 260% 0;
+  }
+}
+
+@utility anim-page {
+  animation: ms-page-in var(--dur-slow) var(--ease-out-soft) both;
+}
+
+@utility anim-pop {
+  animation: ms-pop var(--dur) var(--ease-spring) both;
+}
+
+@utility anim-up {
+  animation: ms-fade-up var(--dur) var(--ease-out-soft) both;
+}
+
+@utility anim-collapse {
+  overflow: hidden;
+  animation: ms-collapse-in var(--dur) var(--ease-out-soft) both;
+}
+
+@utility anim-bump {
+  animation: ms-bump var(--dur) var(--ease-spring) both;
+}
+
+@utility anim-banner {
+  animation: ms-banner 1.1s var(--ease-out-soft) both;
+}
+
+@utility anim-mark {
+  animation: ms-mark 1.6s ease-in-out infinite;
+}
+
+/* entrada escalonada de listas: use style={{ animationDelay }} */
+@utility stagger-item {
+  animation: ms-fade-up var(--dur) var(--ease-out-soft) both;
+}
+
+@utility skeleton {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--surface-2) 90%, transparent) 25%,
+    color-mix(in oklab, var(--primary) 16%, var(--surface-2)) 50%,
+    color-mix(in oklab, var(--surface-2) 90%, transparent) 75%
+  );
+  background-size: 220% 100%;
+  animation: ms-skeleton 1.3s linear infinite;
+}
+
+/* feedback tátil padrão de botões e itens clicáveis */
+@utility press {
+  transition:
+    transform var(--dur-fast) var(--ease-out-soft),
+    box-shadow var(--dur) var(--ease-out-soft),
+    background-color var(--dur) ease,
+    border-color var(--dur) ease,
+    color var(--dur) ease,
+    opacity var(--dur) ease;
+  &:hover {
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+/* animações de batalha */
+.fx-attack-player {
+  animation: ms-lunge-right 420ms var(--ease-spring) both;
+}
+.fx-attack-foe {
+  animation: ms-lunge-left 420ms var(--ease-spring) both;
+}
+.fx-hit {
+  animation: ms-hit 360ms var(--ease-out-soft) both;
+}
+.fx-burst {
+  animation: ms-ring-burst 520ms var(--ease-out-soft) both;
+}
+.fx-flash {
+  animation: ms-flash 380ms ease-out both;
+}
+
+/* transições suaves globais e feedback de clique */
+button,
+a,
+[role="button"],
+summary {
+  transition:
+    transform var(--dur-fast) var(--ease-out-soft),
+    background-color var(--dur) ease,
+    border-color var(--dur) ease,
+    color var(--dur) ease,
+    box-shadow var(--dur) ease,
+    opacity var(--dur) ease;
+}
+
+button:not(:disabled):active,
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+ * 🌕🔴 Lua de Sangue — identidade visual do evento
+ * ========================================================= */
+
+.bm-scope {
+  --bm-blood: oklch(0.55 0.21 22);
+  --bm-deep: oklch(0.22 0.09 18);
+}
+
+@keyframes bm-moon-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bm-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bm-orbit {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes bm-drip {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+.bm-moon {
+  background: radial-gradient(circle at 35% 35%, oklch(0.62 0.22 22), oklch(0.32 0.14 20) 70%);
+  box-shadow:
+    0 0 40px color-mix(in oklab, oklch(0.55 0.21 22) 70%, transparent),
+    0 0 120px color-mix(in oklab, oklch(0.55 0.21 22) 35%, transparent);
+  animation: bm-moon-rise 600ms var(--ease-out-soft) both, bm-pulse 4.5s ease-in-out 600ms infinite;
+}
+
+.bm-panel {
+  border-color: color-mix(in oklab, oklch(0.55 0.21 22) 45%, transparent) !important;
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 6%, transparent) inset,
+    0 22px 60px -30px color-mix(in oklab, oklch(0.55 0.21 22) 60%, transparent);
+}
+
+.bm-drip {
+  animation: bm-drip 2.6s ease-in infinite;
+}
+
+/* ---- skins: camadas sobre a arte original, sem trocar o monstro ---- */
+.bm-skin {
+  position: relative;
+  isolation: isolate;
+}
+
+.bm-skin > * {
+  filter: drop-shadow(0 0 12px color-mix(in oklab, oklch(0.55 0.21 22) 70%, transparent));
+}
+
+.bm-skin::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, oklch(0.55 0.21 22) 55%, transparent) 0%,
+    transparent 68%
+  );
+  animation: bm-pulse 3.6s ease-in-out infinite;
+}
+
+.bm-skin-aura::after,
+.bm-skin-moon::after,
+.bm-skin-ember::after,
+.bm-skin-veil::after,
+.bm-skin-eclipse::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.bm-skin-aura::after {
+  inset: -12%;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in oklab, oklch(0.6 0.22 22) 70%, transparent);
+  animation: bm-orbit 9s linear infinite;
+}
+
+.bm-skin-moon::after {
+  top: -6%;
+  right: -6%;
+  height: 34%;
+  width: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, oklch(0.64 0.22 22), oklch(0.3 0.13 20));
+  box-shadow: 0 0 18px color-mix(in oklab, oklch(0.55 0.21 22) 80%, transparent);
+}
+
+.bm-skin-ember::after {
+  inset: 0;
+  border-radius: 40%;
+  background:
+    radial-gradient(circle at 20% 80%, color-mix(in oklab, oklch(0.62 0.24 30) 60%, transparent) 0 12%, transparent 13%),
+    radial-gradient(circle at 78% 22%, color-mix(in oklab, oklch(0.62 0.24 30) 55%, transparent) 0 9%, transparent 10%),
+    radial-gradient(circle at 62% 88%, color-mix(in oklab, oklch(0.62 0.24 30) 50%, transparent) 0 7%, transparent 8%);
+  animation: bm-pulse 2.2s ease-in-out infinite;
+}
+
+.bm-skin-veil::after {
+  inset: 8% -4% -10% -4%;
+  border-radius: 45% 45% 40% 40%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in oklab, oklch(0.5 0.2 22) 42%, transparent)
+  );
+  mix-blend-mode: screen;
+}
+
+.bm-skin-eclipse::after {
+  inset: -14%;
+  border-radius: 50%;
+  border-top: 3px solid color-mix(in oklab, oklch(0.66 0.23 22) 85%, transparent);
+  border-left: 3px solid color-mix(in oklab, oklch(0.4 0.16 20) 60%, transparent);
+  border-right: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  animation: bm-orbit 6s linear infinite;
+}
+
+.bm-accessory {
+  position: absolute;
+  top: -8%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 8px color-mix(in oklab, oklch(0.55 0.21 22) 80%, transparent));
+}
+
+.mframe-bloodmoon {
+  filter: drop-shadow(0 0 16px color-mix(in oklab, oklch(0.55 0.21 22) 75%, transparent));
+}
+.mframe-bloodmoon::before {
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.62 0.22 22),
+    oklch(0.28 0.12 20),
+    oklch(0.66 0.23 24),
+    oklch(0.28 0.12 20),
+    oklch(0.62 0.22 22)
+  );
+  animation: mframe-spin 6s linear infinite;
+}

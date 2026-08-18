@@ -32,11 +32,17 @@ import {
 import { MONSTERS, MONSTERS_BY_ID, MONSTERS_BY_RARITY } from "./monsters";
 import { ACHIEVEMENTS, registerRarityTiers } from "./achievements";
 import { LEAGUES, TEAM_SIZE, TROPHY_LOSS, TROPHY_WIN, leagueOf } from "./battle/config";
-import type { BattleRecord, DayActivity, PendingBattle } from "./types";
+import type { BattleRecord, BloodMoonEventState, DayActivity, PendingBattle } from "./types";
 import { generateDailyQuests, QUESTS_BY_ID, questDone, type DailyQuest, type QuestMetric } from "./quests";
 import { ITEMS_BY_ID, ITEM_DROP_SECONDS, rollItem, type ItemDef } from "./items";
 import { subjectKey, subjectLevelFromXp, subjectIcon, SUBJECT_XP_PER_MINUTE, type SubjectProgress } from "./subjects";
 import { COSMETICS, COSMETICS_BY_ID, type CosmeticKind } from "./cosmetics";
+import {
+  BLOOD_MOON,
+  BLOOD_MOON_PRICES_BY_COSMETIC,
+  BLOOD_MOON_SKINS_BY_ID,
+  bloodMoonActive,
+} from "./bloodmoon";
 import { sanitizeName } from "./names";
 
 import {
@@ -120,6 +126,7 @@ export function defaultState(): GameState {
     itemLog: [],
     quests: generateDailyQuests(todayKey()),
     seasons: { current: currentSeason().number, maxTrophies: 0, wins: 0, losses: 0, history: [] },
+    bloodMoon: { coins: 0, earned: 0, progressSec: 0, skins: [], equipped: {}, cosmetics: [] },
     cosmetics: {
       owned: COSMETICS.filter((c) => c.unlock.type === "free").map((c) => c.id),
       frame: null,
@@ -644,6 +651,7 @@ function markActivity(
   }
   accumulateItemProgress(s, seconds);
   accumulateDiamonds(s, seconds);
+  accumulateBloodMoonCoins(s, seconds);
 
   // streak
   const today = key;
@@ -1682,6 +1690,8 @@ export function cosmeticUnlocked(id: string, s: GameState = state): boolean {
       return (s.battle?.wins ?? 0) >= u.n;
     case "season":
       return false;
+    case "event":
+      return false;
   }
 }
 
@@ -1698,7 +1708,7 @@ function refreshCosmetics() {
   let changed = false;
   for (const c of COSMETICS) {
     if (owned.has(c.id)) continue;
-    if (c.unlock.type === "season") continue;
+    if (c.unlock.type === "season" || c.unlock.type === "event") continue;
     if (cosmeticUnlocked(c.id, state)) {
       owned.add(c.id);
       cosmeticQueue.push(c.id);
@@ -1802,4 +1812,109 @@ export function finishSeasonIfNeeded(position: number | null = null): SeasonReco
     applySeasonReward(s, rewards);
   });
   return record;
+}
+
+
+// ---------------- 🌕🔴 Evento Lua de Sangue ----------------
+
+function emptyBloodMoon(): BloodMoonEventState {
+  return { coins: 0, earned: 0, progressSec: 0, skins: [], equipped: {}, cosmetics: [] };
+}
+
+export function bloodMoonState(s: GameState = state): BloodMoonEventState {
+  return s.bloodMoon ?? emptyBloodMoon();
+}
+
+/**
+ * Moedas do evento vêm APENAS do tempo real registrado em sessões de estudo
+ * e leitura, e só enquanto o evento está ativo. Atualizar a página não gera nada.
+ */
+function accumulateBloodMoonCoins(s: GameState, seconds: number) {
+  if (seconds <= 0 || !bloodMoonActive()) return;
+  const ev = { ...bloodMoonState(s) };
+  let acc = ev.progressSec + seconds;
+  const gained = Math.floor(acc / BLOOD_MOON.coinSeconds);
+  if (gained > 0) {
+    ev.coins += gained;
+    ev.earned += gained;
+    acc -= gained * BLOOD_MOON.coinSeconds;
+  }
+  ev.progressSec = acc;
+  s.bloodMoon = ev;
+}
+
+/** progresso rumo à próxima moeda do evento (interface) */
+export function bloodMoonProgress(s: GameState = state) {
+  const cur = bloodMoonState(s).progressSec;
+  return {
+    current: cur,
+    target: BLOOD_MOON.coinSeconds,
+    pct: Math.min(100, (cur / BLOOD_MOON.coinSeconds) * 100),
+  };
+}
+
+export function ownsBloodMoonSkin(skinId: string, s: GameState = state): boolean {
+  return bloodMoonState(s).skins.includes(skinId);
+}
+
+/** compra uma skin do evento pagando somente com a moeda da Lua de Sangue */
+export function buyBloodMoonSkin(skinId: string): { ok: boolean; message: string } {
+  const skin = BLOOD_MOON_SKINS_BY_ID[skinId];
+  if (!skin) return { ok: false, message: "Skin desconhecida." };
+  if (!bloodMoonActive()) return { ok: false, message: "A Lua de Sangue já se encerrou." };
+  const ev = bloodMoonState();
+  if (ev.skins.includes(skinId)) return { ok: false, message: "Você já possui esta skin." };
+  if (ev.coins < skin.price)
+    return { ok: false, message: `Faltam ${skin.price - ev.coins} moedas da Lua de Sangue.` };
+  setState((s) => {
+    const cur = { ...bloodMoonState(s) };
+    cur.coins -= skin.price;
+    cur.skins = [...cur.skins, skinId];
+    cur.equipped = { ...cur.equipped, [skin.monsterId]: skinId };
+    s.bloodMoon = cur;
+  });
+  return { ok: true, message: `${skin.name} desbloqueada!` };
+}
+
+/** compra um cosmético de perfil do evento (moeda do evento apenas) */
+export function buyBloodMoonCosmetic(cosmeticId: string): { ok: boolean; message: string } {
+  const price = BLOOD_MOON_PRICES_BY_COSMETIC[cosmeticId];
+  const def = COSMETICS_BY_ID[cosmeticId];
+  if (!price || !def) return { ok: false, message: "Item desconhecido." };
+  if (!bloodMoonActive()) return { ok: false, message: "A Lua de Sangue já se encerrou." };
+  const ev = bloodMoonState();
+  if ((state.cosmetics?.owned ?? []).includes(cosmeticId))
+    return { ok: false, message: "Você já possui este item." };
+  if (ev.coins < price)
+    return { ok: false, message: `Faltam ${price - ev.coins} moedas da Lua de Sangue.` };
+  setState((s) => {
+    const cur = { ...bloodMoonState(s) };
+    cur.coins -= price;
+    cur.cosmetics = [...cur.cosmetics, cosmeticId];
+    s.bloodMoon = cur;
+    const owned = new Set(s.cosmetics?.owned ?? []);
+    owned.add(cosmeticId);
+    s.cosmetics = { ...s.cosmetics, owned: [...owned] };
+  });
+  return { ok: true, message: `${def.icon} ${def.name} desbloqueado!` };
+}
+
+/** equipa/desequipa a skin do evento de um monstro (puramente visual) */
+export function toggleBloodMoonSkin(skinId: string): boolean {
+  const skin = BLOOD_MOON_SKINS_BY_ID[skinId];
+  if (!skin || !ownsBloodMoonSkin(skinId)) return false;
+  setState((s) => {
+    const cur = { ...bloodMoonState(s) };
+    const equipped = { ...cur.equipped };
+    if (equipped[skin.monsterId] === skinId) delete equipped[skin.monsterId];
+    else equipped[skin.monsterId] = skinId;
+    cur.equipped = equipped;
+    s.bloodMoon = cur;
+  });
+  return true;
+}
+
+/** skin equipada de um monstro (usada pela arte do monstro) */
+export function equippedSkinFor(monsterId: string, s: GameState = state): string | null {
+  return bloodMoonState(s).equipped[monsterId] ?? null;
 }

@@ -14,7 +14,9 @@ export type CosmeticUnlock =
   | { type: "streak"; n: number }
   | { type: "trophies"; n: number }
   | { type: "wins"; n: number }
-  | { type: "season" };
+  | { type: "season" }
+  /** obtido comprando na loja de um evento temporário */
+  | { type: "event"; event: string };
 
 export type CosmeticDef = {
   id: string;
@@ -117,7 +119,49 @@ const RANK_COSMETICS: CosmeticDef[] = RANK_LADDER.flatMap((r) => [
   },
 ]);
 
-export const COSMETICS: CosmeticDef[] = [...BASE_COSMETICS, ...RANK_COSMETICS];
+// ---------- 🌕🔴 Lua de Sangue (comprados com a moeda do evento) ----------
+const BLOOD_MOON_COSMETICS_DEFS: CosmeticDef[] = [
+  {
+    id: "badge_bloodmoon",
+    kind: "badge",
+    name: "Selo da Lua de Sangue",
+    icon: "🩸",
+    description: "Emblema exclusivo do evento Lua de Sangue.",
+    unlock: { type: "event", event: "Lua de Sangue" },
+  },
+  {
+    id: "title_bloodmoon",
+    kind: "title",
+    name: "Filho da Lua de Sangue",
+    icon: "🌕",
+    description: "Título exclusivo do evento Lua de Sangue.",
+    unlock: { type: "event", event: "Lua de Sangue" },
+  },
+  {
+    id: "fx_bloodmoon",
+    kind: "effect",
+    name: "Aura Carmesim",
+    icon: "🔴",
+    description: "Brilho vermelho de eclipse no seu retrato.",
+    unlock: { type: "event", event: "Lua de Sangue" },
+    className: "drop-shadow-[0_0_18px_oklch(0.55_0.21_22/0.85)]",
+  },
+  {
+    id: "frame_bloodmoon",
+    kind: "frame",
+    name: "Moldura da Lua de Sangue",
+    icon: "🌘",
+    description: "Moldura de eclipse escarlate, só do evento.",
+    unlock: { type: "event", event: "Lua de Sangue" },
+    className: "mframe mframe-bloodmoon",
+  },
+];
+
+export const COSMETICS: CosmeticDef[] = [
+  ...BASE_COSMETICS,
+  ...BLOOD_MOON_COSMETICS_DEFS,
+  ...RANK_COSMETICS,
+];
 
 
 
@@ -199,5 +243,7 @@ export function unlockLabel(u: CosmeticUnlock): string {
       return `Vença ${u.n} batalhas`;
     case "season":
       return "Recompensa de temporada";
+    case "event":
+      return `Loja do evento ${u.event}`;
   }
 }
