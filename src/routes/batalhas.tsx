@@ -511,7 +511,7 @@ function BattlesPage() {
                     />
                   </div>
                   <p className="text-[9px] font-bold text-muted-foreground uppercase text-center">
-                    {after.next ? `${num(after.trophiesAfter)} / ${num(after.next.minTrophies)} para ${after.next.name}` : "Nível Máximo Atingido"}
+                    {after.next ? `Faltam ${num(after.missing)} troféus para ${after.next.name}` : "Nível Máximo Atingido"}
                   </p>
                 </div>
               </div>
