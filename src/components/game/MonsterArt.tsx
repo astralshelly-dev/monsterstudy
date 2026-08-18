@@ -105,9 +105,9 @@ export function MonsterArt({
           skin && !silhouette && skinFxClass(skin.fx),
         )}
       >
-        {art.startsWith("/") ? (
+        {shownArt.startsWith("/") ? (
           <img
-            src={art}
+            src={shownArt}
             alt=""
             loading="lazy"
             className={cn(
@@ -121,10 +121,10 @@ export function MonsterArt({
             className={cn("leading-none", animate && "animate-float", silhouette && "brightness-0 opacity-60")}
             aria-hidden
           >
-            {art}
+            {shownArt}
           </span>
         )}
-        {skin && !silhouette && (
+        {skin && !silhouette && !skinImg && (
           <span className="bm-accessory" aria-hidden>
             {skin.accessory}
           </span>
