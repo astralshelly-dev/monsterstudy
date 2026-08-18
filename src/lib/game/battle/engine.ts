@@ -782,12 +782,15 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
   const aiAction =
     actor === "foe" ? decideAiAction(b, attacker.charge === 0 && aiWantsAbility(b, attacker)) : null;
 
-  if (aiAction?.kind === "switch") {
+  // a IA só pode trocar se não trocou nas últimas 3 rodadas (nada de trocas em cadeia)
+  const canAiSwitch = b.turnNo - (b.foe.lastSwitchTurn ?? -99) >= 3;
+  if (aiAction?.kind === "switch" && canAiSwitch) {
     const next = b.foe.fighters[aiAction.index];
-    if (next && next.hp > 0) {
+    if (next && next.hp > 0 && aiAction.index !== b.foe.active) {
       // trocar consome o turno, exatamente como para o jogador
       attacker.charge = Math.min(attacker.ability.cooldown, attacker.charge + 1);
       b.foe.active = aiAction.index;
+      b.foe.lastSwitchTurn = b.turnNo;
       next.guard = 1;
       b.events.push({
         id: eid(),
