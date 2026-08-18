@@ -47,9 +47,12 @@ export type Fighter = {
   echo: { turns: number; dmg: number } | null;
   /** marcado pelo veredito (permanente): dano ampliado + dreno para quem o ferir */
   mark: { pct: number; lifestealPct: number; abilityLifestealPct: number } | null;
-
-
+  /** função estratégica do monstro (só identidade: não muda atributos) */
+  role: RoleId;
+  /** bônus de dano do feixe elemental ativo da equipe (0 quando não há feixe) */
+  dmgBonus: number;
 };
+
 
 export type SideId = "player" | "foe";
 
