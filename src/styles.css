@@ -1181,3 +1181,117 @@ a:focus-visible,
   );
   animation: mframe-spin 6s linear infinite;
 }
+
+/* ============================================================
+   Fluidez extra: abertura de batalha, especiais e microinterações
+   ============================================================ */
+
+@keyframes ms-intro-vs {
+  0% { opacity: 0; transform: scale(0.6) rotate(-6deg); filter: blur(6px); }
+  45% { opacity: 1; transform: scale(1.12) rotate(0deg); filter: blur(0); }
+  75% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+.fx-intro-vs {
+  animation: ms-intro-vs 1.5s var(--ease-out-soft) both;
+}
+
+@keyframes ms-enter-left {
+  from { opacity: 0; transform: translateX(-28px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ms-enter-right {
+  from { opacity: 0; transform: translateX(28px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.fx-enter-left { animation: ms-enter-left 620ms var(--ease-out-soft) both; }
+.fx-enter-right { animation: ms-enter-right 620ms var(--ease-out-soft) both; }
+
+@keyframes ms-cast {
+  0% { transform: scale(1); filter: brightness(1); }
+  25% { transform: scale(1.1) translateY(-6px); filter: brightness(1.5) saturate(1.3); }
+  55% { transform: scale(1.16) translateY(-2px); filter: brightness(1.7) saturate(1.4); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+.fx-cast { animation: ms-cast 1.1s var(--ease-out-soft) both; }
+
+@keyframes ms-cast-ring {
+  0% { opacity: 0.9; transform: scale(0.7); }
+  100% { opacity: 0; transform: scale(2.1); }
+}
+.fx-cast-ring { animation: ms-cast-ring 900ms ease-out both; }
+
+@keyframes ms-special-zoom {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+.fx-special-zoom { animation: ms-special-zoom 1.1s var(--ease-out-soft) both; }
+
+@keyframes ms-special-flare {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.fx-special-flare {
+  background: radial-gradient(circle at 50% 45%, color-mix(in oklab, white 40%, transparent), transparent 62%);
+  animation: ms-special-flare 900ms ease-out both;
+}
+
+@keyframes ms-special-rays {
+  0% { opacity: 0; transform: rotate(0deg) scale(0.8); }
+  30% { opacity: 0.75; }
+  100% { opacity: 0; transform: rotate(26deg) scale(1.35); }
+}
+.fx-special-rays {
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in oklab, white 22%, transparent) 0deg 4deg,
+    transparent 4deg 16deg
+  );
+  mix-blend-mode: screen;
+  animation: ms-special-rays 1.05s ease-out both;
+}
+
+/* microinterações globais mais macias */
+button,
+a,
+[role="button"] {
+  transition:
+    transform 160ms var(--ease-out-soft),
+    opacity 160ms var(--ease-out-soft),
+    background-color 200ms var(--ease-out-soft),
+    box-shadow 220ms var(--ease-out-soft),
+    color 200ms var(--ease-out-soft);
+}
+button:active:not(:disabled),
+[role="button"]:active {
+  transform: scale(0.97);
+}
+.panel {
+  transition:
+    transform 240ms var(--ease-out-soft),
+    box-shadow 260ms var(--ease-out-soft),
+    border-color 260ms var(--ease-out-soft);
+}
+.panel-hover:hover {
+  transform: translateY(-3px);
+}
+input,
+textarea,
+select {
+  transition: box-shadow 200ms var(--ease-out-soft), border-color 200ms var(--ease-out-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-intro-vs,
+  .fx-enter-left,
+  .fx-enter-right,
+  .fx-cast,
+  .fx-cast-ring,
+  .fx-special-zoom,
+  .fx-special-flare,
+  .fx-special-rays {
+    animation: none !important;
+  }
+}
