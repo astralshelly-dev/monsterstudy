@@ -176,7 +176,7 @@ function BloodMoonPage() {
                       <div className="mt-1 flex flex-wrap items-center gap-1">
                         <RarityBadge rarity={skin.rarity} />
                         <span className={cn("text-[11px] font-semibold", rarityText(skin.rarity))}>
-                          {RARITIES[skin.rarity].name}
+                          Skin exclusiva
                         </span>
                       </div>
                       <p className="mt-1.5 text-xs text-muted-foreground">{skin.description}</p>

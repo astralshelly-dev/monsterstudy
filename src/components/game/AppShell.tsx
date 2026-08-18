@@ -33,7 +33,8 @@ import {
 import { useGame, useHydrated } from "@/hooks/use-game";
 import { CloudSyncProvider, useCloudSync } from "@/hooks/use-auth";
 import { isAdminEmail } from "@/lib/admin";
-import { moneyPerSecond, userProgress } from "@/lib/game/state";
+import { bloodMoonState, moneyPerSecond, userProgress } from "@/lib/game/state";
+import { bloodMoonActive } from "@/lib/game/bloodmoon";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { WelcomeBack } from "@/components/game/WelcomeBack";
@@ -262,6 +263,9 @@ function AppShellContent({ children }: { children: ReactNode }) {
               <Pill icon={<span>⭐</span>} value={`Nv ${state.profile.level}`} />
               <Pill icon={<BookMarked className="h-3.5 w-3.5 text-mana" />} value={`${num(state.shards)}`} />
               <Pill icon={<span>💎</span>} value={`${num(state.diamonds ?? 0)}`} />
+              {bloodMoonActive() && (
+                <Pill icon={<span>🩸</span>} value={`${num(bloodMoonState(state).coins)}`} />
+              )}
             </div>
           </div>
         </header>
