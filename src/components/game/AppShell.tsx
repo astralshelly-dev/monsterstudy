@@ -236,12 +236,17 @@ function AppShellContent({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/50 px-4 py-3 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-            <Link to="/" className="flex items-center gap-2 lg:hidden">
-              <span className="text-xl">🐲</span>
-              <span className="font-display text-sm font-bold">Monster Study</span>
-            </Link>
+        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/50 px-3 py-2.5 backdrop-blur-xl sm:px-4 sm:py-3">
+          <div className="mx-auto flex max-w-6xl min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-3">
+            <div className="flex min-w-0 items-center justify-between gap-2 lg:hidden">
+              <Link to="/" className="flex min-w-0 items-center gap-2">
+                <span className="text-lg">🐲</span>
+                <span className="truncate font-display text-sm font-bold">Monster Study</span>
+              </Link>
+              <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                {num(prog.xp)}/{num(prog.need)} XP
+              </span>
+            </div>
             <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
               <div className="h-2 w-40 overflow-hidden rounded-full bg-muted">
                 <div
@@ -253,15 +258,16 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 {num(prog.xp)} / {num(prog.need)} XP
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
+            <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-0.5 text-sm no-scrollbar lg:mx-0 lg:overflow-visible lg:px-0">
               <Pill icon={<span className="text-gold">💰</span>} value={money(state.money)} />
               <Pill icon={<Flame className="h-3.5 w-3.5 text-ember" />} value={`${state.streak.current}d`} />
               <Pill icon={<span>⭐</span>} value={`Nv ${state.profile.level}`} />
-              <Pill icon={<BookMarked className="h-3.5 w-3.5 text-mana" />} value={`${state.shards}`} />
-              <Pill icon={<span>💎</span>} value={`${state.diamonds ?? 0}`} />
+              <Pill icon={<BookMarked className="h-3.5 w-3.5 text-mana" />} value={`${num(state.shards)}`} />
+              <Pill icon={<span>💎</span>} value={`${num(state.diamonds ?? 0)}`} />
             </div>
           </div>
         </header>
+
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 lg:pb-10">{children}</main>
 
