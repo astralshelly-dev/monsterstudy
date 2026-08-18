@@ -91,6 +91,7 @@ export function SceneBackground({
       style={{ backgroundColor: theme.bg }}
     >
       <ArtLayer theme={theme} />
+      <SceneProps theme={theme} />
       <Particles theme={theme} />
       {/* leve toque metálico: brilho plano no topo, sem gradiente colorido */}
       <div className="absolute inset-x-0 top-0 h-px" style={{ backgroundColor: theme.ink, opacity: 0.25 }} />
