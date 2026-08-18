@@ -1166,3 +1166,18 @@ a:focus-visible,
   font-size: 0.9rem;
   filter: drop-shadow(0 0 8px color-mix(in oklab, oklch(0.55 0.21 22) 80%, transparent));
 }
+
+.mframe-bloodmoon {
+  filter: drop-shadow(0 0 16px color-mix(in oklab, oklch(0.55 0.21 22) 75%, transparent));
+}
+.mframe-bloodmoon::before {
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.62 0.22 22),
+    oklch(0.28 0.12 20),
+    oklch(0.66 0.23 24),
+    oklch(0.28 0.12 20),
+    oklch(0.62 0.22 22)
+  );
+  animation: mframe-spin 6s linear infinite;
+}
