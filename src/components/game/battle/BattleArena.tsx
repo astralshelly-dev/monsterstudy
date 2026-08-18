@@ -393,8 +393,14 @@ function FighterView({
             className={cn(
               "pointer-events-none absolute left-1/2 top-0 font-display font-bold drop-shadow",
               "animate-[ms-dmg-float_1.1s_var(--ease-out-soft)_both]",
-              f.heal ? "text-emerald-400" : f.effect === "super" ? "text-gold" : "text-ember",
-              f.effect === "super" ? "text-3xl" : "text-2xl",
+              f.heal
+                ? "text-emerald-400"
+                : f.effect === "super"
+                  ? "text-destructive"
+                  : f.effect === "weak"
+                    ? "text-foreground"
+                    : "text-gold",
+              f.effect === "super" ? "text-3xl" : f.effect === "weak" ? "text-xl" : "text-2xl",
             )}
           >
             {f.text}
