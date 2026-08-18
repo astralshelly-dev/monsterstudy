@@ -209,17 +209,14 @@ export function BattleArena({
         )
       )}
 
-      <div className="panel max-h-40 overflow-y-auto p-4 text-xs text-muted-foreground">
+      <div ref={logRef} className="panel max-h-40 overflow-y-auto p-4 text-xs text-muted-foreground">
         {battle.log.length === 0 ? (
           <p>A batalha vai começar…</p>
         ) : (
           <ul className="space-y-1">
-            {battle.log
-              .slice(-14)
-              .reverse()
-              .map((l, i) => (
-                <li key={`${i}-${l}`}>{l}</li>
-              ))}
+            {battle.log.slice(-40).map((l, i) => (
+              <li key={`${i}-${l}`}>{l}</li>
+            ))}
           </ul>
         )}
       </div>
