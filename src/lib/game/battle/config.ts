@@ -281,13 +281,17 @@ export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
  * Cada monstro tem UMA habilidade fixa (nunca aleatória).
  * A distribuição é determinística: derivada da ordem do bestiário.
  */
+/** habilidades exclusivas: nunca entram na distribuição automática */
+const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio"];
+
 const ABILITY_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
+  const pool = ABILITIES.filter((a) => !EXCLUSIVE_ABILITIES.includes(a.id));
   MONSTERS.forEach((m, i) => {
     const tier = RARITY_ORDER.indexOf(m.rarity);
     // raridades altas começam mais adiante na lista (habilidades mais impactantes)
-    const idx = (i * 5 + tier * 3) % ABILITIES.length;
-    map[m.id] = ABILITIES[idx]!.id;
+    const idx = (i * 5 + tier * 3) % pool.length;
+    map[m.id] = pool[idx]!.id;
   });
   // ajustes de identidade para os mais emblemáticos
   map['astraeon'] = "onda_expansiva";
