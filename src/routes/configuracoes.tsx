@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const TOGGLES = [
-  { id: "sounds", label: "Sons", hint: "Efeitos sonoros nas revelações e fim de sessão." },
+  { id: "sounds", label: "Efeitos sonoros", hint: "Cliques, compras, dano, habilidades e recompensas." },
+  { id: "music", label: "Música ambiente", hint: "Trilha atmosférica do tema Lua de Sangue." },
   { id: "animations", label: "Animações", hint: "Animações de revelação e brilhos de raridade." },
   { id: "notifications", label: "Notificações", hint: "Avisos ao fim das sessões (quando permitido)." },
   { id: "compact", label: "Modo compacto", hint: "Reduz espaçamentos para mostrar mais conteúdo." },
