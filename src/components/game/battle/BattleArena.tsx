@@ -86,8 +86,8 @@ export function BattleArena({
       }, 1100);
     }
     if (attacker || hurt || banner) {
-      setFx({ attacker, hit: hurt?.side ?? null, effect, banner });
-      window.setTimeout(() => setFx(NO_FX), banner ? 1150 : 520);
+      setFx({ attacker, hit: hurt?.side ?? null, effect, banner, special });
+      window.setTimeout(() => setFx(NO_FX), banner ? 1400 : 520);
     }
     setBattle(next);
   }
