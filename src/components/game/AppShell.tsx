@@ -269,10 +269,10 @@ function AppShellContent({ children }: { children: ReactNode }) {
         </header>
 
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 lg:pb-10">{children}</main>
+        <main className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 sm:pt-6 lg:pb-10">{children}</main>
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
-          <div className="grid grid-cols-5">
+          <div className="grid grid-cols-5 items-stretch">
             {flatNav
               .filter((n) => n.primary)
               .slice(0, 4)
@@ -284,12 +284,12 @@ function AppShellContent({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "flex flex-col items-center gap-1 py-2.5 text-[10px]",
+                      "flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-[10px] leading-tight",
                       active ? "text-primary" : "text-muted-foreground",
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
-                    {item.label}
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    <span className="w-full truncate text-center">{item.label}</span>
                   </Link>
                 );
               })}
@@ -350,7 +350,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
 function Pill({ icon, value }: { icon: ReactNode; value: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/70 px-2.5 py-1 text-xs font-semibold tabular-nums ring-1 ring-border/60">
+    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-secondary/70 px-2 py-1 text-[11px] font-semibold tabular-nums ring-1 ring-border/60 sm:gap-1.5 sm:px-2.5 sm:text-xs">
       {icon}
       {value}
     </span>
