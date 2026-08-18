@@ -744,15 +744,39 @@ export function takeTurn(prev: Battle, opts?: { useSpecial?: boolean }): Battle 
   // a proteção da troca vale apenas até o monstro agir
   attacker.guard = 0;
 
+  // ---- decisão da IA (mesmas regras do jogador) ----
+  const aiAction =
+    actor === "foe" ? decideAiAction(b, attacker.charge === 0 && aiWantsAbility(b, attacker)) : null;
+
+  if (aiAction?.kind === "switch") {
+    const next = b.foe.fighters[aiAction.index];
+    if (next && next.hp > 0) {
+      // trocar consome o turno, exatamente como para o jogador
+      attacker.charge = Math.min(attacker.ability.cooldown, attacker.charge + 1);
+      b.foe.active = aiAction.index;
+      next.guard = 1;
+      b.events.push({
+        id: eid(),
+        kind: "switch",
+        side: "foe",
+        text: `${b.foe.name} troca para ${next.name} (gastou o turno)`,
+      });
+      tickBurn(b, "foe");
+      finishTurnAfterAiSwitch(b);
+      return b;
+    }
+  }
+
   if (wantsSpecial) {
     basicAttack(b, actor, attacker, defSide, defSideId, 0.5);
     if (defSide.fighters[defSide.active]!.hp > 0) useAbility(b, actor, attacker, defSide, defSideId);
     else attacker.charge = attacker.ability.cooldown;
-  } else if (actor === "foe" && attacker.charge === 0 && aiWantsAbility(b, attacker)) {
+  } else if (actor === "foe" && aiAction?.kind === "ability" && attacker.charge === 0) {
     useAbility(b, actor, attacker, defSide, defSideId);
   } else {
     basicAttack(b, actor, attacker, defSide, defSideId);
   }
+
 
 
   if (defSide.fighters[defSide.active]!.hp > 0) tickBurn(b, defSideId);
