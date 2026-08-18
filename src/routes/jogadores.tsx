@@ -330,7 +330,7 @@ function ProfileDetailedView({ profile: p }: { profile: PublicProfile }) {
                     Desafiar
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-xl px-8" onClick={() => toast.info("Sistema de amigos em breve!")}>
+                <Button variant="outline" size="lg" className="rounded-xl px-8" onClick={() => void addFriend(p.publicId)}>
                    + Adicionar Amigo
                 </Button>
               </div>
