@@ -1206,6 +1206,18 @@ export function setBattleTeam(ids: string[]) {
   });
 }
 
+/** feixe elemental escolhido pelo jogador (persistido) */
+export function battleBeamId(s: GameState = state): string | null {
+  return battleData(s).beam ?? null;
+}
+
+export function setBattleBeam(beamId: string | null) {
+  setState((s) => {
+    s.battle = { ...battleData(s), beam: beamId };
+  });
+}
+
+
 // ---------- batalha definitiva (abandono = derrota) ----------
 
 /** batalha ranqueada em andamento, se houver */
