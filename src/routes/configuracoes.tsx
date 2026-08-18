@@ -6,6 +6,7 @@ import { resetProgress, updateSettings } from "@/lib/game/state";
 import { PageHeader } from "@/components/game/Primitives";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
@@ -20,7 +21,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const TOGGLES = [
-  { id: "sounds", label: "Sons", hint: "Efeitos sonoros nas revelações e fim de sessão." },
+  { id: "sounds", label: "Efeitos sonoros", hint: "Cliques, compras, dano, habilidades e recompensas." },
+  { id: "music", label: "Música ambiente", hint: "Trilha atmosférica do tema Lua de Sangue." },
   { id: "animations", label: "Animações", hint: "Animações de revelação e brilhos de raridade." },
   { id: "notifications", label: "Notificações", hint: "Avisos ao fim das sessões (quando permitido)." },
   { id: "compact", label: "Modo compacto", hint: "Reduz espaçamentos para mostrar mais conteúdo." },
@@ -85,11 +87,29 @@ function Settings() {
               <p className="text-xs text-muted-foreground">{t.hint}</p>
             </div>
             <Switch
-              checked={state.settings[t.id]}
+              checked={state.settings[t.id] !== false}
               onCheckedChange={(v) => updateSettings({ [t.id]: v })}
             />
           </div>
         ))}
+        <div className="space-y-4 p-4">
+          <VolumeRow
+            label="Volume da música"
+            value={state.settings.musicVolume ?? 0.35}
+            disabled={state.settings.music === false}
+            onChange={(v) => updateSettings({ musicVolume: v })}
+          />
+          <VolumeRow
+            label="Volume dos efeitos"
+            value={state.settings.sfxVolume ?? 0.7}
+            disabled={state.settings.sounds === false}
+            onChange={(v) => updateSettings({ sfxVolume: v })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Durante uma sessão de estudo ou leitura o som é silenciado por completo, voltando
+            quando a sessão termina.
+          </p>
+        </div>
       </section>
 
       <section className="panel space-y-3 p-5">
@@ -143,6 +163,37 @@ function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </section>
+    </div>
+  );
+}
+
+function VolumeRow({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  disabled?: boolean;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className={disabled ? "opacity-50" : undefined}>
+      <div className="mb-2 flex items-center justify-between">
+        <Label className="text-sm">{label}</Label>
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {Math.round(value * 100)}%
+        </span>
+      </div>
+      <Slider
+        value={[Math.round(value * 100)]}
+        min={0}
+        max={100}
+        step={5}
+        disabled={disabled}
+        onValueChange={([v]) => onChange((v ?? 0) / 100)}
+      />
     </div>
   );
 }

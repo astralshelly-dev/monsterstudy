@@ -1,28 +1,7 @@
 import { RARITIES, RARITY_ORDER, type RarityId } from "@/lib/game/config";
-import { getSnapshot } from "@/lib/game/state";
+import { audioCtx, sfxBus, sfxVolume, tone as rawTone } from "@/lib/game/audio";
 
-let ctx: AudioContext | null = null;
-
-function audio(): AudioContext | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctor) return null;
-    ctx ??= new Ctor();
-    if (ctx.state === "suspended") void ctx.resume();
-    return ctx;
-  } catch {
-    return null;
-  }
-}
-
-function soundsEnabled(): boolean {
-  try {
-    return getSnapshot().settings.sounds !== false;
-  } catch {
-    return true;
-  }
-}
+export { playSfx, type SfxName } from "@/lib/game/audio";
 
 type ToneOptions = {
   freq: number;
@@ -33,19 +12,13 @@ type ToneOptions = {
   detune?: number;
 };
 
-function tone(ac: AudioContext, { freq, start, dur, gain = 0.16, type = "triangle", detune = 0 }: ToneOptions) {
-  const t0 = ac.currentTime + start;
-  const osc = ac.createOscillator();
-  const g = ac.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, t0);
-  if (detune) osc.detune.setValueAtTime(detune, t0);
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(gain, t0 + Math.min(0.05, dur * 0.3));
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  osc.connect(g).connect(ac.destination);
-  osc.start(t0);
-  osc.stop(t0 + dur + 0.05);
+function tone(_ac: AudioContext, o: ToneOptions) {
+  rawTone({ ...o, bus: sfxBus() });
+}
+
+function ready(): AudioContext | null {
+  if (sfxVolume() <= 0) return null;
+  return audioCtx();
 }
 
 function sparkle(ac: AudioContext, start: number, count: number) {
@@ -70,8 +43,7 @@ const note = (semi: number) => BASE * Math.pow(2, semi / 12);
  * e mais brilho — de dois bipes simples (comum) a um arpejo épico (divino).
  */
 export function playRewardSfx(rarity: RarityId) {
-  if (!soundsEnabled()) return;
-  const ac = audio();
+  const ac = ready();
   if (!ac) return;
   const tier = Math.max(0, RARITY_ORDER.indexOf(rarity));
   const drama = RARITIES[rarity]?.drama ?? tier;
@@ -132,8 +104,7 @@ export function playRewardSfx(rarity: RarityId) {
 
 /** Alarme suave de fim de cronômetro: dois toques ascendentes repetidos. */
 export function playTimerEndSfx() {
-  if (!soundsEnabled()) return;
-  const ac = audio();
+  const ac = ready();
   if (!ac) return;
   for (let rep = 0; rep < 2; rep++) {
     const base = rep * 0.62;
@@ -144,8 +115,7 @@ export function playTimerEndSfx() {
 
 /** Som curto e neutro para sessões sem monstro (ex.: encerrada muito cedo). */
 export function playNoRewardSfx() {
-  if (!soundsEnabled()) return;
-  const ac = audio();
+  const ac = ready();
   if (!ac) return;
   tone(ac, { freq: note(4), start: 0, dur: 0.22, gain: 0.12, type: "triangle" });
   tone(ac, { freq: note(-3), start: 0.2, dur: 0.4, gain: 0.12, type: "triangle" });

@@ -38,6 +38,7 @@ import { bloodMoonActive } from "@/lib/game/bloodmoon";
 import { money, num } from "@/lib/format";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { WelcomeBack } from "@/components/game/WelcomeBack";
+import { AudioController } from "@/components/game/AudioController";
 import { SceneThemeProvider } from "@/components/game/SceneTheme";
 import { BumpOnChange, PageTransition, SmoothBar } from "@/components/game/motion";
 import { cn } from "@/lib/utils";
@@ -374,6 +375,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
       </nav>
       </div>
       {offline && <WelcomeBack offline={offline} onClose={dismissOffline} />}
+      <AudioController />
     </div>
   );
 }

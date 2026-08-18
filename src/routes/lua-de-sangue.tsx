@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { playSfx } from "@/lib/game/audio";
 import { useGame } from "@/hooks/use-game";
 import {
   bloodMoonProgress,
@@ -65,9 +66,11 @@ function BloodMoonPage() {
   function purchaseSkin(skin: BloodMoonSkin) {
     const res = buyBloodMoonSkin(skin.id);
     if (!res.ok) {
+      playSfx("error");
       toast.error(res.message);
       return;
     }
+    playSfx("purchase");
     setFlash(skin.id);
     window.setTimeout(() => setFlash(null), 1800);
     toast.success(`🩸 ${res.message}`);
@@ -244,8 +247,13 @@ function BloodMoonPage() {
                       disabled={missing > 0}
                       onClick={() => {
                         const res = buyBloodMoonCosmetic(entry.cosmeticId);
-                        if (res.ok) toast.success(`🩸 ${res.message}`);
-                        else toast.error(res.message);
+                        if (res.ok) {
+                          playSfx("purchase");
+                          toast.success(`🩸 ${res.message}`);
+                        } else {
+                          playSfx("error");
+                          toast.error(res.message);
+                        }
                       }}
                     >
                       {missing > 0 ? `Faltam 🩸 ${num(missing)}` : "Comprar"}
