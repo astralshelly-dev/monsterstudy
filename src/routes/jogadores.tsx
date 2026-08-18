@@ -346,4 +346,5 @@ function StatMiniCard({ icon, label, value }: { icon: React.ReactNode; label: st
       <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">{label}</p>
       <p className="font-display text-base font-bold truncate w-full">{value}</p>
     </div>
+  );
 }
