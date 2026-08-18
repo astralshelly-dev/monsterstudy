@@ -374,6 +374,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
       </nav>
       </div>
       {offline && <WelcomeBack offline={offline} onClose={dismissOffline} />}
+      <AudioController />
     </div>
   );
 }
