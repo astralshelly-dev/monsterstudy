@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { RARITIES } from "@/lib/game/config";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { HABITATS } from "@/lib/game/config";
@@ -38,9 +39,13 @@ export function RewardModal({
   }, [rarity?.drama, def]);
 
   const sparkles = 6 + (rarity?.drama || 0) * 4;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-100 grid place-items-center overflow-hidden bg-background/95 px-4 backdrop-blur-md animate-in fade-in duration-500">
+  return createPortal(
+    <div className="fixed inset-0 z-100 grid place-items-center overflow-y-auto bg-background/95 px-4 py-8 backdrop-blur-md animate-in fade-in duration-500">
+
       {/* fundo dramático conforme raridade */}
       {rarity && (
         <div
@@ -146,7 +151,8 @@ export function RewardModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
