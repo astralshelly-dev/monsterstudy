@@ -45,7 +45,6 @@ export function RewardModal({
 
   return createPortal(
     <div className="fixed inset-0 z-100 grid place-items-center overflow-y-auto bg-background/95 px-4 py-8 backdrop-blur-md animate-in fade-in duration-500">
-      <div className="pointer-events-none absolute inset-0" aria-hidden />
 
       {/* fundo dramático conforme raridade */}
       {rarity && (
