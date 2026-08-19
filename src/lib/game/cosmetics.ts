@@ -128,6 +128,8 @@ const BLOOD_MOON_COSMETICS_DEFS: CosmeticDef[] = [
     icon: "🩸",
     description: "Emblema exclusivo do evento Lua de Sangue.",
     unlock: { type: "event", event: "Lua de Sangue" },
+    className: "badge-blood",
+
   },
   {
     id: "title_bloodmoon",
