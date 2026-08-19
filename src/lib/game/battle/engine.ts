@@ -55,8 +55,10 @@ export type Fighter = {
   dmgBonus: number;
   /** dano total causado por este monstro na partida (estatísticas) */
   dealt: number;
-  /** último dano sofrido (usado por Anomalia Temporal para reverter o tempo) */
+  /** último dano sofrido */
   lastDamageTaken: number;
+  /** 🌑 Marca do Eclipse: o próximo dano recebido é ampliado; some depois dele */
+  eclipseMark: { turns: number; pct: number } | null;
 };
 
 
@@ -146,6 +148,7 @@ export function makeFighter(
     dmgBonus: bonus.dmg,
     dealt: 0,
     lastDamageTaken: 0,
+    eclipseMark: null,
   };
 }
 
@@ -284,6 +287,24 @@ function hpShare(side: Side): number {
   return side.fighters.reduce((a, f) => a + f.hp, 0) / max;
 }
 
+/** interpola a curva do Eclipse do Início (pontos em ordem decrescente de vida) */
+function eclipseMult(curve: [number, number][], ratio: number): number {
+  const pts = [...curve].sort((a, z) => z[0] - a[0]);
+  const first = pts[0]!;
+  const last = pts[pts.length - 1]!;
+  if (ratio >= first[0]) return first[1];
+  if (ratio <= last[0]) return last[1];
+  for (let i = 0; i < pts.length - 1; i += 1) {
+    const hi = pts[i]!;
+    const lo = pts[i + 1]!;
+    if (ratio <= hi[0] && ratio >= lo[0]) {
+      const t = (ratio - lo[0]) / (hi[0] - lo[0]);
+      return lo[1] + (hi[1] - lo[1]) * t;
+    }
+  }
+  return last[1];
+}
+
 function applyDamage(
   b: Battle,
   target: SideId,
@@ -292,6 +313,17 @@ function applyDamage(
   src?: { attacker?: Fighter; viaAbility?: boolean },
 ): number {
   let dmg = amount;
+  if (fighter.eclipseMark) {
+    const extra = Math.max(1, Math.round(dmg * fighter.eclipseMark.pct));
+    dmg += extra;
+    fighter.eclipseMark = null;
+    b.events.push({
+      id: eid(),
+      kind: "buff",
+      side: target === "player" ? "foe" : "player",
+      text: `🌑 A Marca do Eclipse amplia o dano em ${extra}`,
+    });
+  }
   const marked = !!fighter.mark;
   if (fighter.mark) {
     const extra = Math.max(1, Math.round(dmg * fighter.mark.pct));
@@ -541,44 +573,42 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       });
       break;
     }
-    case "rewind": {
-      // reverte o último dano sofrido por Aetheryon
-      const rewindHeal = Math.min(attacker.maxHp - attacker.hp, attacker.lastDamageTaken);
-      if (rewindHeal > 0) {
-        attacker.hp = Math.min(attacker.maxHp, attacker.hp + rewindHeal);
-        b.events.push({
-          id: eid(),
-          kind: "heal",
-          side,
-          text: `🕰️ ${attacker.name} reverteu ${rewindHeal} de dano do tempo`,
-          heal: rewindHeal,
-        });
-      } else {
-        b.events.push({
-          id: eid(),
-          kind: "buff",
-          side,
-          text: `🕰️ ${attacker.name} distorce o tempo ao seu redor`,
-        });
-      }
-      attacker.lastDamageTaken = 0;
-      // limpa efeitos negativos
-      attacker.burn = null;
-      attacker.poison = null;
-      attacker.mark = null;
-      if (attacker.atkBuff < 0) attacker.atkBuff = 0;
-      if (attacker.defBuff < 0) attacker.defBuff = 0;
-      if ((attacker.spdBuff ?? 0) < 0) attacker.spdBuff = 0;
+    case "eclipse": {
+      // dano proporcional à vida ATUAL do alvo (curva interpolada)
+      const ratio = defender.maxHp > 0 ? Math.max(0, Math.min(1, defender.hp / defender.maxHp)) : 0;
+      const mult = eclipseMult(e.curve, ratio);
       b.events.push({
         id: eid(),
         kind: "buff",
         side,
-        text: `🌌 Efeitos negativos de ${attacker.name} foram dissipados`,
+        text: `👁️ O eclipse pesa sobre ${defender.name} (${Math.round(ratio * 100)}% de vida → ${Math.round(mult * 100)}% de ataque)`,
       });
-      // contra-ataque temporal
-      hit(e.mult);
+      const applyMark = ratio >= e.markThreshold && !defender.eclipseMark;
+      const dealt = hit(mult);
+      if (mult > 1 && dealt > 0) {
+        const recoil = Math.max(1, Math.round(dealt * e.recoilPct));
+        attacker.hp = Math.max(1, attacker.hp - recoil);
+        b.events.push({
+          id: eid(),
+          kind: "damage",
+          side,
+          target: side,
+          text: `👁️ ${attacker.name} sofre ${recoil} pelo peso do eclipse`,
+          damage: recoil,
+        });
+      }
+      if (applyMark && defender.hp > 0) {
+        defender.eclipseMark = { turns: 1, pct: e.markPct };
+        b.events.push({
+          id: eid(),
+          kind: "buff",
+          side,
+          text: `🌑 ${defender.name} recebeu a Marca do Eclipse: +${Math.round(e.markPct * 100)}% no próximo dano`,
+        });
+      }
       break;
     }
+
 
     case "fortify": {
 
@@ -591,7 +621,8 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
   }
   attacker.abilityUses += 1;
   // Equinoxis: primeira recarga leva 3 rodadas, depois 4
-  attacker.charge = attacker.abilityUses === 1 ? 3 : a.cooldown;
+  attacker.charge =
+    attacker.abilityUses === 1 && a.effect.type !== "eclipse" ? 3 : a.cooldown;
 }
 
 
@@ -688,6 +719,10 @@ function tickEcho(b: Battle, side: SideId) {
 
 function tickBurn(b: Battle, side: SideId) {
   const f = activeOf(b, side);
+  if (f.eclipseMark) {
+    f.eclipseMark.turns -= 1;
+    if (f.eclipseMark.turns <= 0) f.eclipseMark = null;
+  }
   tickPoison(b, side);
   if (!f.burn || f.hp <= 0) return;
   const dealt = Math.min(f.hp, f.burn.dmg);
@@ -783,7 +818,7 @@ function finishTurnAfterAiSwitch(b: Battle) {
  */
 function aiWantsAbility(b: Battle, f: Fighter): boolean {
   const style = f.ability.effect.type;
-  const support = ["shield", "fortify", "team_heal", "drain", "weaken", "rewind"].includes(style);
+  const support = ["shield", "fortify", "team_heal", "drain", "weaken"].includes(style);
   const hurt = f.hp / f.maxHp <= 0.6;
 
   switch (b.foe.behavior) {

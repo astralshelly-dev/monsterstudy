@@ -77,8 +77,18 @@ export type AbilityEffect =
   | { type: "echo"; mult: number; echoPct: number; turns: number }
   /** veredito: marca permanente — o alvo sofre mais dano e alimenta quem o ferir */
   | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number }
-  /** anomalia temporal: reverte o último dano sofrido, limpa efeitos negativos e contra-ataca */
-  | { type: "rewind"; mult: number };
+  /** eclipse do início: dano proporcional à vida ATUAL do alvo (curva interpolada) */
+  | {
+      type: "eclipse";
+      /** pontos da curva: [pct de vida do alvo, multiplicador] */
+      curve: [number, number][];
+      /** recuo sofrido quando o multiplicador passa de 1,0 (fração do dano da habilidade) */
+      recoilPct: number;
+      /** vida mínima do alvo (fração) para aplicar a Marca do Eclipse */
+      markThreshold: number;
+      /** dano extra do próximo golpe recebido pelo marcado */
+      markPct: number;
+    };
 
 
 
@@ -273,14 +283,28 @@ export const ABILITIES: Ability[] = [
     effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.25, abilityLifestealPct: 0.12 },
   },
   {
-    id: "anomalia_temporal",
-    name: "Anomalia Temporal",
-    icon: "🕰️",
+    id: "eclipse_do_inicio",
+    name: "Eclipse do Início",
+    icon: "👁️",
     description:
-      "Aetheryon distorce o tempo da batalha, revertendo o último dano que sofreu, dissipando efeitos negativos (queimadura, veneno, marca e reduções) e desferindo um golpe temporal de 1,6× de dano.",
+      "Aetheryon concentra o eclipse sobre o alvo: quanto MAIS vida atual o inimigo tiver, maior o dano (160% do ataque com vida cheia, descendo até 60% com o alvo quase caído). Respeita defesa e elementos. Se o multiplicador passar de 100%, Aetheryon sofre 20% do dano da habilidade como recuo. Contra alvos com 80%+ de vida, aplica 🌑 Marca do Eclipse: o próximo dano recebido pelo alvo é +10% (1 rodada, não acumula). Recarga: 4 rodadas.",
     cooldown: 4,
-    effect: { type: "rewind", mult: 1.6 },
+    effect: {
+      type: "eclipse",
+      curve: [
+        [1.0, 1.6],
+        [0.9, 1.45],
+        [0.75, 1.25],
+        [0.5, 1.0],
+        [0.25, 0.75],
+        [0.1, 0.6],
+      ],
+      recoilPct: 0.2,
+      markThreshold: 0.8,
+      markPct: 0.1,
+    },
   },
+
 
 ];
 
@@ -294,7 +318,7 @@ export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
  * A distribuição é determinística: derivada da ordem do bestiário.
  */
 /** habilidades exclusivas: nunca entram na distribuição automática */
-const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "anomalia_temporal"];
+const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "eclipse_do_inicio"];
 
 
 const ABILITY_MAP: Record<string, string> = (() => {
@@ -309,7 +333,7 @@ const ABILITY_MAP: Record<string, string> = (() => {
   // ajustes de identidade para os mais emblemáticos
   map['astraeon'] = "onda_expansiva";
   map['luminara'] = "canto_restaurador";
-  map['aetheryon'] = "anomalia_temporal";
+  map['aetheryon'] = "eclipse_do_inicio";
   map['emberfang'] = "chama_persistente";
 
   map['moonfang'] = "carga_final";
