@@ -77,8 +77,18 @@ export type AbilityEffect =
   | { type: "echo"; mult: number; echoPct: number; turns: number }
   /** veredito: marca permanente — o alvo sofre mais dano e alimenta quem o ferir */
   | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number }
-  /** anomalia temporal: reverte o último dano sofrido, limpa efeitos negativos e contra-ataca */
-  | { type: "rewind"; mult: number };
+  /** eclipse do início: dano proporcional à vida ATUAL do alvo (curva interpolada) */
+  | {
+      type: "eclipse";
+      /** pontos da curva: [pct de vida do alvo, multiplicador] */
+      curve: [number, number][];
+      /** recuo sofrido quando o multiplicador passa de 1,0 (fração do dano da habilidade) */
+      recoilPct: number;
+      /** vida mínima do alvo (fração) para aplicar a Marca do Eclipse */
+      markThreshold: number;
+      /** dano extra do próximo golpe recebido pelo marcado */
+      markPct: number;
+    };
 
 
 
