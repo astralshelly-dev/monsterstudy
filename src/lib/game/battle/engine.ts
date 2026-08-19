@@ -55,7 +55,10 @@ export type Fighter = {
   dmgBonus: number;
   /** dano total causado por este monstro na partida (estatísticas) */
   dealt: number;
+  /** último dano sofrido (usado por Anomalia Temporal para reverter o tempo) */
+  lastDamageTaken: number;
 };
+
 
 
 export type SideId = "player" | "foe";
