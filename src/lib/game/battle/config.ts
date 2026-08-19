@@ -76,7 +76,10 @@ export type AbilityEffect =
   /** eco temporal: o dano de agora se repete sozinho no próximo turno */
   | { type: "echo"; mult: number; echoPct: number; turns: number }
   /** veredito: marca permanente — o alvo sofre mais dano e alimenta quem o ferir */
-  | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number };
+  | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number }
+  /** anomalia temporal: reverte o último dano sofrido, limpa efeitos negativos e contra-ataca */
+  | { type: "rewind"; mult: number };
+
 
 
 export type Ability = {
@@ -269,9 +272,18 @@ export const ABILITIES: Ability[] = [
     cooldown: 4,
     effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.25, abilityLifestealPct: 0.12 },
   },
-
+  {
+    id: "anomalia_temporal",
+    name: "Anomalia Temporal",
+    icon: "🕰️",
+    description:
+      "Aetheryon distorce o tempo da batalha, revertendo o último dano que sofreu, dissipando efeitos negativos (queimadura, veneno, marca e reduções) e desferindo um golpe temporal de 1,6× de dano.",
+    cooldown: 4,
+    effect: { type: "rewind", mult: 1.6 },
+  },
 
 ];
+
 
 export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
   ABILITIES.map((a) => [a.id, a]),
@@ -282,7 +294,8 @@ export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
  * A distribuição é determinística: derivada da ordem do bestiário.
  */
 /** habilidades exclusivas: nunca entram na distribuição automática */
-const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio"];
+const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "anomalia_temporal"];
+
 
 const ABILITY_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
@@ -296,8 +309,9 @@ const ABILITY_MAP: Record<string, string> = (() => {
   // ajustes de identidade para os mais emblemáticos
   map['astraeon'] = "onda_expansiva";
   map['luminara'] = "canto_restaurador";
-  map['aetheryon'] = "golpe_pesado";
+  map['aetheryon'] = "anomalia_temporal";
   map['emberfang'] = "chama_persistente";
+
   map['moonfang'] = "carga_final";
   map['barkgolem'] = "postura_ancestral";
   map['abyssaria'] = "sugar_essencia";

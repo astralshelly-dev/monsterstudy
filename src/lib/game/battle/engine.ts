@@ -55,7 +55,10 @@ export type Fighter = {
   dmgBonus: number;
   /** dano total causado por este monstro na partida (estatísticas) */
   dealt: number;
+  /** último dano sofrido (usado por Anomalia Temporal para reverter o tempo) */
+  lastDamageTaken: number;
 };
+
 
 
 export type SideId = "player" | "foe";
@@ -142,8 +145,10 @@ export function makeFighter(
     role: roleIdOf(monsterId),
     dmgBonus: bonus.dmg,
     dealt: 0,
+    lastDamageTaken: 0,
   };
 }
+
 
 
 export function createBattle(input: {
@@ -323,8 +328,10 @@ function applyDamage(
       });
     }
   }
+  fighter.lastDamageTaken = dmg;
   fighter.hp = Math.max(0, fighter.hp - dmg);
   if (src?.attacker && dmg > 0) src.attacker.dealt = (src.attacker.dealt ?? 0) + dmg;
+
 
   // a marca do veredito alimenta quem ferir o alvo marcado
   const healer = src?.attacker;
@@ -534,8 +541,47 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
       });
       break;
     }
+    case "rewind": {
+      // reverte o último dano sofrido por Aetheryon
+      const rewindHeal = Math.min(attacker.maxHp - attacker.hp, attacker.lastDamageTaken);
+      if (rewindHeal > 0) {
+        attacker.hp = Math.min(attacker.maxHp, attacker.hp + rewindHeal);
+        b.events.push({
+          id: eid(),
+          kind: "heal",
+          side,
+          text: `🕰️ ${attacker.name} reverteu ${rewindHeal} de dano do tempo`,
+          heal: rewindHeal,
+        });
+      } else {
+        b.events.push({
+          id: eid(),
+          kind: "buff",
+          side,
+          text: `🕰️ ${attacker.name} distorce o tempo ao seu redor`,
+        });
+      }
+      attacker.lastDamageTaken = 0;
+      // limpa efeitos negativos
+      attacker.burn = null;
+      attacker.poison = null;
+      attacker.mark = null;
+      if (attacker.atkBuff < 0) attacker.atkBuff = 0;
+      if (attacker.defBuff < 0) attacker.defBuff = 0;
+      if ((attacker.spdBuff ?? 0) < 0) attacker.spdBuff = 0;
+      b.events.push({
+        id: eid(),
+        kind: "buff",
+        side,
+        text: `🌌 Efeitos negativos de ${attacker.name} foram dissipados`,
+      });
+      // contra-ataque temporal
+      hit(e.mult);
+      break;
+    }
 
     case "fortify": {
+
       attacker.defBuff += e.defPct * k;
       const heal = Math.round(attacker.maxHp * e.healPct * k);
       attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
@@ -737,8 +783,9 @@ function finishTurnAfterAiSwitch(b: Battle) {
  */
 function aiWantsAbility(b: Battle, f: Fighter): boolean {
   const style = f.ability.effect.type;
-  const support = ["shield", "fortify", "team_heal", "drain", "weaken"].includes(style);
+  const support = ["shield", "fortify", "team_heal", "drain", "weaken", "rewind"].includes(style);
   const hurt = f.hp / f.maxHp <= 0.6;
+
   switch (b.foe.behavior) {
     case "ofensivo":
       return true;
