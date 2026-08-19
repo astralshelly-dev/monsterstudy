@@ -1314,3 +1314,142 @@ select {
     animation: none !important;
   }
 }
+
+/* ============================================================
+   Molduras desenhadas — 🌕🔴 Lua de Sangue e ⚡ PRO
+   ============================================================ */
+
+/* ---------- Lua de Sangue: eclipse, gotas e halo carmesim ---------- */
+.mframe-bloodmoon {
+  --mf-a: oklch(0.62 0.22 22);
+  --mf-b: oklch(0.3 0.13 20);
+  padding: 13px;
+  border-radius: 1.5rem;
+  background:
+    /* lua eclipsada no canto superior direito */
+    radial-gradient(circle at 84% 14%, oklch(0.72 0.2 24) 0 5.5%, transparent 6%),
+    radial-gradient(circle at 88% 11%, oklch(0.16 0.05 20) 0 4%, transparent 4.5%),
+    /* gotas de sangue na base */
+    radial-gradient(circle at 22% 96%, oklch(0.5 0.2 22) 0 2.6%, transparent 3%),
+    radial-gradient(circle at 50% 99%, oklch(0.45 0.19 22) 0 2%, transparent 2.4%),
+    radial-gradient(circle at 76% 95%, oklch(0.5 0.2 22) 0 2.2%, transparent 2.6%),
+    /* névoa noturna */
+    radial-gradient(120% 90% at 50% 0%, oklch(0.35 0.14 20 / 0.55), transparent 70%),
+    linear-gradient(180deg, oklch(0.16 0.05 20 / 0.9), oklch(0.1 0.03 18 / 0.95));
+  filter: drop-shadow(0 0 18px oklch(0.55 0.21 22 / 0.75));
+  animation: bm-frame-breathe 3.6s ease-in-out infinite;
+}
+.mframe-bloodmoon::before {
+  padding: 3px;
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.7 0.24 24),
+    oklch(0.22 0.09 20),
+    oklch(0.55 0.21 22),
+    oklch(0.16 0.06 18),
+    oklch(0.72 0.24 26),
+    oklch(0.22 0.09 20),
+    oklch(0.7 0.24 24)
+  );
+  animation: mframe-spin 9s linear infinite;
+}
+.mframe-bloodmoon::after {
+  inset: 7px;
+  border-radius: 1.05rem;
+  border: 1px solid oklch(0.6 0.2 22 / 0.75);
+  box-shadow:
+    0 0 10px oklch(0.55 0.21 22 / 0.55) inset,
+    0 0 0 1px oklch(0.12 0.04 18 / 0.9),
+    /* cantos gravados */
+    -5px -5px 0 -2px oklch(0.66 0.23 24 / 0.9),
+    5px 5px 0 -2px oklch(0.66 0.23 24 / 0.9),
+    5px -5px 0 -2px oklch(0.3 0.12 20 / 0.9),
+    -5px 5px 0 -2px oklch(0.3 0.12 20 / 0.9);
+}
+
+@keyframes bm-frame-breathe {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 14px oklch(0.55 0.21 22 / 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 24px oklch(0.6 0.23 24 / 0.9));
+  }
+}
+
+/* ---------- PRO: placas angulares, raio e brilho passando ---------- */
+.mframe-pro {
+  --mf-a: oklch(0.86 0.15 92);
+  --mf-b: oklch(0.7 0.16 250);
+  padding: 13px;
+  border-radius: 1.5rem;
+  background:
+    /* chevrons superior e inferior */
+    linear-gradient(135deg, transparent 46%, oklch(0.88 0.15 92 / 0.9) 47% 50%, transparent 51%),
+    linear-gradient(-135deg, transparent 46%, oklch(0.88 0.15 92 / 0.9) 47% 50%, transparent 51%),
+    /* placas laterais */
+    linear-gradient(90deg, oklch(0.7 0.16 250 / 0.55) 0 3%, transparent 4%),
+    linear-gradient(270deg, oklch(0.7 0.16 250 / 0.55) 0 3%, transparent 4%),
+    radial-gradient(120% 100% at 50% 120%, oklch(0.45 0.13 255 / 0.5), transparent 70%),
+    linear-gradient(180deg, oklch(0.2 0.04 265 / 0.92), oklch(0.13 0.03 265 / 0.95));
+  filter: drop-shadow(0 0 16px oklch(0.8 0.15 92 / 0.5));
+}
+.mframe-pro::before {
+  padding: 3px;
+  background: conic-gradient(
+    from 0deg,
+    oklch(0.95 0.11 95),
+    oklch(0.72 0.16 250),
+    oklch(0.88 0.15 92),
+    oklch(0.4 0.1 260),
+    oklch(0.95 0.11 95)
+  );
+  animation: mframe-spin 5s linear infinite;
+}
+.mframe-pro::after {
+  inset: 7px;
+  border-radius: 1.05rem;
+  border: 1px solid oklch(0.9 0.12 95 / 0.8);
+  box-shadow:
+    0 0 10px oklch(0.85 0.14 92 / 0.5) inset,
+    0 0 0 1px oklch(0.15 0.03 265 / 0.9),
+    -5px -5px 0 -2px oklch(0.94 0.11 95 / 0.95),
+    5px 5px 0 -2px oklch(0.94 0.11 95 / 0.95),
+    5px -5px 0 -2px oklch(0.72 0.16 250 / 0.95),
+    -5px 5px 0 -2px oklch(0.72 0.16 250 / 0.95);
+}
+
+/* ---------- Nome com atmosfera de lua e sangue ---------- */
+.name-blood {
+  background-image: linear-gradient(
+    100deg,
+    oklch(0.55 0.2 22),
+    oklch(0.78 0.21 26),
+    oklch(0.95 0.08 30),
+    oklch(0.62 0.22 22),
+    oklch(0.4 0.16 20)
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: name-shift 6s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 6px oklch(0.55 0.21 22 / 0.9))
+    drop-shadow(0 0 14px oklch(0.45 0.19 20 / 0.6));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .name-blood,
+  .mframe-bloodmoon {
+    animation: none;
+  }
+}
+
+/* ---------- Emblema 🩸 com pulso de sangue ---------- */
+.badge-blood {
+  position: relative;
+  color: oklch(0.72 0.2 24);
+  text-shadow: 0 0 10px oklch(0.55 0.21 22 / 0.85);
+  animation: bm-frame-breathe 3s ease-in-out infinite;
+}
