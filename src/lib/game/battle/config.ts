@@ -318,7 +318,7 @@ export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
  * A distribuição é determinística: derivada da ordem do bestiário.
  */
 /** habilidades exclusivas: nunca entram na distribuição automática */
-const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "anomalia_temporal"];
+const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "eclipse_do_inicio"];
 
 
 const ABILITY_MAP: Record<string, string> = (() => {
@@ -333,7 +333,7 @@ const ABILITY_MAP: Record<string, string> = (() => {
   // ajustes de identidade para os mais emblemáticos
   map['astraeon'] = "onda_expansiva";
   map['luminara'] = "canto_restaurador";
-  map['aetheryon'] = "anomalia_temporal";
+  map['aetheryon'] = "eclipse_do_inicio";
   map['emberfang'] = "chama_persistente";
 
   map['moonfang'] = "carga_final";
