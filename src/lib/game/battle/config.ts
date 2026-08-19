@@ -76,7 +76,10 @@ export type AbilityEffect =
   /** eco temporal: o dano de agora se repete sozinho no próximo turno */
   | { type: "echo"; mult: number; echoPct: number; turns: number }
   /** veredito: marca permanente — o alvo sofre mais dano e alimenta quem o ferir */
-  | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number };
+  | { type: "judgment"; markPct: number; lifestealPct: number; abilityLifestealPct: number }
+  /** anomalia temporal: reverte o último dano sofrido, limpa efeitos negativos e contra-ataca */
+  | { type: "rewind"; mult: number };
+
 
 
 export type Ability = {
