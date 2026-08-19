@@ -294,7 +294,8 @@ export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
  * A distribuição é determinística: derivada da ordem do bestiário.
  */
 /** habilidades exclusivas: nunca entram na distribuição automática */
-const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio"];
+const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "anomalia_temporal"];
+
 
 const ABILITY_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
