@@ -309,8 +309,9 @@ const ABILITY_MAP: Record<string, string> = (() => {
   // ajustes de identidade para os mais emblemáticos
   map['astraeon'] = "onda_expansiva";
   map['luminara'] = "canto_restaurador";
-  map['aetheryon'] = "golpe_pesado";
+  map['aetheryon'] = "anomalia_temporal";
   map['emberfang'] = "chama_persistente";
+
   map['moonfang'] = "carga_final";
   map['barkgolem'] = "postura_ancestral";
   map['abyssaria'] = "sugar_essencia";
