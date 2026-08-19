@@ -148,6 +148,7 @@ export function makeFighter(
     dmgBonus: bonus.dmg,
     dealt: 0,
     lastDamageTaken: 0,
+    eclipseMark: null,
   };
 }
 
@@ -286,6 +287,24 @@ function hpShare(side: Side): number {
   return side.fighters.reduce((a, f) => a + f.hp, 0) / max;
 }
 
+/** interpola a curva do Eclipse do Início (pontos em ordem decrescente de vida) */
+function eclipseMult(curve: [number, number][], ratio: number): number {
+  const pts = [...curve].sort((a, z) => z[0] - a[0]);
+  const first = pts[0]!;
+  const last = pts[pts.length - 1]!;
+  if (ratio >= first[0]) return first[1];
+  if (ratio <= last[0]) return last[1];
+  for (let i = 0; i < pts.length - 1; i += 1) {
+    const hi = pts[i]!;
+    const lo = pts[i + 1]!;
+    if (ratio <= hi[0] && ratio >= lo[0]) {
+      const t = (ratio - lo[0]) / (hi[0] - lo[0]);
+      return lo[1] + (hi[1] - lo[1]) * t;
+    }
+  }
+  return last[1];
+}
+
 function applyDamage(
   b: Battle,
   target: SideId,
@@ -294,6 +313,17 @@ function applyDamage(
   src?: { attacker?: Fighter; viaAbility?: boolean },
 ): number {
   let dmg = amount;
+  if (fighter.eclipseMark) {
+    const extra = Math.max(1, Math.round(dmg * fighter.eclipseMark.pct));
+    dmg += extra;
+    fighter.eclipseMark = null;
+    b.events.push({
+      id: eid(),
+      kind: "buff",
+      side: target === "player" ? "foe" : "player",
+      text: `🌑 A Marca do Eclipse amplia o dano em ${extra}`,
+    });
+  }
   const marked = !!fighter.mark;
   if (fighter.mark) {
     const extra = Math.max(1, Math.round(dmg * fighter.mark.pct));
@@ -591,7 +621,8 @@ function useAbility(b: Battle, side: SideId, attacker: Fighter, defenderSide: Si
   }
   attacker.abilityUses += 1;
   // Equinoxis: primeira recarga leva 3 rodadas, depois 4
-  attacker.charge = attacker.abilityUses === 1 ? 3 : a.cooldown;
+  attacker.charge =
+    attacker.abilityUses === 1 && a.effect.type !== "eclipse" ? 3 : a.cooldown;
 }
 
 
@@ -688,6 +719,10 @@ function tickEcho(b: Battle, side: SideId) {
 
 function tickBurn(b: Battle, side: SideId) {
   const f = activeOf(b, side);
+  if (f.eclipseMark) {
+    f.eclipseMark.turns -= 1;
+    if (f.eclipseMark.turns <= 0) f.eclipseMark = null;
+  }
   tickPoison(b, side);
   if (!f.burn || f.hp <= 0) return;
   const dealt = Math.min(f.hp, f.burn.dmg);
@@ -783,7 +818,7 @@ function finishTurnAfterAiSwitch(b: Battle) {
  */
 function aiWantsAbility(b: Battle, f: Fighter): boolean {
   const style = f.ability.effect.type;
-  const support = ["shield", "fortify", "team_heal", "drain", "weaken", "rewind"].includes(style);
+  const support = ["shield", "fortify", "team_heal", "drain", "weaken"].includes(style);
   const hurt = f.hp / f.maxHp <= 0.6;
 
   switch (b.foe.behavior) {
