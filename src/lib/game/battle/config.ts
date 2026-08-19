@@ -283,14 +283,28 @@ export const ABILITIES: Ability[] = [
     effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.25, abilityLifestealPct: 0.12 },
   },
   {
-    id: "anomalia_temporal",
-    name: "Anomalia Temporal",
-    icon: "🕰️",
+    id: "eclipse_do_inicio",
+    name: "Eclipse do Início",
+    icon: "👁️",
     description:
-      "Aetheryon distorce o tempo da batalha, revertendo o último dano que sofreu, dissipando efeitos negativos (queimadura, veneno, marca e reduções) e desferindo um golpe temporal de 1,6× de dano.",
+      "Aetheryon concentra o eclipse sobre o alvo: quanto MAIS vida atual o inimigo tiver, maior o dano (160% do ataque com vida cheia, descendo até 60% com o alvo quase caído). Respeita defesa e elementos. Se o multiplicador passar de 100%, Aetheryon sofre 20% do dano da habilidade como recuo. Contra alvos com 80%+ de vida, aplica 🌑 Marca do Eclipse: o próximo dano recebido pelo alvo é +10% (1 rodada, não acumula). Recarga: 4 rodadas.",
     cooldown: 4,
-    effect: { type: "rewind", mult: 1.6 },
+    effect: {
+      type: "eclipse",
+      curve: [
+        [1.0, 1.6],
+        [0.9, 1.45],
+        [0.75, 1.25],
+        [0.5, 1.0],
+        [0.25, 0.75],
+        [0.1, 0.6],
+      ],
+      recoilPct: 0.2,
+      markThreshold: 0.8,
+      markPct: 0.1,
+    },
   },
+
 
 ];
 
