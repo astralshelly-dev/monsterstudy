@@ -82,7 +82,7 @@ function Profile() {
           </div>
           <div className="min-w-56 flex-1">
             <p className="font-display text-2xl font-bold">
-              {badge && <span className="mr-1.5">{badge.icon}</span>}
+              {badge && <span className={cn("mr-1.5", badge.className)}>{badge.icon}</span>}
               <span className={titleNameClass(title?.id)}>{state.profile.name}</span>
             </p>
             {title && (

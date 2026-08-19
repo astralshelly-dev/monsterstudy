@@ -128,6 +128,8 @@ const BLOOD_MOON_COSMETICS_DEFS: CosmeticDef[] = [
     icon: "🩸",
     description: "Emblema exclusivo do evento Lua de Sangue.",
     unlock: { type: "event", event: "Lua de Sangue" },
+    className: "badge-blood",
+
   },
   {
     id: "title_bloodmoon",
@@ -196,6 +198,9 @@ const TITLE_NAME_STYLE: Record<string, { tier: TitleTier; className: string }> =
   title_rank_mestre: { tier: "elite", className: "name-elite name-elite-legend" },
   title_rank_pro: { tier: "elite", className: "name-elite name-elite-pro" },
   title_campeao: { tier: "elite", className: "name-elite name-elite-pro" },
+  // 🌕🔴 evento: nome em sangue com brilho de eclipse
+  title_bloodmoon: { tier: "elite", className: "name-blood" },
+
 };
 
 /** classe CSS a aplicar no nome do jogador (vazio quando não há título equipado) */
