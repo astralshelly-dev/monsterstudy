@@ -272,9 +272,18 @@ export const ABILITIES: Ability[] = [
     cooldown: 4,
     effect: { type: "judgment", markPct: 0.2, lifestealPct: 0.25, abilityLifestealPct: 0.12 },
   },
-
+  {
+    id: "anomalia_temporal",
+    name: "Anomalia Temporal",
+    icon: "🕰️",
+    description:
+      "Aetheryon distorce o tempo da batalha, revertendo o último dano que sofreu, dissipando efeitos negativos (queimadura, veneno, marca e reduções) e desferindo um golpe temporal de 1,6× de dano.",
+    cooldown: 4,
+    effect: { type: "rewind", mult: 1.6 },
+  },
 
 ];
+
 
 export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
   ABILITIES.map((a) => [a.id, a]),
