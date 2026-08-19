@@ -328,8 +328,10 @@ function applyDamage(
       });
     }
   }
+  fighter.lastDamageTaken = dmg;
   fighter.hp = Math.max(0, fighter.hp - dmg);
   if (src?.attacker && dmg > 0) src.attacker.dealt = (src.attacker.dealt ?? 0) + dmg;
+
 
   // a marca do veredito alimenta quem ferir o alvo marcado
   const healer = src?.attacker;
