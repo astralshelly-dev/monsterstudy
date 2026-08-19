@@ -152,7 +152,8 @@ export function RewardModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
