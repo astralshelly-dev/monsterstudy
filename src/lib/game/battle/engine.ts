@@ -145,8 +145,10 @@ export function makeFighter(
     role: roleIdOf(monsterId),
     dmgBonus: bonus.dmg,
     dealt: 0,
+    lastDamageTaken: 0,
   };
 }
+
 
 
 export function createBattle(input: {
