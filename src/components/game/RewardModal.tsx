@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { RARITIES } from "@/lib/game/config";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { HABITATS } from "@/lib/game/config";
