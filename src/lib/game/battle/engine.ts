@@ -55,8 +55,10 @@ export type Fighter = {
   dmgBonus: number;
   /** dano total causado por este monstro na partida (estatísticas) */
   dealt: number;
-  /** último dano sofrido (usado por Anomalia Temporal para reverter o tempo) */
+  /** último dano sofrido */
   lastDamageTaken: number;
+  /** 🌑 Marca do Eclipse: o próximo dano recebido é ampliado; some depois dele */
+  eclipseMark: { turns: number; pct: number } | null;
 };
 
 
