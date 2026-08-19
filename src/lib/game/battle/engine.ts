@@ -783,8 +783,9 @@ function finishTurnAfterAiSwitch(b: Battle) {
  */
 function aiWantsAbility(b: Battle, f: Fighter): boolean {
   const style = f.ability.effect.type;
-  const support = ["shield", "fortify", "team_heal", "drain", "weaken"].includes(style);
+  const support = ["shield", "fortify", "team_heal", "drain", "weaken", "rewind"].includes(style);
   const hurt = f.hp / f.maxHp <= 0.6;
+
   switch (b.foe.behavior) {
     case "ofensivo":
       return true;
