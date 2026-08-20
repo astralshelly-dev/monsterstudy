@@ -682,6 +682,7 @@ export async function playerDetail(publicId: string) {
     xp: num(p.xp),
     money: num(p.money),
     shards: num(p.shards),
+    bloodCoins: num(asObject(state['bloodMoon'])['coins']),
     trophies,
     bestTrophies: num(battle['bestTrophies']),
     league: leagueOf(trophies).id,
@@ -760,6 +761,7 @@ export async function playerDetail(publicId: string) {
 const LABELS: Record<ResourceKey, string> = {
   money: "moedas",
   shards: "fragmentos",
+  bloodCoins: "moedas da Lua de Sangue",
   xp: "XP",
   trophies: "troféus",
   streak: "streak",
