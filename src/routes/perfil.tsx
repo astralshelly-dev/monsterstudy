@@ -65,6 +65,13 @@ function Profile() {
   const badge = equippedCosmetic("badge", state);
   const fx = equippedCosmetic("effect", state);
   useSceneThemeOverride(bg?.id ?? null);
+  const ownedSkins = (state.bloodMoon?.skins ?? [])
+    .map((id) => {
+      const def = BLOOD_MOON_SKINS_BY_ID[id];
+      const src = skinAvatarArt(id);
+      return def && src ? { id, name: def.name, src } : null;
+    })
+    .filter((s): s is { id: string; name: string; src: string } => !!s);
 
   return (
     <div className="space-y-6">
