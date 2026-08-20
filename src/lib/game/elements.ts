@@ -151,7 +151,6 @@ export function combinedMatchups(ids: ElementId[]) {
   };
 }
 
-
 /** elemento de cada monstro (o secreto é o único "Deus") */
 export const MONSTER_ELEMENTS: Record<string, ElementId> = {
   // comuns
@@ -259,6 +258,8 @@ export const MONSTER_ELEMENTS_2: Record<string, ElementId> = {
   equinoxis: "luz",
   // sapo tóxico aquático
   toxlet: "agua",
+  // molachor teste sombrio (adicionado pelo usuario, e não pelo lovable)
+  malachor: "sombrio",
 };
 
 export function elementOf(monsterId: string): ElementDef {
@@ -275,4 +276,3 @@ export function elementIdsOf(monsterId: string): ElementId[] {
 export function elementDefsOf(monsterId: string): ElementDef[] {
   return elementIdsOf(monsterId).map((id) => ELEMENTS_BY_ID[id]);
 }
-
