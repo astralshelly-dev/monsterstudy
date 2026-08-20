@@ -510,6 +510,7 @@ function PlayerConsole({ player, busy, run, onClose }: { player: PlayerDetail; b
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Metric icon="💰" label="Moedas" value={fmtMoney(player.money)} />
         <Metric icon="💎" label="Fragmentos" value={fmtNum(player.shards)} />
+        <Metric icon="🩸" label="Moedas Lua de Sangue" value={fmtNum(player.bloodCoins)} />
         <Metric icon="⭐" label="Nível / XP" value={`${player.level} · ${fmtNum(player.xp)}`} />
         <Metric icon="🏆" label="Troféus" value={`${fmtNum(player.trophies)} · ${player.leagueName}`} />
         <Metric icon="🔥" label="Streak" value={`${player.streak.current} (rec. ${player.streak.best})`} />
@@ -529,6 +530,7 @@ function PlayerConsole({ player, busy, run, onClose }: { player: PlayerDetail; b
           [
             ["money", "💰 Moedas", player.money],
             ["shards", "💎 Fragmentos", player.shards],
+            ["bloodCoins", "🩸 Moedas da Lua de Sangue", player.bloodCoins],
             ["xp", "⭐ XP", player.xp],
             ["trophies", "🏆 Troféus", player.trophies],
             ["level", "📈 Nível", player.level],

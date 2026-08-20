@@ -276,12 +276,13 @@ export function summarizeState(state: Json): Json {
 // ------------------------------------------------------------
 // Operações numéricas
 // ------------------------------------------------------------
-export type ResourceKey = "money" | "shards" | "xp" | "trophies" | "streak" | "level";
+export type ResourceKey = "money" | "shards" | "bloodCoins" | "xp" | "trophies" | "streak" | "level";
 export type ResourceMode = "add" | "remove" | "set";
 
 const LIMITS: Record<ResourceKey, number> = {
   money: 1_000_000_000,
   shards: 1_000_000,
+  bloodCoins: 1_000_000,
   xp: 1_000_000_000,
   trophies: 100_000,
   streak: 10_000,
@@ -302,6 +303,17 @@ export function setResourceInState(state: Json, key: ResourceKey, amount: number
 
   if (key === "money") s['money'] = applyValue(num(s['money']), amount, mode, key);
   if (key === "shards") s['shards'] = applyValue(num(s['shards']), amount, mode, key);
+  if (key === "bloodCoins") {
+    const ev = { ...obj(s['bloodMoon']) };
+    const next = applyValue(num(ev['coins']), amount, mode, key);
+    ev['coins'] = next;
+    ev['earned'] = Math.max(num(ev['earned']), next);
+    if (!Array.isArray(ev['skins'])) ev['skins'] = [];
+    if (!Array.isArray(ev['cosmetics'])) ev['cosmetics'] = [];
+    if (!ev['equipped'] || typeof ev['equipped'] !== "object") ev['equipped'] = {};
+    ev['progressSec'] = num(ev['progressSec']);
+    s['bloodMoon'] = ev;
+  }
   if (key === "xp") {
     profile['xp'] = applyValue(num(profile['xp']), amount, mode, key);
     s['profile'] = profile;
@@ -670,6 +682,7 @@ export async function playerDetail(publicId: string) {
     xp: num(p.xp),
     money: num(p.money),
     shards: num(p.shards),
+    bloodCoins: num(asObject(state['bloodMoon'])['coins']),
     trophies,
     bestTrophies: num(battle['bestTrophies']),
     league: leagueOf(trophies).id,
@@ -748,6 +761,7 @@ export async function playerDetail(publicId: string) {
 const LABELS: Record<ResourceKey, string> = {
   money: "moedas",
   shards: "fragmentos",
+  bloodCoins: "moedas da Lua de Sangue",
   xp: "XP",
   trophies: "troféus",
   streak: "streak",

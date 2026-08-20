@@ -27,6 +27,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { duration, money, num, shortDate } from "@/lib/format";
 import { ILLUSTRATED_AVATARS } from "@/lib/game/avatars";
+import { BLOOD_MOON_SKINS_BY_ID } from "@/lib/game/bloodmoon";
+import { SKIN_AVATAR_PREFIX, skinAvatarArt } from "@/lib/game/skin-avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { ProfileAvatar } from "@/components/game/Avatar";
 import { cn } from "@/lib/utils";
@@ -65,6 +67,13 @@ function Profile() {
   const badge = equippedCosmetic("badge", state);
   const fx = equippedCosmetic("effect", state);
   useSceneThemeOverride(bg?.id ?? null);
+  const ownedSkins = (state.bloodMoon?.skins ?? [])
+    .map((id) => {
+      const def = BLOOD_MOON_SKINS_BY_ID[id];
+      const src = skinAvatarArt(id);
+      return def && src ? { id, name: def.name, src } : null;
+    })
+    .filter((s): s is { id: string; name: string; src: string } => !!s);
 
   return (
     <div className="space-y-6">
@@ -167,6 +176,36 @@ function Profile() {
               ))}
             </div>
           </div>
+
+          {ownedSkins.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>🌕🔴 Retratos da Lua de Sangue</Label>
+              <p className="text-xs text-muted-foreground">
+                Desbloqueados ao comprar skins do evento.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ownedSkins.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    title={s.name}
+                    onClick={() => {
+                      updateProfile({ avatar: `${SKIN_AVATAR_PREFIX}${s.id}`, avatarMonsterId: null });
+                      toast.success(`Retrato: ${s.name}`);
+                    }}
+                    className={cn(
+                      "h-14 w-14 overflow-hidden rounded-xl bg-secondary/60 ring-1 ring-destructive/40 transition-transform hover:scale-105",
+                      state.profile.avatar === `${SKIN_AVATAR_PREFIX}${s.id}` &&
+                        !state.profile.avatarMonsterId &&
+                        "ring-2 ring-destructive",
+                    )}
+                  >
+                    <img src={s.src} alt={s.name} className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

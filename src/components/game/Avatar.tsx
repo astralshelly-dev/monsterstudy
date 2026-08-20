@@ -1,6 +1,7 @@
 import { ILLUSTRATED_AVATARS, illustratedAvatar } from "@/lib/game/avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { skinArt } from "@/lib/game/skin-art";
+import { skinAvatarFromValue } from "@/lib/game/skin-avatars";
 import { equippedSkinFor } from "@/lib/game/state";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +32,8 @@ export function ProfileAvatar({
   const monster = monsterId ? MONSTERS_BY_ID[monsterId] : undefined;
   const art = illustratedAvatar(avatar);
   const skinSrc = monsterId ? skinArt(equippedSkinFor(monsterId)) : undefined;
-  const src = skinSrc ?? monster?.art ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
+  const skinPortrait = monsterId ? undefined : skinAvatarFromValue(avatar);
+  const src = skinSrc ?? monster?.art ?? skinPortrait ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
 
   const portrait = (
     <span

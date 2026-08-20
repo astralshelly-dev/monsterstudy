@@ -100,7 +100,7 @@ export const adminSetResource = createServerFn({ method: "POST" })
   .inputValidator(
     (input: {
       publicId: string;
-      key: "money" | "shards" | "xp" | "trophies" | "streak" | "level";
+      key: "money" | "shards" | "bloodCoins" | "xp" | "trophies" | "streak" | "level";
       amount: number;
       mode: "add" | "remove" | "set";
     }) => ({
