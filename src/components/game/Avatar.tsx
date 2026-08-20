@@ -31,7 +31,8 @@ export function ProfileAvatar({
   const monster = monsterId ? MONSTERS_BY_ID[monsterId] : undefined;
   const art = illustratedAvatar(avatar);
   const skinSrc = monsterId ? skinArt(equippedSkinFor(monsterId)) : undefined;
-  const src = skinSrc ?? monster?.art ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
+  const skinPortrait = monsterId ? undefined : skinAvatarFromValue(avatar);
+  const src = skinSrc ?? monster?.art ?? skinPortrait ?? art?.src ?? ILLUSTRATED_AVATARS[0]?.src;
 
   const portrait = (
     <span
