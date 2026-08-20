@@ -27,6 +27,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { duration, money, num, shortDate } from "@/lib/format";
 import { ILLUSTRATED_AVATARS } from "@/lib/game/avatars";
+import { BLOOD_MOON_SKINS_BY_ID } from "@/lib/game/bloodmoon";
+import { SKIN_AVATAR_PREFIX, skinAvatarArt } from "@/lib/game/skin-avatars";
 import { MONSTERS_BY_ID } from "@/lib/game/monsters";
 import { ProfileAvatar } from "@/components/game/Avatar";
 import { cn } from "@/lib/utils";
