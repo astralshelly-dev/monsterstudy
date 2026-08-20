@@ -303,6 +303,17 @@ export function setResourceInState(state: Json, key: ResourceKey, amount: number
 
   if (key === "money") s['money'] = applyValue(num(s['money']), amount, mode, key);
   if (key === "shards") s['shards'] = applyValue(num(s['shards']), amount, mode, key);
+  if (key === "bloodCoins") {
+    const ev = { ...obj(s['bloodMoon']) };
+    const next = applyValue(num(ev['coins']), amount, mode, key);
+    ev['coins'] = next;
+    ev['earned'] = Math.max(num(ev['earned']), next);
+    if (!Array.isArray(ev['skins'])) ev['skins'] = [];
+    if (!Array.isArray(ev['cosmetics'])) ev['cosmetics'] = [];
+    if (!ev['equipped'] || typeof ev['equipped'] !== "object") ev['equipped'] = {};
+    ev['progressSec'] = num(ev['progressSec']);
+    s['bloodMoon'] = ev;
+  }
   if (key === "xp") {
     profile['xp'] = applyValue(num(profile['xp']), amount, mode, key);
     s['profile'] = profile;
