@@ -41,7 +41,12 @@ export function nextLeagueOf(trophies: number): League | null {
   return LEAGUES.find((l) => l.min > trophies) ?? null;
 }
 
-export function leagueProgress(trophies: number): { league: League; next: League | null; pct: number; missing: number } {
+export function leagueProgress(trophies: number): {
+  league: League;
+  next: League | null;
+  pct: number;
+  missing: number;
+} {
   const league = leagueOf(trophies);
   const next = nextLeagueOf(trophies);
   if (!next) return { league, next: null, pct: 100, missing: 0 };
@@ -89,8 +94,6 @@ export type AbilityEffect =
       /** dano extra do próximo golpe recebido pelo marcado */
       markPct: number;
     };
-
-
 
 export type Ability = {
   id: string;
@@ -304,14 +307,9 @@ export const ABILITIES: Ability[] = [
       markPct: 0.1,
     },
   },
-
-
 ];
 
-
-export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
-  ABILITIES.map((a) => [a.id, a]),
-);
+export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(ABILITIES.map((a) => [a.id, a]));
 
 /**
  * Cada monstro tem UMA habilidade fixa (nunca aleatória).
@@ -319,7 +317,6 @@ export const ABILITIES_BY_ID: Record<string, Ability> = Object.fromEntries(
  */
 /** habilidades exclusivas: nunca entram na distribuição automática */
 const EXCLUSIVE_ABILITIES = ["veredito_do_equinocio", "eclipse_do_inicio"];
-
 
 const ABILITY_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
@@ -331,37 +328,37 @@ const ABILITY_MAP: Record<string, string> = (() => {
     map[m.id] = pool[idx]!.id;
   });
   // ajustes de identidade para os mais emblemáticos
-  map['astraeon'] = "onda_expansiva";
-  map['luminara'] = "canto_restaurador";
-  map['aetheryon'] = "eclipse_do_inicio";
-  map['emberfang'] = "chama_persistente";
+  map["astraeon"] = "onda_expansiva";
+  map["luminara"] = "canto_restaurador";
+  map["aetheryon"] = "eclipse_do_inicio";
+  map["emberfang"] = "chama_persistente";
 
-  map['moonfang'] = "carga_final";
-  map['barkgolem'] = "postura_ancestral";
-  map['abyssaria'] = "sugar_essencia";
-  map['voltyx'] = "rajada_dupla";
+  map["moonfang"] = "carga_final";
+  map["barkgolem"] = "postura_ancestral";
+  map["abyssaria"] = "sugar_essencia";
+  map["voltyx"] = "rajada_dupla";
   // expansão: identidade dos novos elementos
-  map['cragling'] = "avalanche";
-  map['terrabor'] = "postura_ancestral";
-  map['gaiaruk'] = "avalanche";
-  map['ferrik'] = "ferrugem";
-  map['chromaw'] = "corrosao";
-  map['titanox'] = "muralha_de_aco";
-  map['zephyx'] = "rajada_de_vento";
-  map['gustwing'] = "ventania_cortante";
-  map['aeromyr'] = "purificar";
-  map['toxlet'] = "sopro_toxico";
-  map['venomyra'] = "sopro_toxico";
-  map['malachor'] = "corrosao";
-  map['quartzox'] = "muralha_de_aco";
-  map['thornmaw'] = "sopro_toxico";
-  map['abyssquill'] = "sopro_toxico";
-  map['tempestrix'] = "rajada_de_vento";
-  map['mistmote'] = "ventania_cortante";
-  map['pebbly'] = "postura_ancestral";
-  map['dunecoil'] = "ferrugem";
-  map['chronavyr'] = "eco_temporal";
-  map['equinoxis'] = "veredito_do_equinocio";
+  map["cragling"] = "avalanche";
+  map["terrabor"] = "postura_ancestral";
+  map["gaiaruk"] = "avalanche";
+  map["ferrik"] = "ferrugem";
+  map["chromaw"] = "corrosao";
+  map["titanox"] = "muralha_de_aco";
+  map["zephyx"] = "rajada_de_vento";
+  map["gustwing"] = "ventania_cortante";
+  map["aeromyr"] = "purificar";
+  map["toxlet"] = "sopro_toxico";
+  map["venomyra"] = "sopro_toxico";
+  map["malachor"] = "corrosao";
+  map["quartzox"] = "muralha_de_aco";
+  map["thornmaw"] = "sopro_toxico";
+  map["abyssquill"] = "sopro_toxico";
+  map["tempestrix"] = "rajada_de_vento";
+  map["mistmote"] = "ventania_cortante";
+  map["pebbly"] = "postura_ancestral";
+  map["dunecoil"] = "ferrugem";
+  map["chronavyr"] = "eco_temporal";
+  map["equinoxis"] = "veredito_do_equinocio";
   return map;
 })();
 
@@ -481,7 +478,7 @@ export type StatProfile = { hp: number; atk: number; def: number };
 
 export const STAT_PROFILE: Record<string, StatProfile> = {
   // ---- comuns ----
-  mosslet: { hp: 1.15, atk: 0.82, def: 1.12 },
+  mosslet: { hp: 2.3, atk: 0.82, def: 1.12 },
   pebbly: { hp: 1.1, atk: 0.85, def: 1.35 },
   drippet: { hp: 0.98, atk: 0.95, def: 0.95 },
   sparkid: { hp: 0.8, atk: 1.28, def: 0.8 },
@@ -568,13 +565,9 @@ export function battleStats(rarity: RarityId, level: number, monsterId?: string)
     atk: Math.round((21 + tier * 3.7) * p.atk * (1 + (lv - 1) * 0.09)),
     def: Math.round((7 + tier * 1.8) * p.def * (1 + (lv - 1) * 0.07)),
     // a velocidade vem das características do monstro; a raridade quase não conta
-    spd:
-      Math.round(
-        (24 + tier * 0.6) * (monsterId ? speedFactor(monsterId) : 1) * (1 + (lv - 1) * 0.05) * 10,
-      ) / 10,
+    spd: Math.round((24 + tier * 0.6) * (monsterId ? speedFactor(monsterId) : 1) * (1 + (lv - 1) * 0.05) * 10) / 10,
   };
 }
-
 
 export function monsterPower(monsterId: string, level: number): number {
   const def = MONSTERS_BY_ID[monsterId];
@@ -613,4 +606,3 @@ export function abilityStyle(monsterId: string): "ofensivo" | "defensivo" {
   const t = abilityFor(monsterId).effect.type;
   return (DEFENSIVE_EFFECTS as readonly string[]).includes(t) ? "defensivo" : "ofensivo";
 }
-

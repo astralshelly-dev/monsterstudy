@@ -258,8 +258,6 @@ export const MONSTER_ELEMENTS_2: Record<string, ElementId> = {
   equinoxis: "luz",
   // sapo tóxico aquático
   toxlet: "agua",
-  // molachor teste sombrio (adicionado pelo usuario, e não pelo lovable)
-  malachor: "sombrio",
 };
 
 export function elementOf(monsterId: string): ElementDef {
