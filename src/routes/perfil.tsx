@@ -167,6 +167,36 @@ function Profile() {
               ))}
             </div>
           </div>
+
+          {ownedSkins.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>🌕🔴 Retratos da Lua de Sangue</Label>
+              <p className="text-xs text-muted-foreground">
+                Desbloqueados ao comprar skins do evento.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ownedSkins.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    title={s.name}
+                    onClick={() => {
+                      updateProfile({ avatar: `${SKIN_AVATAR_PREFIX}${s.id}`, avatarMonsterId: null });
+                      toast.success(`Retrato: ${s.name}`);
+                    }}
+                    className={cn(
+                      "h-14 w-14 overflow-hidden rounded-xl bg-secondary/60 ring-1 ring-destructive/40 transition-transform hover:scale-105",
+                      state.profile.avatar === `${SKIN_AVATAR_PREFIX}${s.id}` &&
+                        !state.profile.avatarMonsterId &&
+                        "ring-2 ring-destructive",
+                    )}
+                  >
+                    <img src={s.src} alt={s.name} className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
