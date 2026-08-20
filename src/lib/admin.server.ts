@@ -276,12 +276,13 @@ export function summarizeState(state: Json): Json {
 // ------------------------------------------------------------
 // Operações numéricas
 // ------------------------------------------------------------
-export type ResourceKey = "money" | "shards" | "xp" | "trophies" | "streak" | "level";
+export type ResourceKey = "money" | "shards" | "bloodCoins" | "xp" | "trophies" | "streak" | "level";
 export type ResourceMode = "add" | "remove" | "set";
 
 const LIMITS: Record<ResourceKey, number> = {
   money: 1_000_000_000,
   shards: 1_000_000,
+  bloodCoins: 1_000_000,
   xp: 1_000_000_000,
   trophies: 100_000,
   streak: 10_000,
