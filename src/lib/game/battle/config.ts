@@ -152,7 +152,7 @@ export const ABILITIES: Ability[] = [
     icon: "🛡️",
     description: "Cria um escudo que absorve o próximo dano recebido.",
     cooldown: 4,
-    effect: { type: "shield", pct: 0.4 },
+    effect: { type: "shield", pct: 0.2 },
   },
   {
     id: "sugar_essencia",
