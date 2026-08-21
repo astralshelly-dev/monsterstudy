@@ -75,8 +75,8 @@ const BASE_COSMETICS: CosmeticDef[] = [
 
   // ---------- Efeitos ----------
   { id: "fx_none", kind: "effect", name: "Sem efeito", icon: "◽", description: "Nenhum efeito visual.", unlock: { type: "free" }, className: "" },
-  { id: "fx_glow", kind: "effect", name: "Brilho Arcano", icon: "✨", description: "Nível 10.", unlock: { type: "level", n: 10 }, className: "animate-pulse-soft" },
-  { id: "fx_aura", kind: "effect", name: "Aura Divina", icon: "🌟", description: "40 conquistas desbloqueadas.", unlock: { type: "achievements", n: 40 }, className: "drop-shadow-[0_0_18px_hsl(var(--gold)/0.7)]" },
+  { id: "fx_glow", kind: "effect", name: "Brilho Arcano", icon: "✨", description: "Nível 10.", unlock: { type: "level", n: 10 }, className: "pfx pfx-glow" },
+  { id: "fx_aura", kind: "effect", name: "Aura Divina", icon: "🌟", description: "40 conquistas desbloqueadas.", unlock: { type: "achievements", n: 40 }, className: "pfx pfx-aura" },
 ];
 
 // ---------- Conjuntos de liga (um título + um fundo para cada rank) ----------
@@ -144,9 +144,9 @@ const BLOOD_MOON_COSMETICS_DEFS: CosmeticDef[] = [
     kind: "effect",
     name: "Aura Carmesim",
     icon: "🔴",
-    description: "Brilho vermelho de eclipse no seu retrato.",
+    description: "Atmosfera de eclipse escarlate no painel do seu perfil.",
     unlock: { type: "event", event: "Lua de Sangue" },
-    className: "drop-shadow-[0_0_18px_oklch(0.55_0.21_22/0.85)]",
+    className: "pfx pfx-blood",
   },
   {
     id: "frame_bloodmoon",
