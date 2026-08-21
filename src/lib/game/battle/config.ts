@@ -514,7 +514,7 @@ export const STAT_PROFILE: Record<string, StatProfile> = {
   terrabor: { hp: 2.6, atk: 0.92, def: 1.42 },
   // ---- super raros ----
   stormhorn: { hp: 2.3, atk: 1.15, def: 1.08 },
-  voidbloom: { hp: 2,1, atk: 1.2, def: 0.95 },
+  voidbloom: { hp: 2.1, atk: 1.2, def: 0.95 },
   kraveel: { hp: 2.44, atk: 1.05, def: 1.0 },
   magmaw: { hp: 2.7, atk: 1.25, def: 1.05 },
   thornmaw: { hp: 2.3, atk: 1.22, def: 0.9 },
@@ -524,7 +524,7 @@ export const STAT_PROFILE: Record<string, StatProfile> = {
   // ---- épicos ----
   aurelith: { hp: 1.9, atk: 1.22, def: 0.95 },
   cryotaur: { hp: 2.84, atk: 1.05, def: 1.35 },
-  sylvaqueen: { hp: 2.10, atk: 1.15, def: 1.05 },
+  sylvaqueen: { hp: 2.1, atk: 1.15, def: 1.05 },
   obsidrake: { hp: 2.2, atk: 1.3, def: 1.15 },
   tempestrix: { hp: 1.8, atk: 1.32, def: 0.88 },
   dunephar: { hp: 2.3, atk: 1.0, def: 1.25 },
