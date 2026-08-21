@@ -60,11 +60,14 @@ export function botTeam(
   teamLevel: number,
   playerLevel: number,
   exclude: string[] = [],
-  opts?: { behavior?: AiBehavior; tier?: number },
+  opts?: { behavior?: AiBehavior; tier?: number; tierOffset?: number; levelOffset?: number },
 ): TeamSlot[] {
   const maxIndex = RARITY_ORDER.length - 2; // sem "secreto"
   const byLevel = 1 + Math.floor(playerLevel / 3);
-  const maxTier = Math.min(maxIndex, Math.max(byLevel, (opts?.tier ?? 0)));
+  const maxTier = Math.max(
+    0,
+    Math.min(maxIndex, Math.max(byLevel, opts?.tier ?? 0) + (opts?.tierOffset ?? 0)),
+  );
   const minTier = Math.max(0, maxTier - 2);
   const inRange = MONSTERS.filter(
     (m) =>
@@ -92,7 +95,10 @@ export function botTeam(
     used.add(m.id);
     // times mais alinhados ao estilo ficam com raridade mais alta
     const bonus = behavior === "equilibrado" ? 0 : 1;
-    const lvl = Math.max(1, Math.min(10, Math.round(teamLevel + bonus + (Math.random() * 2 - 1))));
+    const lvl = Math.max(
+      1,
+      Math.min(10, Math.round(teamLevel + bonus + (opts?.levelOffset ?? 0) + (Math.random() * 2 - 1))),
+    );
     chosen.push({ monsterId: m.id, level: lvl });
     return true;
   };
@@ -117,7 +123,7 @@ const BOT_NAMES = [
 
 export function makeBotOpponent(
   ctx: MatchContext,
-  opts?: { exclude?: string[]; behavior?: AiBehavior },
+  opts?: { exclude?: string[]; behavior?: AiBehavior; tierOffset?: number; levelOffset?: number },
 ): Opponent {
   const behavior = opts?.behavior ?? pick(BEHAVIORS);
   return {
@@ -131,6 +137,8 @@ export function makeBotOpponent(
     team: botTeam(ctx.myTeamLevel, ctx.myLevel, opts?.exclude ?? [], {
       behavior,
       ...(typeof ctx.myTeamTier === "number" ? { tier: ctx.myTeamTier } : {}),
+      ...(opts?.tierOffset ? { tierOffset: opts.tierOffset } : {}),
+      ...(opts?.levelOffset ? { levelOffset: opts.levelOffset } : {}),
     }),
     behavior,
   };
@@ -219,6 +227,13 @@ export function findOpponent(ctx: MatchContext): Promise<Opponent> {
 
 /** adversário de treino (IA) — sempre com monstros diferentes dos do jogador */
 export function trainingOpponent(ctx: MatchContext, ownedIds: string[], behavior?: AiBehavior): Opponent {
-  const bot = makeBotOpponent(ctx, { exclude: ownedIds, ...(behavior ? { behavior } : {}) });
+  // Treino: a IA fica um degrau abaixo do jogador (raridade e nível) para
+  // continuar desafiadora sem ser injusta.
+  const bot = makeBotOpponent(ctx, {
+    exclude: ownedIds,
+    tierOffset: -1,
+    levelOffset: -1,
+    ...(behavior ? { behavior } : {}),
+  });
   return { ...bot, name: `IA ${bot.behavior}` };
 }

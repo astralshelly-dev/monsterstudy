@@ -70,12 +70,23 @@ function Shop() {
                   )}
                 </div>
                 <div className="mt-3 flex-1 space-y-1">
-                  {chances.map((c) => (
-                    <div key={c.rarity} className="flex items-center justify-between text-[11px]">
-                      <span className={rarityText(c.rarity)}>{RARITIES[c.rarity].name}</span>
-                      <span className="tabular-nums text-muted-foreground">{c.pct.toFixed(1)}%</span>
-                    </div>
-                  ))}
+                  {chances.map((c) => {
+                    const diff = c.pct - c.basePct;
+                    return (
+                      <div key={c.rarity} className="flex items-center justify-between text-[11px]">
+                        <span className={rarityText(c.rarity)}>{RARITIES[c.rarity].name}</span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {c.pct.toFixed(1)}%
+                          {Math.abs(diff) >= 0.05 && (
+                            <span className={cn("ml-1", diff > 0 ? "text-rarity-incomum" : "text-muted-foreground/70")}>
+                              ({diff > 0 ? "+" : ""}
+                              {diff.toFixed(1)})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
                 {!unlocked && (
                   <Button

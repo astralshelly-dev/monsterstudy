@@ -533,7 +533,13 @@ export function rarityChances(minutes: number, luckyLevel = state.upgrades.lucky
     return [r, w * factor] as [RarityId, number];
   });
   const sum = weighted.reduce((a, [, w]) => a + w, 0);
-  return weighted.map(([r, w]) => ({ rarity: r, pct: (w / sum) * 100 }));
+  const baseSum = entries.reduce((a, [, w]) => a + w, 0);
+  const baseById = new Map(entries.map(([r, w]) => [r, (w / baseSum) * 100]));
+  return weighted.map(([r, w]) => ({
+    rarity: r,
+    pct: (w / sum) * 100,
+    basePct: baseById.get(r) ?? 0,
+  }));
 }
 
 /** fração mínima do tempo planejado para ganhar monstro */
@@ -570,9 +576,14 @@ function rollRarity(minutes: number, earlyEnd: boolean, completion = 1): RarityI
   return weighted[0]![0];
 }
 
+/** chance de insistir em um monstro novo quando ainda falta algum da raridade */
+const NEW_MONSTER_PRIORITY = 0.92;
+
 function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean } {
   const pool = MONSTERS_BY_RARITY[rarity] ?? MONSTERS_BY_RARITY["comum"]!;
-  const pick = pool[Math.floor(Math.random() * pool.length)]!;
+  const missing = pool.filter((m) => !state.monsters[m.id]);
+  const from = missing.length > 0 && Math.random() < NEW_MONSTER_PRIORITY ? missing : pool;
+  const pick = from[Math.floor(Math.random() * from.length)]!;
   const duplicate = Boolean(state.monsters[pick.id]);
   return { monsterId: pick.id, duplicate };
 }

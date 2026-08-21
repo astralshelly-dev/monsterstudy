@@ -4,9 +4,9 @@
 import a0 from "@/assets/skin-avatars/bm_av_equinoxis.png.asset.json";
 import a1 from "@/assets/skin-avatars/bm_av_luminara.png.asset.json";
 import a2 from "@/assets/skin-avatars/bm_av_astraeon.png.asset.json";
-import a3 from "@/assets/skin-avatars/bm_av_eclipsaur.png.asset.json";
+import a3 from "@/assets/skin-avatars/bm_av_eclipsaur.png";
 import a4 from "@/assets/skin-avatars/bm_av_abyssaria.png.asset.json";
-import a5 from "@/assets/skin-avatars/bm_av_umbraleth.png.asset.json";
+import a5 from "@/assets/skin-avatars/bm_av_umbraleth.png";
 import a6 from "@/assets/skin-avatars/bm_av_chronavyr.png.asset.json";
 import a7 from "@/assets/skin-avatars/bm_av_solmyrr.png.asset.json";
 import a8 from "@/assets/skin-avatars/bm_av_thundrix.png.asset.json";
@@ -17,9 +17,9 @@ export const SKIN_AVATARS: Record<string, string> = {
   bm_skin_equinoxis: a0.url,
   bm_skin_luminara: a1.url,
   bm_skin_astraeon: a2.url,
-  bm_skin_eclipsaur: a3.url,
+  bm_skin_eclipsaur: a3,
   bm_skin_abyssaria: a4.url,
-  bm_skin_umbraleth: a5.url,
+  bm_skin_umbraleth: a5,
   bm_skin_chronavyr: a6.url,
   bm_skin_solmyrr: a7.url,
   bm_skin_thundrix: a8.url,

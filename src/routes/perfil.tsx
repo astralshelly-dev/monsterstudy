@@ -79,9 +79,9 @@ function Profile() {
     <div className="space-y-6">
       <PageHeader title="Perfil" icon="🧙" subtitle="Sua identidade de caçador de conhecimento." />
 
-      <div className={cn("panel p-6", bg?.className)}>
+      <div className={cn("panel p-6", bg?.className, fx?.className)}>
         <div className="flex flex-wrap items-center gap-5">
-          <div className={cn(fx?.className)}>
+          <div>
             <ProfileAvatar
               avatar={state.profile.avatar}
               monsterId={state.profile.avatarMonsterId}

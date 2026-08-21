@@ -251,7 +251,7 @@ function effDef(f: Fighter, behavior: AiBehavior): number {
 
 /** turno em que a batalha começa a escalar para nunca ficar infinita */
 export const SUDDEN_DEATH_TURN = 40;
-export const MAX_TURNS = 100;
+export const MAX_TURNS = 250;
 
 let escalation = 1;
 
