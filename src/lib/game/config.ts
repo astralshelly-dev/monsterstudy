@@ -242,6 +242,18 @@ export const TIMERS: TimerConfig[] = [
     price: 140000,
     weights: { lendario: 58, mitico: 38, divino: 4 },
   },
+  {
+    minutes: 330,
+    label: "5h30",
+    price: 210000,
+    weights: { lendario: 34, mitico: 55, divino: 11 },
+  },
+  {
+    minutes: 360,
+    label: "6 horas",
+    price: 320000,
+    weights: { mitico: 70, divino: 25, secreto: 5 },
+  },
 ];
 
 export const DEFAULT_UNLOCKED_TIMERS = TIMERS.filter((t) => t.price === 0).map((t) => t.minutes);
