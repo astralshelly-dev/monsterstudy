@@ -151,7 +151,7 @@ export const ABILITIES: Ability[] = [
     name: "Casca Arcana",
     icon: "🛡️",
     description: "Cria um escudo que absorve o próximo dano recebido.",
-    cooldown: 4,
+    cooldown: 5,
     effect: { type: "shield", pct: 0.2 },
   },
   {
