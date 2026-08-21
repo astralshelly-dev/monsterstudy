@@ -570,9 +570,14 @@ function rollRarity(minutes: number, earlyEnd: boolean, completion = 1): RarityI
   return weighted[0]![0];
 }
 
+/** chance de insistir em um monstro novo quando ainda falta algum da raridade */
+const NEW_MONSTER_PRIORITY = 0.92;
+
 function grantMonster(rarity: RarityId): { monsterId: string; duplicate: boolean } {
   const pool = MONSTERS_BY_RARITY[rarity] ?? MONSTERS_BY_RARITY["comum"]!;
-  const pick = pool[Math.floor(Math.random() * pool.length)]!;
+  const missing = pool.filter((m) => !state.monsters[m.id]);
+  const from = missing.length > 0 && Math.random() < NEW_MONSTER_PRIORITY ? missing : pool;
+  const pick = from[Math.floor(Math.random() * from.length)]!;
   const duplicate = Boolean(state.monsters[pick.id]);
   return { monsterId: pick.id, duplicate };
 }
