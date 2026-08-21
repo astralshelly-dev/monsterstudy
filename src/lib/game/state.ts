@@ -533,7 +533,13 @@ export function rarityChances(minutes: number, luckyLevel = state.upgrades.lucky
     return [r, w * factor] as [RarityId, number];
   });
   const sum = weighted.reduce((a, [, w]) => a + w, 0);
-  return weighted.map(([r, w]) => ({ rarity: r, pct: (w / sum) * 100 }));
+  const baseSum = entries.reduce((a, [, w]) => a + w, 0);
+  const baseById = new Map(entries.map(([r, w]) => [r, (w / baseSum) * 100]));
+  return weighted.map(([r, w]) => ({
+    rarity: r,
+    pct: (w / sum) * 100,
+    basePct: baseById.get(r) ?? 0,
+  }));
 }
 
 /** fração mínima do tempo planejado para ganhar monstro */
